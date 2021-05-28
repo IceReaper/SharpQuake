@@ -22,39 +22,39 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework.Mathematics;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.BSP
 {
+    using System.Numerics;
+    using Plane = Mathematics.Plane;
+
     // !!! if this is changed, it must be changed in asm_i386.h too !!!
     public class BspHull
     {
         public BspClipNode[] clipnodes;
         public Plane[] planes;
-        public Int32 firstclipnode;
-        public Int32 lastclipnode;
+        public int firstclipnode;
+        public int lastclipnode;
         public Vector3 clip_mins;
         public Vector3 clip_maxs;
 
         public void Clear( )
         {
-            clipnodes = null;
-            planes = null;
-            firstclipnode = 0;
-            lastclipnode = 0;
-            clip_mins = Vector3.Zero;
-            clip_maxs = Vector3.Zero;
+            this.clipnodes = null;
+            this.planes = null;
+            this.firstclipnode = 0;
+            this.lastclipnode = 0;
+            this.clip_mins = Vector3.Zero;
+            this.clip_maxs = Vector3.Zero;
         }
 
         public void CopyFrom( BspHull src )
         {
-            clipnodes = src.clipnodes;
-            planes = src.planes;
-            firstclipnode = src.firstclipnode;
-            lastclipnode = src.lastclipnode;
-            clip_mins = src.clip_mins;
-            clip_maxs = src.clip_maxs;
+            this.clipnodes = src.clipnodes;
+            this.planes = src.planes;
+            this.firstclipnode = src.firstclipnode;
+            this.lastclipnode = src.lastclipnode;
+            this.clip_mins = src.clip_mins;
+            this.clip_maxs = src.clip_maxs;
         }
     } // hull_t;
 }

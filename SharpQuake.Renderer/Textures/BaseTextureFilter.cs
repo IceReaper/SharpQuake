@@ -22,21 +22,19 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
 namespace SharpQuake.Renderer.Textures
 {
     public class BaseTextureFilter
     {
-        public virtual String Name
+        public virtual string Name
         {
             get;
             protected set;
         }
 
-        public BaseTextureFilter( String name )
+        public BaseTextureFilter( string name )
         {
-            Name = name;
+            this.Name = name;
         }
     }
 }

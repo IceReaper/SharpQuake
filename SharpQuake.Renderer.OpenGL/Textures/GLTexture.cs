@@ -22,24 +22,25 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Renderer.Textures;
-using OpenTK.Graphics.OpenGL;
-using SharpQuake.Framework;
-using System.Runtime.InteropServices;
-using System.Linq;
-
 namespace SharpQuake.Renderer.OpenGL.Textures
 {
+    using Framework;
+    using Framework.Data;
+    using Framework.Definitions;
+    using OpenTK.Graphics.OpenGL;
+    using Renderer.Textures;
+    using System.Linq;
+    using System.Runtime.InteropServices;
+
     public class GLTexture : BaseTexture
     {
-        public static Int32 CurrentTextureNumber
+        public static int CurrentTextureNumber
         {
             get;
             set;
         }
 
-        public static Int32 Texels
+        public static int Texels
         {
             get;
             set;
@@ -47,19 +48,13 @@ namespace SharpQuake.Renderer.OpenGL.Textures
 
         static GLTexture()
         {
-            CurrentTextureNumber = 1;
+            GLTexture.CurrentTextureNumber = 1;
         }
 
         public GLTextureDesc GLDesc
         {
-            get
-            {
-                return ( GLTextureDesc ) Desc;
-            }
-            set
-            {
-                Desc = ( BaseTextureDesc ) value;
-            }
+            get => ( GLTextureDesc )this.Desc;
+            set => this.Desc = ( BaseTextureDesc ) value;
         }
 
         // gl_lightmap_format = 4
@@ -78,72 +73,74 @@ namespace SharpQuake.Renderer.OpenGL.Textures
         {
             base.Initialise( buffer );
 
-            if ( !Desc.IsLightMap )
+            if ( !this.Desc.IsLightMap )
             {
-                GLDesc.TextureNumber = CurrentTextureNumber;
-                GenerateTextureNumber( );
+                this.GLDesc.TextureNumber = GLTexture.CurrentTextureNumber;
+                GLTexture.GenerateTextureNumber( );
             }
         }
 
-        public override void Initialise( UInt32[] buffer )
+        public override void Initialise( uint[] buffer )
         {
             base.Initialise( buffer );
 
-            if ( !Desc.IsLightMap )
+            if ( !this.Desc.IsLightMap )
             {
-                GLDesc.TextureNumber = CurrentTextureNumber;
-                GenerateTextureNumber( );
+                this.GLDesc.TextureNumber = GLTexture.CurrentTextureNumber;
+                GLTexture.GenerateTextureNumber( );
             }
         }
 
         public override void Bind( )
         {
-            GL.BindTexture( TextureTarget.Texture2D, GLDesc.TextureNumber );
+            GL.BindTexture( TextureTarget.Texture2D, this.GLDesc.TextureNumber );
         }
 
-        public override void Upload( System.Boolean resample )
+        public override void Upload( bool resample )
         {
-            if ( Desc.IsLightMap )
+            if (this.Desc.IsLightMap )
             {
-                GLDesc.TextureNumber = CurrentTextureNumber;
+                this.GLDesc.TextureNumber = GLTexture.CurrentTextureNumber;
 
-                Bind( );
-                UploadLightmap( );
+                this.Bind( );
+                this.UploadLightmap( );
             }
             else
             {
-                Bind( );
+                this.Bind( );
 
-                if ( Buffer32?.Length > 0 )
-                    Upload32( Buffer32, Desc.HasAlpha, resample );
+                if (this.Buffer32?.Length > 0 )
+                    this.Upload32(this.Buffer32, this.Desc.HasAlpha, resample );
                 else
-                    Upload8( resample );
+                    this.Upload8( resample );
             }
 
-            if ( Desc.IsLightMap )
-                GenerateTextureNumber( );
+            if (this.Desc.IsLightMap )
+                GLTexture.GenerateTextureNumber( );
         }
 
         // GL_Upload32
-        protected override void Upload32( UInt32[] data, System.Boolean alpha, System.Boolean resample )
+        protected override void Upload32( uint[] data, bool alpha, bool resample )
         {
             base.Upload32( data, alpha, resample );
 
-            var filter = ( GLTextureFilter ) Device.GetTextureFilters( Desc.Filter );
+            var filter = ( GLTextureFilter )this.Device.GetTextureFilters(this.Desc.Filter );
 
-            var samples = alpha ? AlphaFormat : SolidFormat;
-            UInt32[] scaled;
+            var samples = alpha ? this.AlphaFormat : this.SolidFormat;
+            uint[] scaled;
 
-            Texels += Desc.ScaledWidth * Desc.ScaledHeight;
+            GLTexture.Texels += this.Desc.ScaledWidth * this.Desc.ScaledHeight;
 
-            if ( Desc.ScaledWidth == Desc.Width && Desc.ScaledHeight == Desc.Height )
+            if (this.Desc.ScaledWidth == this.Desc.Width && this.Desc.ScaledHeight == this.Desc.Height )
             {
-                if ( !Desc.HasMipMap )
+                if ( !this.Desc.HasMipMap )
                 {
                     var h2 = GCHandle.Alloc( data, GCHandleType.Pinned );
                     try
                     {
-                        GL.TexImage2D( TextureTarget.Texture2D, 0, samples, Desc.ScaledWidth, Desc.ScaledHeight, 0,
+                        GL.TexImage2D( TextureTarget.Texture2D, 0, samples,
+                            this.Desc.ScaledWidth,
+                            this.Desc.ScaledHeight, 0,
                             PixelFormat.Rgba, PixelType.UnsignedByte, h2.AddrOfPinnedObject( ) );
                     }
                     finally
@@ -154,16 +151,16 @@ namespace SharpQuake.Renderer.OpenGL.Textures
                 }
                 else
                 {
-                    scaled = new UInt32[Desc.ScaledWidth * Desc.ScaledHeight]; // uint[1024 * 512];
+                    scaled = new uint[this.Desc.ScaledWidth * this.Desc.ScaledHeight]; // uint[1024 * 512];
                     data.CopyTo( scaled, 0 );
                 }
             }
             else if ( resample )
-                Resample( data, Desc.Width, Desc.Height, out scaled, Desc.ScaledWidth, Desc.ScaledHeight );
+                this.Resample( data, this.Desc.Width, this.Desc.Height, out scaled, this.Desc.ScaledWidth, this.Desc.ScaledHeight );
             else
             {
-                Desc.ScaledWidth = Desc.Width;
-                Desc.ScaledHeight = Desc.Height;
+                this.Desc.ScaledWidth = this.Desc.Width;
+                this.Desc.ScaledHeight = this.Desc.Height;
                 scaled = data;
             }
 
@@ -171,24 +168,28 @@ namespace SharpQuake.Renderer.OpenGL.Textures
             try
             {
                 var ptr = h.AddrOfPinnedObject( );
-                GL.TexImage2D( TextureTarget.Texture2D, 0, samples, Desc.ScaledWidth, Desc.ScaledHeight, 0,
+                GL.TexImage2D( TextureTarget.Texture2D, 0, samples,
+                    this.Desc.ScaledWidth,
+                    this.Desc.ScaledHeight, 0,
                     PixelFormat.Rgba, PixelType.UnsignedByte, ptr );
                 var err = GL.GetError( ); // debug
-                if ( Desc.HasMipMap )
+                if (this.Desc.HasMipMap )
                 {
                     var miplevel = 0;
-                    while ( Desc.ScaledWidth > 1 || Desc.ScaledHeight > 1 )
+                    while (this.Desc.ScaledWidth > 1 || this.Desc.ScaledHeight > 1 )
                     {
-                        MipMap( scaled, Desc.ScaledWidth, Desc.ScaledHeight );
-                        Desc.ScaledWidth >>= 1;
-                        Desc.ScaledHeight >>= 1;
-                        if ( Desc.ScaledWidth < 1 )
-                            Desc.ScaledWidth = 1;
-                        if ( Desc.ScaledHeight < 1 )
-                            Desc.ScaledHeight = 1;
+                        this.MipMap( scaled, this.Desc.ScaledWidth, this.Desc.ScaledHeight );
+                        this.Desc.ScaledWidth >>= 1;
+                        this.Desc.ScaledHeight >>= 1;
+                        if (this.Desc.ScaledWidth < 1 )
+                            this.Desc.ScaledWidth = 1;
+                        if (this.Desc.ScaledHeight < 1 )
+                            this.Desc.ScaledHeight = 1;
                         miplevel++;
 
-                        GL.TexImage2D( TextureTarget.Texture2D, miplevel, samples, Desc.ScaledWidth, Desc.ScaledHeight, 0,
+                        GL.TexImage2D( TextureTarget.Texture2D, miplevel, samples,
+                            this.Desc.ScaledWidth,
+                            this.Desc.ScaledHeight, 0,
                             PixelFormat.Rgba, PixelType.UnsignedByte, ptr );
                     }
                 }
@@ -200,21 +201,21 @@ namespace SharpQuake.Renderer.OpenGL.Textures
 
         Done:
             ;
-            if ( !String.IsNullOrEmpty( Desc.BlendMode ) )
-                Device.SetBlendMode( Desc.BlendMode );
+            if ( !string.IsNullOrEmpty(this.Desc.BlendMode ) )
+                this.Device.SetBlendMode(this.Desc.BlendMode );
 
             var min = filter.Minimise;
             var mag = filter.Maximise;
 
-            if ( Desc.HasMipMap )
-                ( ( GLDevice ) Device ).SetTextureFilters( min, mag );
+            if (this.Desc.HasMipMap )
+                ( ( GLDevice )this.Device ).SetTextureFilters( min, mag );
             else
-                ( ( GLDevice ) Device ).SetTextureFilters( ( TextureMinFilter ) mag, mag );
+                ( ( GLDevice )this.Device ).SetTextureFilters( ( TextureMinFilter ) mag, mag );
         }
 
         public override void UploadLightmap( )
         {
-            var lightmaps = Buffer.Data;
+            var lightmaps = this.Buffer.Data;
 
             var handle = GCHandle.Alloc( lightmaps, GCHandleType.Pinned );
             try
@@ -224,25 +225,25 @@ namespace SharpQuake.Renderer.OpenGL.Textures
 
                 for ( var i = 0; i < RenderDef.MAX_LIGHTMAPS; i++ )
                 {
-                    if ( LightMapData[i, 0] == 0 )
+                    if (this.LightMapData[i, 0] == 0 )
                         break;		// no more used
 
-                    LightMapModified[i] = false;
-                    LightMapRectChange[i].l = RenderDef.BLOCK_WIDTH;
-                    LightMapRectChange[i].t = RenderDef.BLOCK_HEIGHT;
-                    LightMapRectChange[i].w = 0;
-                    LightMapRectChange[i].h = 0;
+                    this.LightMapModified[i] = false;
+                    this.LightMapRectChange[i].l = RenderDef.BLOCK_WIDTH;
+                    this.LightMapRectChange[i].t = RenderDef.BLOCK_HEIGHT;
+                    this.LightMapRectChange[i].w = 0;
+                    this.LightMapRectChange[i].h = 0;
 
-                    GL.BindTexture( TextureTarget.Texture2D, GLDesc.TextureNumber + i );
+                    GL.BindTexture( TextureTarget.Texture2D, this.GLDesc.TextureNumber + i );
 
-                    Device.SetTextureFilters( "GL_LINEAR" );
+                    this.Device.SetTextureFilters( "GL_LINEAR" );
 
-                    var pixelFormat = ( GLPixelFormat ) Device.PixelFormats.Where( p => p.Name == Desc.LightMapFormat ).FirstOrDefault( );
+                    var pixelFormat = ( GLPixelFormat )this.Device.PixelFormats.Where( p => p.Name == this.Desc.LightMapFormat ).FirstOrDefault( );
 
-                    var addr = lmAddr + i * RenderDef.BLOCK_WIDTH * RenderDef.BLOCK_HEIGHT * Desc.LightMapBytes;
-                    GL.TexImage2D( TextureTarget.Texture2D, 0, ( PixelInternalFormat ) Desc.LightMapBytes,
-                        RenderDef.BLOCK_WIDTH, RenderDef.BLOCK_HEIGHT, 0, pixelFormat.Value, PixelType.UnsignedByte, new IntPtr( addr ) );
-                    GenerateTextureNumber( );
+                    var addr = lmAddr + i * RenderDef.BLOCK_WIDTH * RenderDef.BLOCK_HEIGHT * this.Desc.LightMapBytes;
+                    GL.TexImage2D( TextureTarget.Texture2D, 0, ( PixelInternalFormat )this.Desc.LightMapBytes,
+                        RenderDef.BLOCK_WIDTH, RenderDef.BLOCK_HEIGHT, 0, pixelFormat.Value, PixelType.UnsignedByte, new( addr ) );
+                    GLTexture.GenerateTextureNumber( );
                 }
             }
             finally
@@ -250,24 +251,24 @@ namespace SharpQuake.Renderer.OpenGL.Textures
                 handle.Free( );
             }
 
-            GenerateTextureNumber( );
+            GLTexture.GenerateTextureNumber( );
         }
 
-        public override void CommitLightmap( Byte[] data, Int32 i )
+        public override void CommitLightmap( byte[] data, int i )
         {
-            LightMapModified[i] = false;
-            var theRect = LightMapRectChange[i];
+            this.LightMapModified[i] = false;
+            var theRect = this.LightMapRectChange[i];
             var handle = GCHandle.Alloc( data, GCHandleType.Pinned );
 
-            var format = ( GLPixelFormat ) Device.PixelFormats.Where( p => p.Name == Desc.LightMapFormat ).FirstOrDefault( );
+            var format = ( GLPixelFormat )this.Device.PixelFormats.Where( p => p.Name == this.Desc.LightMapFormat ).FirstOrDefault( );
 
             try
             {
                 var addr = handle.AddrOfPinnedObject( ).ToInt64( ) +
-                    ( i * RenderDef.BLOCK_HEIGHT + theRect.t ) * RenderDef.BLOCK_WIDTH * Desc.LightMapBytes;
+                    ( i * RenderDef.BLOCK_HEIGHT + theRect.t ) * RenderDef.BLOCK_WIDTH * this.Desc.LightMapBytes;
                 GL.TexSubImage2D( TextureTarget.Texture2D, 0, 0, theRect.t,
                     RenderDef.BLOCK_WIDTH, theRect.h, format == null ? PixelFormat.Rgba : format.Value,
-                    PixelType.UnsignedByte, new IntPtr( addr ) );
+                    PixelType.UnsignedByte, new( addr ) );
             }
             finally
             {
@@ -277,38 +278,38 @@ namespace SharpQuake.Renderer.OpenGL.Textures
             theRect.t = RenderDef.BLOCK_HEIGHT;
             theRect.h = 0;
             theRect.w = 0;
-            LightMapRectChange[i] = theRect;
+            this.LightMapRectChange[i] = theRect;
         }
 
-        public override void BindLightmap( Int32 number )
+        public override void BindLightmap( int number )
         {
             GL.BindTexture( TextureTarget.Texture2D, number );
         }
 
-        public override void TranslateAndUpload( Byte[] original, Byte[] translate, Int32 inWidth, Int32 inHeight, Int32 maxWidth = 512, Int32 maxHeight = 256, Int32 mip = 0 )
+        public override void TranslateAndUpload( byte[] original, byte[] translate, int inWidth, int inHeight, int maxWidth = 512, int maxHeight = 256, int mip = 0 )
         {
             // because this happens during gameplay, do it fast
             // instead of sending it through gl_upload 8
-            Bind( );
+            this.Bind( );
             //Host.DrawingContext.Bind( _PlayerTextures + playernum );
 
-            var scaled_width = ( Int32 ) ( maxWidth < 512 ? maxWidth : 512 );
-            var scaled_height = ( Int32 ) ( maxHeight < 256 ? maxHeight : 256 );
+            var scaled_width = ( int ) ( maxWidth < 512 ? maxWidth : 512 );
+            var scaled_height = ( int ) ( maxHeight < 256 ? maxHeight : 256 );
 
             // allow users to crunch sizes down even more if they want
-            scaled_width >>= ( Int32 ) mip;
-            scaled_height >>= ( Int32 ) mip;
+            scaled_width >>= ( int ) mip;
+            scaled_height >>= ( int ) mip;
 
-            UInt32 fracstep, frac;
-            Int32 destOffset;
+            uint fracstep, frac;
+            int destOffset;
 
-            var translate32 = new UInt32[256];
+            var translate32 = new uint[256];
             for ( var i = 0; i < 256; i++ )
-                translate32[i] = Device.Palette.Table8to24[translate[i]];
+                translate32[i] = this.Device.Palette.Table8to24[translate[i]];
 
-            var dest = new UInt32[512 * 256];
+            var dest = new uint[512 * 256];
             destOffset = 0;
-            fracstep = ( UInt32 ) ( inWidth * 0x10000 / scaled_width );
+            fracstep = ( uint ) ( inWidth * 0x10000 / scaled_width );
             for ( var i = 0; i < scaled_height; i++, destOffset += scaled_width )
             {
                 var srcOffset = inWidth * ( i * inHeight / scaled_height );
@@ -335,16 +336,16 @@ namespace SharpQuake.Renderer.OpenGL.Textures
             {
                 handle.Free( );
             }
-            GL.TexEnv( TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, ( Int32 ) TextureEnvMode.Modulate );
-            Device.SetTextureFilters( "GL_LINEAR" );
+            GL.TexEnv( TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, ( int ) TextureEnvMode.Modulate );
+            this.Device.SetTextureFilters( "GL_LINEAR" );
         }
 
         /// <summary>
         /// gets texture_extension_number++
         /// </summary>
-        public static Int32 GenerateTextureNumber( )
+        public static int GenerateTextureNumber( )
         {
-            return CurrentTextureNumber++;
+            return GLTexture.CurrentTextureNumber++;
         }
     }
 }

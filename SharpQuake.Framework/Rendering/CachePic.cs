@@ -22,13 +22,11 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Rendering
 {
     public class CachePic
     {
-        public String name; //[MAX_QPATH];
+        public string name; //[MAX_QPATH];
         public GLPic pic;
     } // cachepic_t;
 }

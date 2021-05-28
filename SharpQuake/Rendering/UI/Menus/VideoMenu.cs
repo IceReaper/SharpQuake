@@ -22,34 +22,33 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-
-namespace SharpQuake.Rendering.UI
+namespace SharpQuake.Rendering.UI.Menus
 {
+    using Framework.Definitions;
+
     public class VideoMenu : MenuBase
     {
         private struct modedesc_t
         {
-            public Int32 modenum;
-            public String desc;
-            public Boolean iscur;
+            public int modenum;
+            public string desc;
+            public bool iscur;
         } //modedesc_t;
 
-        private const Int32 MAX_COLUMN_SIZE = 9;
-        private const Int32 MODE_AREA_HEIGHT = MAX_COLUMN_SIZE + 2;
-        private const Int32 MAX_MODEDESCS = MAX_COLUMN_SIZE * 3;
+        private const int MAX_COLUMN_SIZE = 9;
+        private const int MODE_AREA_HEIGHT = VideoMenu.MAX_COLUMN_SIZE + 2;
+        private const int MAX_MODEDESCS = VideoMenu.MAX_COLUMN_SIZE * 3;
 
-        private Int32 _WModes; // vid_wmodes
-        private modedesc_t[] _ModeDescs = new modedesc_t[MAX_MODEDESCS]; // modedescs
+        private int _WModes; // vid_wmodes
+        private modedesc_t[] _ModeDescs = new modedesc_t[VideoMenu.MAX_MODEDESCS]; // modedescs
 
-        public override void KeyEvent( Int32 key )
+        public override void KeyEvent( int key )
         {
             switch ( key )
             {
                 case KeysDef.K_ESCAPE:
-                    Host.Sound.LocalSound( "misc/menu1.wav" );
-                    OptionsMenu.Show( Host );
+                    this.Host.Sound.LocalSound( "misc/menu1.wav" );
+                    MenuBase.OptionsMenuInstance.Show(this.Host );
                     break;
 
                 default:
@@ -59,45 +58,45 @@ namespace SharpQuake.Rendering.UI
 
         public override void Draw( )
         {
-            var p = Host.DrawingContext.CachePic( "gfx/vidmodes.lmp", "GL_NEAREST" );
-            Host.Menu.DrawPic( ( 320 - p.Width ) / 2, 4, p );
+            var p = this.Host.DrawingContext.CachePic( "gfx/vidmodes.lmp", "GL_NEAREST" );
+            this.Host.Menu.DrawPic( ( 320 - p.Width ) / 2, 4, p );
 
-            _WModes = 0;
-            var lnummodes = Host.Video.Device.AvailableModes.Length;
+            this._WModes = 0;
+            var lnummodes = this.Host.Video.Device.AvailableModes.Length;
 
-            for ( var i = 1; ( i < lnummodes ) && ( _WModes < MAX_MODEDESCS ); i++ )
+            for ( var i = 1; i < lnummodes && this._WModes < VideoMenu.MAX_MODEDESCS; i++ )
             {
-                var m = Host.Video.Device.AvailableModes[i];
+                var m = this.Host.Video.Device.AvailableModes[i];
 
-                var k = _WModes;
+                var k = this._WModes;
 
-                _ModeDescs[k].modenum = i;
-                _ModeDescs[k].desc = String.Format( "{0}x{1}x{2}", m.Width, m.Height, m.BitsPerPixel );
-                _ModeDescs[k].iscur = false;
+                this._ModeDescs[k].modenum = i;
+                this._ModeDescs[k].desc = string.Format( "{0}x{1}x{2}", m.Width, m.Height, m.BitsPerPixel );
+                this._ModeDescs[k].iscur = false;
 
-                if ( i == Host.Video.ModeNum )
-                    _ModeDescs[k].iscur = true;
+                if ( i == this.Host.Video.ModeNum )
+                    this._ModeDescs[k].iscur = true;
 
-                _WModes++;
+                this._WModes++;
             }
 
-            if ( _WModes > 0 )
+            if (this._WModes > 0 )
             {
-                Host.Menu.Print( 2 * 8, 36 + 0 * 8, "Fullscreen Modes (WIDTHxHEIGHTxBPP)" );
+                this.Host.Menu.Print( 2 * 8, 36 + 0 * 8, "Fullscreen Modes (WIDTHxHEIGHTxBPP)" );
 
                 var column = 8;
                 var row = 36 + 2 * 8;
 
-                for ( var i = 0; i < _WModes; i++ )
+                for ( var i = 0; i < this._WModes; i++ )
                 {
-                    if ( _ModeDescs[i].iscur )
-                        Host.Menu.PrintWhite( column, row, _ModeDescs[i].desc );
+                    if (this._ModeDescs[i].iscur )
+                        this.Host.Menu.PrintWhite( column, row, this._ModeDescs[i].desc );
                     else
-                        Host.Menu.Print( column, row, _ModeDescs[i].desc );
+                        this.Host.Menu.Print( column, row, this._ModeDescs[i].desc );
 
                     column += 13 * 8;
 
-                    if ( ( i % Vid.VID_ROW_SIZE ) == ( Vid.VID_ROW_SIZE - 1 ) )
+                    if ( i % Vid.VID_ROW_SIZE == Vid.VID_ROW_SIZE - 1 )
                     {
                         column = 8;
                         row += 8;
@@ -105,10 +104,10 @@ namespace SharpQuake.Rendering.UI
                 }
             }
 
-            Host.Menu.Print( 3 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8 * 2, "Video modes must be set from the" );
-            Host.Menu.Print( 3 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8 * 3, "command line with -width <width>" );
-            Host.Menu.Print( 3 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8 * 4, "and -bpp <bits-per-pixel>" );
-            Host.Menu.Print( 3 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8 * 6, "Select windowed mode with -window" );
+            this.Host.Menu.Print( 3 * 8, 36 + VideoMenu.MODE_AREA_HEIGHT * 8 + 8 * 2, "Video modes must be set from the" );
+            this.Host.Menu.Print( 3 * 8, 36 + VideoMenu.MODE_AREA_HEIGHT * 8 + 8 * 3, "command line with -width <width>" );
+            this.Host.Menu.Print( 3 * 8, 36 + VideoMenu.MODE_AREA_HEIGHT * 8 + 8 * 4, "and -bpp <bits-per-pixel>" );
+            this.Host.Menu.Print( 3 * 8, 36 + VideoMenu.MODE_AREA_HEIGHT * 8 + 8 * 6, "Select windowed mode with -window" );
         }
     }
 }

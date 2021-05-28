@@ -22,19 +22,24 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-using SharpQuake.Framework.IO.BSP;
-using SharpQuake.Framework.Mathematics;
-using SharpQuake.Game.Rendering.Memory;
+
 
 // gr_rlights.c
 
-namespace SharpQuake
+namespace SharpQuake.Rendering
 {
+	using Framework.Definitions;
+	using Framework.Definitions.Bsp;
+	using Framework.IO.BSP.Q1;
+	using Framework.Rendering;
+	using Game.Rendering.Memory;
+	using System.Drawing;
+	using System.Numerics;
+	using Plane = Framework.Mathematics.Plane;
+
 	partial class render
 	{
-		private Int32 _DlightFrameCount; // r_dlightframecount
+		private int _DlightFrameCount; // r_dlightframecount
 		private Plane _LightPlane; // lightplane
 
 		/// <summary>
@@ -42,24 +47,25 @@ namespace SharpQuake
 		/// </summary>
 		public void PushDlights( )
 		{
-			if ( Host.Cvars.glFlashBlend.Get<Boolean>() )
+			if (this.Host.Cvars.glFlashBlend.Get<bool>() )
 				return;
 
-			_DlightFrameCount = _FrameCount + 1;    // because the count hasn't advanced yet for this frame
+			this._DlightFrameCount = this._FrameCount + 1;    // because the count hasn't advanced yet for this frame
 
 			for ( var i = 0; i < ClientDef.MAX_DLIGHTS; i++ )
 			{
-				var l = Host.Client.DLights[i];
-				if ( l.die < Host.Client.cl.time || l.radius == 0 )
+				var l = this.Host.Client.DLights[i];
+				if ( l.die < this.Host.Client.cl.time || l.radius == 0 )
 					continue;
-				MarkLights( l, 1 << i, Host.Client.cl.worldmodel.Nodes[0] );
+
+				this.MarkLights( l, 1 << i, this.Host.Client.cl.worldmodel.Nodes[0] );
 			}
 		}
 
 		/// <summary>
 		/// R_MarkLights
 		/// </summary>
-		private void MarkLights( dlight_t light, Int32 bit, MemoryNodeBase node )
+		private void MarkLights( dlight_t light, int bit, MemoryNodeBase node )
 		{
 			if ( node.contents < 0 )
 				return;
@@ -70,29 +76,29 @@ namespace SharpQuake
 
 			if ( dist > light.radius )
 			{
-				MarkLights( light, bit, n.children[0] );
+				this.MarkLights( light, bit, n.children[0] );
 				return;
 			}
 			if ( dist < -light.radius )
 			{
-				MarkLights( light, bit, n.children[1] );
+				this.MarkLights( light, bit, n.children[1] );
 				return;
 			}
 
 			// mark the polygons
 			for ( var i = 0; i < n.numsurfaces; i++ )
 			{
-				var surf = Host.Client.cl.worldmodel.Surfaces[n.firstsurface + i];
-				if ( surf.dlightframe != _DlightFrameCount )
+				var surf = this.Host.Client.cl.worldmodel.Surfaces[n.firstsurface + i];
+				if ( surf.dlightframe != this._DlightFrameCount )
 				{
 					surf.dlightbits = 0;
-					surf.dlightframe = _DlightFrameCount;
+					surf.dlightframe = this._DlightFrameCount;
 				}
 				surf.dlightbits |= bit;
 			}
 
-			MarkLights( light, bit, n.children[0] );
-			MarkLights( light, bit, n.children[1] );
+			this.MarkLights( light, bit, n.children[0] );
+			this.MarkLights( light, bit, n.children[1] );
 		}
 
 		/// <summary>
@@ -103,24 +109,24 @@ namespace SharpQuake
 			//int i;
 			//dlight_t* l;
 
-			if ( !Host.Cvars.glFlashBlend.Get<Boolean>() )
+			if ( !this.Host.Cvars.glFlashBlend.Get<bool>() )
 				return;
 
-			_DlightFrameCount = _FrameCount + 1;    // because the count hasn't advanced yet for this frame
+			this._DlightFrameCount = this._FrameCount + 1;    // because the count hasn't advanced yet for this frame
 
-			Host.Video.Device.Graphics.BeginDLights();
-			Host.Video.Device.SetZWrite( false );
+			this.Host.Video.Device.Graphics.BeginDLights();
+			this.Host.Video.Device.SetZWrite( false );
 
 			for ( var i = 0; i < ClientDef.MAX_DLIGHTS; i++ )
 			{
-				var l = Host.Client.DLights[i];
-				if ( l.die < Host.Client.cl.time || l.radius == 0 )
+				var l = this.Host.Client.DLights[i];
+				if ( l.die < this.Host.Client.cl.time || l.radius == 0 )
 					continue;
 
-				RenderDlight( l );
+				this.RenderDlight( l );
 			}
 
-			Host.Video.Device.Graphics.EndDLights();
+			this.Host.Video.Device.Graphics.EndDLights();
 		}
 
 		/// <summary>
@@ -131,41 +137,41 @@ namespace SharpQuake
 			//
 			// light animations
 			// 'm' is normal light, 'a' is no light, 'z' is double bright
-			var i = ( Int32 ) ( Host.Client.cl.time * 10 );
+			var i = ( int ) (this.Host.Client.cl.time * 10 );
 			for ( var j = 0; j < QDef.MAX_LIGHTSTYLES; j++ )
 			{
-				if ( String.IsNullOrEmpty( Host.Client.LightStyle[j].map ) )
+				if ( string.IsNullOrEmpty(this.Host.Client.LightStyle[j].map ) )
 				{
-					_LightStyleValue[j] = 256;
+					this._LightStyleValue[j] = 256;
 					continue;
 				}
-				var map = Host.Client.LightStyle[j].map;
+				var map = this.Host.Client.LightStyle[j].map;
 				var k = i % map.Length;
 				k = map[k] - 'a';
 				k = k * 22;
-				_LightStyleValue[j] = k;
+				this._LightStyleValue[j] = k;
 			}
 		}
 
 		/// <summary>
 		/// R_LightPoint
 		/// </summary>
-		private Int32 LightPoint( ref Vector3 p )
+		private int LightPoint( ref Vector3 p )
 		{
-			if ( Host.Client.cl.worldmodel.LightData == null )
+			if (this.Host.Client.cl.worldmodel.LightData == null )
 				return 255;
 
 			var end = p;
 			end.Z -= 2048;
 
-			var r = RecursiveLightPoint( Host.Client.cl.worldmodel.Nodes[0], ref p, ref end );
+			var r = this.RecursiveLightPoint(this.Host.Client.cl.worldmodel.Nodes[0], ref p, ref end );
 			if ( r == -1 )
 				r = 0;
 
 			return r;
 		}
 
-		private Int32 RecursiveLightPoint( MemoryNodeBase node, ref Vector3 start, ref Vector3 end )
+		private int RecursiveLightPoint( MemoryNodeBase node, ref Vector3 start, ref Vector3 end )
 		{
 			if ( node.contents < 0 )
 				return -1;      // didn't hit anything
@@ -181,13 +187,13 @@ namespace SharpQuake
 			var side = front < 0 ? 1 : 0;
 
 			if ( ( back < 0 ? 1 : 0 ) == side )
-				return RecursiveLightPoint( n.children[side], ref start, ref end );
+				return this.RecursiveLightPoint( n.children[side], ref start, ref end );
 
 			var frac = front / ( front - back );
 			var mid = start + ( end - start ) * frac;
 
 			// go down front side
-			var r = RecursiveLightPoint( n.children[side], ref start, ref mid );
+			var r = this.RecursiveLightPoint( n.children[side], ref start, ref mid );
 			if ( r >= 0 )
 				return r;       // hit something
 
@@ -195,20 +201,20 @@ namespace SharpQuake
 				return -1;      // didn't hit anuthing
 
 			// check for impact on this node
-			_LightSpot = mid;
-			_LightPlane = plane;
+			this._LightSpot = mid;
+			this._LightPlane = plane;
 
-			var surf = Host.Client.cl.worldmodel.Surfaces;
-			Int32 offset = n.firstsurface;
+			var surf = this.Host.Client.cl.worldmodel.Surfaces;
+			int offset = n.firstsurface;
 			for ( var i = 0; i < n.numsurfaces; i++, offset++ )
 			{
-				if ( ( surf[offset].flags & ( Int32 ) Q1SurfaceFlags.Tiled ) != 0 )
+				if ( ( surf[offset].flags & ( int ) Q1SurfaceFlags.Tiled ) != 0 )
 					continue;   // no lightmaps
 
 				var tex = surf[offset].texinfo;
 
-				var s = ( Int32 ) ( Vector3.Dot( mid, tex.vecs[0].Xyz ) + tex.vecs[0].W );
-				var t = ( Int32 ) ( Vector3.Dot( mid, tex.vecs[1].Xyz ) + tex.vecs[1].W );
+				var s = ( int ) ( Vector3.Dot( mid, new(tex.vecs[0].X, tex.vecs[0].Y, tex.vecs[0].Z) ) + tex.vecs[0].W );
+				var t = ( int ) ( Vector3.Dot( mid, new(tex.vecs[1].X, tex.vecs[1].Y, tex.vecs[1].Z) ) + tex.vecs[1].W );
 
 				if ( s < surf[offset].texturemins[0] || t < surf[offset].texturemins[1] )
 					continue;
@@ -235,7 +241,7 @@ namespace SharpQuake
 
 					for ( var maps = 0; maps < BspDef.MAXLIGHTMAPS && surf[offset].styles[maps] != 255; maps++ )
 					{
-						var scale = _LightStyleValue[surf[offset].styles[maps]];
+						var scale = this._LightStyleValue[surf[offset].styles[maps]];
 						r += lightmap[lmOffset] * scale;
 						lmOffset += ( ( extents[0] >> 4 ) + 1 ) * ( ( extents[1] >> 4 ) + 1 );
 					}
@@ -247,7 +253,7 @@ namespace SharpQuake
 			}
 
 			// go down back side
-			return RecursiveLightPoint( n.children[side == 0 ? 1 : 0], ref mid, ref end );
+			return this.RecursiveLightPoint( n.children[side == 0 ? 1 : 0], ref mid, ref end );
 		}
 
 		/// <summary>
@@ -256,27 +262,28 @@ namespace SharpQuake
 		private void RenderDlight( dlight_t light )
 		{
 			var rad = light.radius * 0.35f;
-			var v = light.origin - Origin;
-			if ( v.Length < rad )
+			var v = light.origin - this.Origin;
+			if ( v.Length() < rad )
 			{   // view is inside the dlight
-				AddLightBlend( 1, 0.5f, 0, light.radius * 0.0003f );
+				this.AddLightBlend( 1, 0.5f, 0, light.radius * 0.0003f );
 				return;
 			}
 
-			Host.Video.Device.Graphics.DrawDLight( light, ViewPn, ViewUp, ViewRight );
+			this.Host.Video.Device.Graphics.DrawDLight( light, this.ViewPn, this.ViewUp, this.ViewRight );
 		}
 
-		private void AddLightBlend( Single r, Single g, Single b, Single a2 )
+		private void AddLightBlend( float r, float g, float b, float a2 )
 		{
-			Host.View.Blend.A += a2 * ( 1 - Host.View.Blend.A );
+			var a = (byte)(this.Host.View.Blend.A + a2 * ( byte.MaxValue - this.Host.View.Blend.A ));
 
-			var a = Host.View.Blend.A;
+			a2 = a2 * byte.MaxValue / a;
 
-			a2 = a2 / a;
-
-			Host.View.Blend.R = Host.View.Blend.R * ( 1 - a2 ) + r * a2; // error? - v_blend[0] = v_blend[1] * (1 - a2) + r * a2;
-			Host.View.Blend.G = Host.View.Blend.G * ( 1 - a2 ) + g * a2;
-			Host.View.Blend.B = Host.View.Blend.B * ( 1 - a2 ) + b * a2;
+			this.Host.View.Blend = Color.FromArgb(
+				a, 
+				(byte)(this.Host.View.Blend.R * ( 1 - a2 ) + r * byte.MaxValue * a2), // error? - v_blend[0] = v_blend[1] * (1 - a2) + r * a2;, 
+				(byte)(this.Host.View.Blend.G * ( 1 - a2 ) + g * byte.MaxValue * a2), 
+				(byte)(this.Host.View.Blend.B * ( 1 - a2 ) + b * byte.MaxValue * a2)
+			);
 		}
 	}
 }

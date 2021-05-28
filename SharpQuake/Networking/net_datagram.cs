@@ -22,40 +22,38 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Net;
-using SharpQuake.Framework;
-using SharpQuake.Framework.IO;
-
-namespace SharpQuake
+namespace SharpQuake.Networking
 {
+    using Engine.Host;
+    using Framework.Data;
+    using Framework.Definitions;
+    using Framework.Engine;
+    using Framework.IO;
+    using Framework.Networking;
+    using System;
+    using System.Net;
+
     internal class net_datagram : INetDriver
     {
-        public static net_datagram Instance
-        {
-            get
-            {
-                return _Singletone;
-            }
-        }
+        public static net_datagram Instance => net_datagram._Singletone;
 
-        private static net_datagram _Singletone = new net_datagram( );
+        private static net_datagram _Singletone = new( );
 
-        private Int32 _DriverLevel;
-        private Boolean _IsInitialised;
-        private Byte[] _PacketBuffer;
+        private int _DriverLevel;
+        private bool _IsInitialised;
+        private byte[] _PacketBuffer;
 
         // statistic counters
-        private Int32 packetsSent;
+        private int packetsSent;
 
-        private Int32 packetsReSent;
-        private Int32 packetsReceived;
-        private Int32 receivedDuplicateCount;
-        private Int32 shortPacketCount;
-        private Int32 droppedDatagrams;
+        private int packetsReSent;
+        private int packetsReceived;
+        private int receivedDuplicateCount;
+        private int shortPacketCount;
+        private int droppedDatagrams;
         //
 
-        private static String StrAddr( EndPoint ep )
+        private static string StrAddr( EndPoint ep )
         {
             return ep.ToString( );
         }
@@ -65,81 +63,77 @@ namespace SharpQuake
         {
             if ( msg.Parameters == null || msg.Parameters.Length == 0 )
             {
-                Host.Console.Print( "unreliable messages sent   = %i\n", Host.Network.UnreliableMessagesSent );
-                Host.Console.Print( "unreliable messages recv   = %i\n", Host.Network.UnreliableMessagesReceived );
-                Host.Console.Print( "reliable messages sent     = %i\n", Host.Network.MessagesSent );
-                Host.Console.Print( "reliable messages received = %i\n", Host.Network.MessagesReceived );
-                Host.Console.Print( "packetsSent                = %i\n", packetsSent );
-                Host.Console.Print( "packetsReSent              = %i\n", packetsReSent );
-                Host.Console.Print( "packetsReceived            = %i\n", packetsReceived );
-                Host.Console.Print( "receivedDuplicateCount     = %i\n", receivedDuplicateCount );
-                Host.Console.Print( "shortPacketCount           = %i\n", shortPacketCount );
-                Host.Console.Print( "droppedDatagrams           = %i\n", droppedDatagrams );
+                this.Host.Console.Print( "unreliable messages sent   = %i\n", this.Host.Network.UnreliableMessagesSent );
+                this.Host.Console.Print( "unreliable messages recv   = %i\n", this.Host.Network.UnreliableMessagesReceived );
+                this.Host.Console.Print( "reliable messages sent     = %i\n", this.Host.Network.MessagesSent );
+                this.Host.Console.Print( "reliable messages received = %i\n", this.Host.Network.MessagesReceived );
+                this.Host.Console.Print( "packetsSent                = %i\n", this.packetsSent );
+                this.Host.Console.Print( "packetsReSent              = %i\n", this.packetsReSent );
+                this.Host.Console.Print( "packetsReceived            = %i\n", this.packetsReceived );
+                this.Host.Console.Print( "receivedDuplicateCount     = %i\n", this.receivedDuplicateCount );
+                this.Host.Console.Print( "shortPacketCount           = %i\n", this.shortPacketCount );
+                this.Host.Console.Print( "droppedDatagrams           = %i\n", this.droppedDatagrams );
             }
             else if ( msg.Parameters[0] == "*" )
             {
-                foreach ( var s in Host.Network.ActiveSockets )
-                    PrintStats( s );
+                foreach ( var s in this.Host.Network.ActiveSockets )
+                    this.PrintStats( s );
 
-                foreach ( var s in Host.Network.FreeSockets )
-                    PrintStats( s );
+                foreach ( var s in this.Host.Network.FreeSockets )
+                    this.PrintStats( s );
             }
             else
             {
                 qsocket_t sock = null;
                 var cmdAddr = msg.Parameters[0];
 
-                foreach ( var s in Host.Network.ActiveSockets )
+                foreach ( var s in this.Host.Network.ActiveSockets )
+                {
                     if ( Utilities.SameText( s.address, cmdAddr ) )
                     {
                         sock = s;
                         break;
                     }
+                }
 
                 if ( sock == null )
-                    foreach ( var s in Host.Network.FreeSockets )
+                {
+                    foreach ( var s in this.Host.Network.FreeSockets )
+                    {
                         if ( Utilities.SameText( s.address, cmdAddr ) )
                         {
                             sock = s;
                             break;
                         }
+                    }
+                }
+
                 if ( sock == null )
                     return;
-                PrintStats( sock );
+
+                this.PrintStats( sock );
             }
         }
 
         // PrintStats(qsocket_t* s)
         private void PrintStats( qsocket_t s )
         {
-            Host.Console.Print( "canSend = {0:4}   \n", s.canSend );
-            Host.Console.Print( "sendSeq = {0:4}   ", s.sendSequence );
-            Host.Console.Print( "recvSeq = {0:4}   \n", s.receiveSequence );
-            Host.Console.Print( "\n" );
+            this.Host.Console.Print( "canSend = {0:4}   \n", s.canSend );
+            this.Host.Console.Print( "sendSeq = {0:4}   ", s.sendSequence );
+            this.Host.Console.Print( "recvSeq = {0:4}   \n", s.receiveSequence );
+            this.Host.Console.Print( "\n" );
         }
 
         private net_datagram( )
         {
-            _PacketBuffer = new Byte[NetworkDef.NET_DATAGRAMSIZE];
+            this._PacketBuffer = new byte[NetworkDef.NET_DATAGRAMSIZE];
         }
 
         #region INetDriver Members
 
-        public String Name
-        {
-            get
-            {
-                return "Datagram";
-            }
-        }
+        public string Name => "Datagram";
 
-        public Boolean IsInitialised
-        {
-            get
-            {
-                return _IsInitialised;
-            }
-        }
+        public bool IsInitialised => this._IsInitialised;
 
         // CHANGE
         private Host Host
@@ -148,35 +142,35 @@ namespace SharpQuake
             set;
         }
 
-        public void Initialise( Object host )
+        public void Initialise( object host )
         {
-            Host = ( Host ) host;
+            this.Host = ( Host ) host;
 
-            _DriverLevel = Array.IndexOf( Host.Network.Drivers, this );
-            Host.Commands.Add( "net_stats", Stats_f );
+            this._DriverLevel = Array.IndexOf(this.Host.Network.Drivers, this );
+            this.Host.Commands.Add( "net_stats", this.Stats_f );
 
             if ( CommandLine.HasParam( "-nolan" ) )
                 return;
 
-            foreach ( var driver in Host.Network.LanDrivers )
+            foreach ( var driver in this.Host.Network.LanDrivers )
             {
                 if ( driver is net_tcp_ip )
                 {
-                    var tcpIP = ( ( net_tcp_ip ) driver );
+                    var tcpIP = ( net_tcp_ip ) driver;
 
-                    tcpIP.HostName = Host.CVars.Get( "hostname" ).Get<String>( );
-                    tcpIP.HostPort = Host.Network.HostPort;
+                    tcpIP.HostName = this.Host.CVars.Get( "hostname" ).Get<string>( );
+                    tcpIP.HostPort = this.Host.Network.HostPort;
                 }
 
                 driver.Initialise( );
 
                 if ( driver is net_tcp_ip )
                 {
-                    var tcpIP = ( ( net_tcp_ip ) driver );
+                    var tcpIP = ( net_tcp_ip ) driver;
 
-                    Host.Network.MyTcpIpAddress = tcpIP.HostAddress;
+                    this.Host.Network.MyTcpIpAddress = tcpIP.HostAddress;
 
-                    Host.CVars.Set( "hostname", tcpIP.HostName );
+                    this.Host.CVars.Set( "hostname", tcpIP.HostName );
                 }
             }
 
@@ -186,15 +180,15 @@ namespace SharpQuake
             //Cmd.Add("test", Test_f);
             //Cmd.Add("test2", Test2_f);
 
-            _IsInitialised = true;
+            this._IsInitialised = true;
         }
 
         /// <summary>
         /// Datagram_Listen
         /// </summary>
-        public void Listen( Boolean state )
+        public void Listen( bool state )
         {
-            foreach ( var drv in Host.Network.LanDrivers )
+            foreach ( var drv in this.Host.Network.LanDrivers )
             {
                 if ( drv.IsInitialised )
                     drv.Listen( state );
@@ -204,31 +198,34 @@ namespace SharpQuake
         /// <summary>
         /// Datagram_SearchForHosts
         /// </summary>
-        public void SearchForHosts( Boolean xmit )
+        public void SearchForHosts( bool xmit )
         {
-            for ( Host.Network.LanDriverLevel = 0; Host.Network.LanDriverLevel < Host.Network.LanDrivers.Length; Host.Network.LanDriverLevel++ )
+            for (this.Host.Network.LanDriverLevel = 0; this.Host.Network.LanDriverLevel < this.Host.Network.LanDrivers.Length; this.Host.Network.LanDriverLevel++ )
             {
-                if ( Host.Network.HostCacheCount == NetworkDef.HOSTCACHESIZE )
+                if (this.Host.Network.HostCacheCount == NetworkDef.HOSTCACHESIZE )
                     break;
-                if ( Host.Network.LanDrivers[Host.Network.LanDriverLevel].IsInitialised )
-                    InternalSearchForHosts( xmit );
+                if (this.Host.Network.LanDrivers[this.Host.Network.LanDriverLevel].IsInitialised )
+                    this.InternalSearchForHosts( xmit );
             }
         }
 
         /// <summary>
         /// Datagram_Connect
         /// </summary>
-        public qsocket_t Connect( String host )
+        public qsocket_t Connect( string host )
         {
             qsocket_t ret = null;
 
-            for ( Host.Network.LanDriverLevel = 0; Host.Network.LanDriverLevel < Host.Network.LanDrivers.Length; Host.Network.LanDriverLevel++ )
-                if ( Host.Network.LanDrivers[Host.Network.LanDriverLevel].IsInitialised )
+            for (this.Host.Network.LanDriverLevel = 0; this.Host.Network.LanDriverLevel < this.Host.Network.LanDrivers.Length; this.Host.Network.LanDriverLevel++ )
+            {
+                if (this.Host.Network.LanDrivers[this.Host.Network.LanDriverLevel].IsInitialised )
                 {
-                    ret = InternalConnect( host );
+                    ret = this.InternalConnect( host );
                     if ( ret != null )
                         break;
                 }
+            }
+
             return ret;
         }
 
@@ -239,13 +236,16 @@ namespace SharpQuake
         {
             qsocket_t ret = null;
 
-            for ( Host.Network.LanDriverLevel = 0; Host.Network.LanDriverLevel < Host.Network.LanDrivers.Length; Host.Network.LanDriverLevel++ )
-                if ( Host.Network.LanDriver.IsInitialised )
+            for (this.Host.Network.LanDriverLevel = 0; this.Host.Network.LanDriverLevel < this.Host.Network.LanDrivers.Length; this.Host.Network.LanDriverLevel++ )
+            {
+                if (this.Host.Network.LanDriver.IsInitialised )
                 {
-                    ret = InternalCheckNewConnections( );
+                    ret = this.InternalCheckNewConnections( );
                     if ( ret != null )
                         break;
                 }
+            }
+
             return ret;
         }
 
@@ -254,59 +254,61 @@ namespace SharpQuake
         /// </summary>
         public qsocket_t InternalCheckNewConnections( )
         {
-            var acceptsock = Host.Network.LanDriver.CheckNewConnections( );
+            var acceptsock = this.Host.Network.LanDriver.CheckNewConnections( );
             if ( acceptsock == null )
                 return null;
 
             EndPoint clientaddr = new IPEndPoint( IPAddress.Any, 0 );
-            Host.Network.Message.FillFrom( Host.Network, acceptsock, ref clientaddr );
+            this.Host.Network.Message.FillFrom(this.Host.Network, acceptsock, ref clientaddr );
 
-            if ( Host.Network.Message.Length < sizeof( Int32 ) )
+            if (this.Host.Network.Message.Length < sizeof( int ) )
                 return null;
 
-            Host.Network.Reader.Reset( );
-            var control = EndianHelper.BigLong( Host.Network.Reader.ReadLong( ) );
+            this.Host.Network.Reader.Reset( );
+            var control = EndianHelper.BigLong(this.Host.Network.Reader.ReadLong( ) );
             if ( control == -1 )
                 return null;
-            if ( ( control & ( ~NetFlags.NETFLAG_LENGTH_MASK ) ) != NetFlags.NETFLAG_CTL )
+            if ( ( control & ~NetFlags.NETFLAG_LENGTH_MASK ) != NetFlags.NETFLAG_CTL )
                 return null;
-            if ( ( control & NetFlags.NETFLAG_LENGTH_MASK ) != Host.Network.Message.Length )
+            if ( ( control & NetFlags.NETFLAG_LENGTH_MASK ) != this.Host.Network.Message.Length )
                 return null;
 
-            var command = Host.Network.Reader.ReadByte( );
+            var command = this.Host.Network.Reader.ReadByte( );
             if ( command == CCReq.CCREQ_SERVER_INFO )
             {
-                var tmp = Host.Network.Reader.ReadString( );
+                var tmp = this.Host.Network.Reader.ReadString( );
                 if ( tmp != "QUAKE" )
                     return null;
 
-                Host.Network.Message.Clear( );
+                this.Host.Network.Message.Clear( );
 
                 // save space for the header, filled in later
-                Host.Network.Message.WriteLong( 0 );
-                Host.Network.Message.WriteByte( CCRep.CCREP_SERVER_INFO );
+                this.Host.Network.Message.WriteLong( 0 );
+                this.Host.Network.Message.WriteByte( CCRep.CCREP_SERVER_INFO );
                 var newaddr = acceptsock.LocalEndPoint; //dfunc.GetSocketAddr(acceptsock, &newaddr);
-                Host.Network.Message.WriteString( newaddr.ToString( ) ); // dfunc.AddrToString(&newaddr));
-                Host.Network.Message.WriteString( Host.Network.HostName );
-                Host.Network.Message.WriteString( Host.Server.sv.name );
-                Host.Network.Message.WriteByte( Host.Network.ActiveConnections );
-                Host.Network.Message.WriteByte( Host.Server.svs.maxclients );
-                Host.Network.Message.WriteByte( NetworkDef.NET_PROTOCOL_VERSION );
-                Utilities.WriteInt( Host.Network.Message.Data, 0, EndianHelper.BigLong( NetFlags.NETFLAG_CTL |
-                    ( Host.Network.Message.Length & NetFlags.NETFLAG_LENGTH_MASK ) ) );
-                Host.Network.LanDriver.Write( acceptsock, Host.Network.Message.Data, Host.Network.Message.Length, clientaddr );
-                Host.Network.Message.Clear( );
+                this.Host.Network.Message.WriteString( newaddr.ToString( ) ); // dfunc.AddrToString(&newaddr));
+                this.Host.Network.Message.WriteString(this.Host.Network.HostName );
+                this.Host.Network.Message.WriteString(this.Host.Server.sv.name );
+                this.Host.Network.Message.WriteByte(this.Host.Network.ActiveConnections );
+                this.Host.Network.Message.WriteByte(this.Host.Server.svs.maxclients );
+                this.Host.Network.Message.WriteByte( NetworkDef.NET_PROTOCOL_VERSION );
+                Utilities.WriteInt(
+                    this.Host.Network.Message.Data, 0, EndianHelper.BigLong( NetFlags.NETFLAG_CTL |
+                    (this.Host.Network.Message.Length & NetFlags.NETFLAG_LENGTH_MASK ) ) );
+
+                this.Host.Network.LanDriver.Write( acceptsock, this.Host.Network.Message.Data, this.Host.Network.Message.Length, clientaddr );
+                this.Host.Network.Message.Clear( );
                 return null;
             }
 
             if ( command == CCReq.CCREQ_PLAYER_INFO )
             {
-                var playerNumber = Host.Network.Reader.ReadByte( );
-                Int32 clientNumber, activeNumber = -1;
+                var playerNumber = this.Host.Network.Reader.ReadByte( );
+                int clientNumber, activeNumber = -1;
                 client_t client = null;
-                for ( clientNumber = 0; clientNumber < Host.Server.svs.maxclients; clientNumber++ )
+                for ( clientNumber = 0; clientNumber < this.Host.Server.svs.maxclients; clientNumber++ )
                 {
-                    client = Host.Server.svs.clients[clientNumber];
+                    client = this.Host.Server.svs.clients[clientNumber];
                     if ( client.active )
                     {
                         activeNumber++;
@@ -314,23 +316,25 @@ namespace SharpQuake
                             break;
                     }
                 }
-                if ( clientNumber == Host.Server.svs.maxclients )
+                if ( clientNumber == this.Host.Server.svs.maxclients )
                     return null;
 
-                Host.Network.Message.Clear( );
+                this.Host.Network.Message.Clear( );
                 // save space for the header, filled in later
-                Host.Network.Message.WriteLong( 0 );
-                Host.Network.Message.WriteByte( CCRep.CCREP_PLAYER_INFO );
-                Host.Network.Message.WriteByte( playerNumber );
-                Host.Network.Message.WriteString( client.name );
-                Host.Network.Message.WriteLong( client.colors );
-                Host.Network.Message.WriteLong( ( Int32 ) client.edict.v.frags );
-                Host.Network.Message.WriteLong( ( Int32 ) ( Host.Network.Time - client.netconnection.connecttime ) );
-                Host.Network.Message.WriteString( client.netconnection.address );
-                Utilities.WriteInt( Host.Network.Message.Data, 0, EndianHelper.BigLong( NetFlags.NETFLAG_CTL |
-                    ( Host.Network.Message.Length & NetFlags.NETFLAG_LENGTH_MASK ) ) );
-                Host.Network.LanDriver.Write( acceptsock, Host.Network.Message.Data, Host.Network.Message.Length, clientaddr );
-                Host.Network.Message.Clear( );
+                this.Host.Network.Message.WriteLong( 0 );
+                this.Host.Network.Message.WriteByte( CCRep.CCREP_PLAYER_INFO );
+                this.Host.Network.Message.WriteByte( playerNumber );
+                this.Host.Network.Message.WriteString( client.name );
+                this.Host.Network.Message.WriteLong( client.colors );
+                this.Host.Network.Message.WriteLong( ( int ) client.edict.v.frags );
+                this.Host.Network.Message.WriteLong( ( int ) (this.Host.Network.Time - client.netconnection.connecttime ) );
+                this.Host.Network.Message.WriteString( client.netconnection.address );
+                Utilities.WriteInt(
+                    this.Host.Network.Message.Data, 0, EndianHelper.BigLong( NetFlags.NETFLAG_CTL |
+                    (this.Host.Network.Message.Length & NetFlags.NETFLAG_LENGTH_MASK ) ) );
+
+                this.Host.Network.LanDriver.Write( acceptsock, this.Host.Network.Message.Data, this.Host.Network.Message.Length, clientaddr );
+                this.Host.Network.Message.Clear( );
 
                 return null;
             }
@@ -338,21 +342,21 @@ namespace SharpQuake
             if ( command == CCReq.CCREQ_RULE_INFO )
             {
                 // find the search start location
-                var prevCvarName = Host.Network.Reader.ReadString( );
+                var prevCvarName = this.Host.Network.Reader.ReadString( );
                 ClientVariable var;
-                if ( !String.IsNullOrEmpty( prevCvarName ) )
+                if ( !string.IsNullOrEmpty( prevCvarName ) )
                 {
-                    var = Host.CVars.Get( prevCvarName );
+                    var = this.Host.CVars.Get( prevCvarName );
 
                     if ( var == null )
                         return null;
 
-                    var index = Host.CVars.IndexOf( var.Name );
+                    var index = this.Host.CVars.IndexOf( var.Name );
 
-                    var = Host.CVars.GetByIndex( index + 1 );
+                    var = this.Host.CVars.GetByIndex( index + 1 );
                 }
                 else
-                    var = Host.CVars.GetByIndex( 0 );
+                    var = this.Host.CVars.GetByIndex( 0 );
 
                 // search for the next server cvar
                 while ( var != null )
@@ -360,26 +364,28 @@ namespace SharpQuake
                     if ( var.IsServer )
                         break;
 
-                    var index = Host.CVars.IndexOf( var.Name );
+                    var index = this.Host.CVars.IndexOf( var.Name );
 
-                    var = Host.CVars.GetByIndex( index + 1 );
+                    var = this.Host.CVars.GetByIndex( index + 1 );
                 }
 
                 // send the response
-                Host.Network.Message.Clear( );
+                this.Host.Network.Message.Clear( );
 
                 // save space for the header, filled in later
-                Host.Network.Message.WriteLong( 0 );
-                Host.Network.Message.WriteByte( CCRep.CCREP_RULE_INFO );
+                this.Host.Network.Message.WriteLong( 0 );
+                this.Host.Network.Message.WriteByte( CCRep.CCREP_RULE_INFO );
                 if ( var != null )
                 {
-                    Host.Network.Message.WriteString( var.Name );
-                    Host.Network.Message.WriteString( var.Get( ).ToString( ) );
+                    this.Host.Network.Message.WriteString( var.Name );
+                    this.Host.Network.Message.WriteString( var.Get( ).ToString( ) );
                 }
-                Utilities.WriteInt( Host.Network.Message.Data, 0, EndianHelper.BigLong( NetFlags.NETFLAG_CTL |
-                    ( Host.Network.Message.Length & NetFlags.NETFLAG_LENGTH_MASK ) ) );
-                Host.Network.LanDriver.Write( acceptsock, Host.Network.Message.Data, Host.Network.Message.Length, clientaddr );
-                Host.Network.Message.Clear( );
+                Utilities.WriteInt(
+                    this.Host.Network.Message.Data, 0, EndianHelper.BigLong( NetFlags.NETFLAG_CTL |
+                    (this.Host.Network.Message.Length & NetFlags.NETFLAG_LENGTH_MASK ) ) );
+
+                this.Host.Network.LanDriver.Write( acceptsock, this.Host.Network.Message.Data, this.Host.Network.Message.Length, clientaddr );
+                this.Host.Network.Message.Clear( );
 
                 return null;
             }
@@ -387,20 +393,22 @@ namespace SharpQuake
             if ( command != CCReq.CCREQ_CONNECT )
                 return null;
 
-            if ( Host.Network.Reader.ReadString( ) != "QUAKE" )
+            if (this.Host.Network.Reader.ReadString( ) != "QUAKE" )
                 return null;
 
-            if ( Host.Network.Reader.ReadByte( ) != NetworkDef.NET_PROTOCOL_VERSION )
+            if (this.Host.Network.Reader.ReadByte( ) != NetworkDef.NET_PROTOCOL_VERSION )
             {
-                Host.Network.Message.Clear( );
+                this.Host.Network.Message.Clear( );
                 // save space for the header, filled in later
-                Host.Network.Message.WriteLong( 0 );
-                Host.Network.Message.WriteByte( CCRep.CCREP_REJECT );
-                Host.Network.Message.WriteString( "Incompatible version.\n" );
-                Utilities.WriteInt( Host.Network.Message.Data, 0, EndianHelper.BigLong( NetFlags.NETFLAG_CTL |
-                    ( Host.Network.Message.Length & NetFlags.NETFLAG_LENGTH_MASK ) ) );
-                Host.Network.LanDriver.Write( acceptsock, Host.Network.Message.Data, Host.Network.Message.Length, clientaddr );
-                Host.Network.Message.Clear( );
+                this.Host.Network.Message.WriteLong( 0 );
+                this.Host.Network.Message.WriteByte( CCRep.CCREP_REJECT );
+                this.Host.Network.Message.WriteString( "Incompatible version.\n" );
+                Utilities.WriteInt(
+                    this.Host.Network.Message.Data, 0, EndianHelper.BigLong( NetFlags.NETFLAG_CTL |
+                    (this.Host.Network.Message.Length & NetFlags.NETFLAG_LENGTH_MASK ) ) );
+
+                this.Host.Network.LanDriver.Write( acceptsock, this.Host.Network.Message.Data, this.Host.Network.Message.Length, clientaddr );
+                this.Host.Network.Message.Clear( );
                 return null;
             }
 
@@ -426,158 +434,166 @@ namespace SharpQuake
 #endif
 
             // see if this guy is already connected
-            foreach ( var s in Host.Network.ActiveSockets )
+            foreach ( var s in this.Host.Network.ActiveSockets )
             {
-                if ( s.driver != Host.Network.DriverLevel )
+                if ( s.driver != this.Host.Network.DriverLevel )
                     continue;
 
-                var ret = Host.Network.LanDriver.AddrCompare( clientaddr, s.addr );
+                var ret = this.Host.Network.LanDriver.AddrCompare( clientaddr, s.addr );
                 if ( ret >= 0 )
                 {
                     // is this a duplicate connection reqeust?
-                    if ( ret == 0 && Host.Network.Time - s.connecttime < 2.0 )
+                    if ( ret == 0 && this.Host.Network.Time - s.connecttime < 2.0 )
                     {
                         // yes, so send a duplicate reply
-                        Host.Network.Message.Clear( );
+                        this.Host.Network.Message.Clear( );
                         // save space for the header, filled in later
-                        Host.Network.Message.WriteLong( 0 );
-                        Host.Network.Message.WriteByte( CCRep.CCREP_ACCEPT );
+                        this.Host.Network.Message.WriteLong( 0 );
+                        this.Host.Network.Message.WriteByte( CCRep.CCREP_ACCEPT );
                         var newaddr = s.socket.LocalEndPoint; //dfunc.GetSocketAddr(s.socket, &newaddr);
-                        Host.Network.Message.WriteLong( Host.Network.LanDriver.GetSocketPort( newaddr ) );
-                        Utilities.WriteInt( Host.Network.Message.Data, 0, EndianHelper.BigLong( NetFlags.NETFLAG_CTL |
-                            ( Host.Network.Message.Length & NetFlags.NETFLAG_LENGTH_MASK ) ) );
-                        Host.Network.LanDriver.Write( acceptsock, Host.Network.Message.Data, Host.Network.Message.Length, clientaddr );
-                        Host.Network.Message.Clear( );
+                        this.Host.Network.Message.WriteLong(this.Host.Network.LanDriver.GetSocketPort( newaddr ) );
+                        Utilities.WriteInt(
+                            this.Host.Network.Message.Data, 0, EndianHelper.BigLong( NetFlags.NETFLAG_CTL |
+                            (this.Host.Network.Message.Length & NetFlags.NETFLAG_LENGTH_MASK ) ) );
+
+                        this.Host.Network.LanDriver.Write( acceptsock, this.Host.Network.Message.Data, this.Host.Network.Message.Length, clientaddr );
+                        this.Host.Network.Message.Clear( );
                         return null;
                     }
                     // it's somebody coming back in from a crash/disconnect
                     // so close the old qsocket and let their retry get them back in
-                    Host.Network.Close( s );
+                    this.Host.Network.Close( s );
                     return null;
                 }
             }
 
             // allocate a QSocket
-            var sock = Host.Network.NewSocket( );
+            var sock = this.Host.Network.NewSocket( );
             if ( sock == null )
             {
                 // no room; try to let him know
-                Host.Network.Message.Clear( );
+                this.Host.Network.Message.Clear( );
                 // save space for the header, filled in later
-                Host.Network.Message.WriteLong( 0 );
-                Host.Network.Message.WriteByte( CCRep.CCREP_REJECT );
-                Host.Network.Message.WriteString( "Server is full.\n" );
-                Utilities.WriteInt( Host.Network.Message.Data, 0, EndianHelper.BigLong( NetFlags.NETFLAG_CTL |
-                    ( Host.Network.Message.Length & NetFlags.NETFLAG_LENGTH_MASK ) ) );
-                Host.Network.LanDriver.Write( acceptsock, Host.Network.Message.Data, Host.Network.Message.Length, clientaddr );
-                Host.Network.Message.Clear( );
+                this.Host.Network.Message.WriteLong( 0 );
+                this.Host.Network.Message.WriteByte( CCRep.CCREP_REJECT );
+                this.Host.Network.Message.WriteString( "Server is full.\n" );
+                Utilities.WriteInt(
+                    this.Host.Network.Message.Data, 0, EndianHelper.BigLong( NetFlags.NETFLAG_CTL |
+                    (this.Host.Network.Message.Length & NetFlags.NETFLAG_LENGTH_MASK ) ) );
+
+                this.Host.Network.LanDriver.Write( acceptsock, this.Host.Network.Message.Data, this.Host.Network.Message.Length, clientaddr );
+                this.Host.Network.Message.Clear( );
                 return null;
             }
 
             // allocate a network socket
-            var newsock = Host.Network.LanDriver.OpenSocket( 0 );
+            var newsock = this.Host.Network.LanDriver.OpenSocket( 0 );
             if ( newsock == null )
             {
-                Host.Network.FreeSocket( sock );
+                this.Host.Network.FreeSocket( sock );
                 return null;
             }
 
             // connect to the client
-            if ( Host.Network.LanDriver.Connect( newsock, clientaddr ) == -1 )
+            if (this.Host.Network.LanDriver.Connect( newsock, clientaddr ) == -1 )
             {
-                Host.Network.LanDriver.CloseSocket( newsock );
-                Host.Network.FreeSocket( sock );
+                this.Host.Network.LanDriver.CloseSocket( newsock );
+                this.Host.Network.FreeSocket( sock );
                 return null;
             }
 
             // everything is allocated, just fill in the details
             sock.socket = newsock;
-            sock.landriver = Host.Network.LanDriverLevel;
+            sock.landriver = this.Host.Network.LanDriverLevel;
             sock.addr = clientaddr;
             sock.address = clientaddr.ToString( );
 
             // send him back the info about the server connection he has been allocated
-            Host.Network.Message.Clear( );
+            this.Host.Network.Message.Clear( );
             // save space for the header, filled in later
-            Host.Network.Message.WriteLong( 0 );
-            Host.Network.Message.WriteByte( CCRep.CCREP_ACCEPT );
+            this.Host.Network.Message.WriteLong( 0 );
+            this.Host.Network.Message.WriteByte( CCRep.CCREP_ACCEPT );
             var newaddr2 = newsock.LocalEndPoint;// dfunc.GetSocketAddr(newsock, &newaddr);
-            Host.Network.Message.WriteLong( Host.Network.LanDriver.GetSocketPort( newaddr2 ) );
-            Utilities.WriteInt( Host.Network.Message.Data, 0, EndianHelper.BigLong( NetFlags.NETFLAG_CTL |
-                ( Host.Network.Message.Length & NetFlags.NETFLAG_LENGTH_MASK ) ) );
-            Host.Network.LanDriver.Write( acceptsock, Host.Network.Message.Data, Host.Network.Message.Length, clientaddr );
-            Host.Network.Message.Clear( );
+            this.Host.Network.Message.WriteLong(this.Host.Network.LanDriver.GetSocketPort( newaddr2 ) );
+            Utilities.WriteInt(
+                this.Host.Network.Message.Data, 0, EndianHelper.BigLong( NetFlags.NETFLAG_CTL |
+                (this.Host.Network.Message.Length & NetFlags.NETFLAG_LENGTH_MASK ) ) );
+
+            this.Host.Network.LanDriver.Write( acceptsock, this.Host.Network.Message.Data, this.Host.Network.Message.Length, clientaddr );
+            this.Host.Network.Message.Clear( );
 
             return sock;
         }
 
-        public Int32 GetMessage( qsocket_t sock )
+        public int GetMessage( qsocket_t sock )
         {
             if ( !sock.canSend )
-                if ( ( Host.Network.Time - sock.lastSendTime ) > 1.0 )
-                    ReSendMessage( sock );
+            {
+                if ( this.Host.Network.Time - sock.lastSendTime > 1.0 )
+                    this.ReSendMessage( sock );
+            }
 
             var ret = 0;
             EndPoint readaddr = new IPEndPoint( IPAddress.Any, 0 );
             while ( true )
             {
-                var length = sock.Read( _PacketBuffer, NetworkDef.NET_DATAGRAMSIZE, ref readaddr );
+                var length = sock.Read(this._PacketBuffer, NetworkDef.NET_DATAGRAMSIZE, ref readaddr );
                 if ( length == 0 )
                     break;
 
                 if ( length == -1 )
                 {
-                    Host.Console.Print( "Read error\n" );
+                    this.Host.Console.Print( "Read error\n" );
                     return -1;
                 }
 
                 if ( sock.LanDriver.AddrCompare( readaddr, sock.addr ) != 0 )
                 {
 #if DEBUG
-                    Host.Console.DPrint( "Forged packet received\n" );
-                    Host.Console.DPrint( "Expected: {0}\n", StrAddr( sock.addr ) );
-                    Host.Console.DPrint( "Received: {0}\n", StrAddr( readaddr ) );
+                    this.Host.Console.DPrint( "Forged packet received\n" );
+                    this.Host.Console.DPrint( "Expected: {0}\n", net_datagram.StrAddr( sock.addr ) );
+                    this.Host.Console.DPrint( "Received: {0}\n", net_datagram.StrAddr( readaddr ) );
 #endif
                     continue;
                 }
 
                 if ( length < NetworkDef.NET_HEADERSIZE )
                 {
-                    shortPacketCount++;
+                    this.shortPacketCount++;
                     continue;
                 }
 
-                var header = Utilities.BytesToStructure<PacketHeader>( _PacketBuffer, 0 );
+                var header = Utilities.BytesToStructure<PacketHeader>(this._PacketBuffer, 0 );
 
                 length = EndianHelper.BigLong( header.length );
-                var flags = length & ( ~NetFlags.NETFLAG_LENGTH_MASK );
+                var flags = length & ~NetFlags.NETFLAG_LENGTH_MASK;
                 length &= NetFlags.NETFLAG_LENGTH_MASK;
 
                 if ( ( flags & NetFlags.NETFLAG_CTL ) != 0 )
                     continue;
 
-                var sequence = ( UInt32 ) EndianHelper.BigLong( header.sequence );
-                packetsReceived++;
+                var sequence = ( uint ) EndianHelper.BigLong( header.sequence );
+                this.packetsReceived++;
 
                 if ( ( flags & NetFlags.NETFLAG_UNRELIABLE ) != 0 )
                 {
                     if ( sequence < sock.unreliableReceiveSequence )
                     {
-                        Host.Console.DPrint( "Got a stale datagram\n" );
+                        this.Host.Console.DPrint( "Got a stale datagram\n" );
                         ret = 0;
                         break;
                     }
                     if ( sequence != sock.unreliableReceiveSequence )
                     {
-                        var count = ( Int32 ) ( sequence - sock.unreliableReceiveSequence );
-                        droppedDatagrams += count;
-                        Host.Console.DPrint( "Dropped {0} datagram(s)\n", count );
+                        var count = ( int ) ( sequence - sock.unreliableReceiveSequence );
+                        this.droppedDatagrams += count;
+                        this.Host.Console.DPrint( "Dropped {0} datagram(s)\n", count );
                     }
                     sock.unreliableReceiveSequence = sequence + 1;
 
                     length -= NetworkDef.NET_HEADERSIZE;
 
-                    Host.Network.Message.FillFrom( _PacketBuffer, PacketHeader.SizeInBytes, length );
+                    this.Host.Network.Message.FillFrom(this._PacketBuffer, PacketHeader.SizeInBytes, length );
 
                     ret = 2;
                     break;
@@ -585,20 +601,20 @@ namespace SharpQuake
 
                 if ( ( flags & NetFlags.NETFLAG_ACK ) != 0 )
                 {
-                    if ( sequence != ( sock.sendSequence - 1 ) )
+                    if ( sequence != sock.sendSequence - 1 )
                     {
-                        Host.Console.DPrint( "Stale ACK received\n" );
+                        this.Host.Console.DPrint( "Stale ACK received\n" );
                         continue;
                     }
                     if ( sequence == sock.ackSequence )
                     {
                         sock.ackSequence++;
                         if ( sock.ackSequence != sock.sendSequence )
-                            Host.Console.DPrint( "ack sequencing error\n" );
+                            this.Host.Console.DPrint( "ack sequencing error\n" );
                     }
                     else
                     {
-                        Host.Console.DPrint( "Duplicate ACK received\n" );
+                        this.Host.Console.DPrint( "Duplicate ACK received\n" );
                         continue;
                     }
                     sock.sendMessageLength -= QDef.MAX_DATAGRAM;
@@ -618,14 +634,14 @@ namespace SharpQuake
                 if ( ( flags & NetFlags.NETFLAG_DATA ) != 0 )
                 {
                     header.length = EndianHelper.BigLong( NetworkDef.NET_HEADERSIZE | NetFlags.NETFLAG_ACK );
-                    header.sequence = EndianHelper.BigLong( ( Int32 ) sequence );
+                    header.sequence = EndianHelper.BigLong( ( int ) sequence );
 
-                    Utilities.StructureToBytes( ref header, _PacketBuffer, 0 );
-                    sock.Write( _PacketBuffer, NetworkDef.NET_HEADERSIZE, readaddr );
+                    Utilities.StructureToBytes( ref header, this._PacketBuffer, 0 );
+                    sock.Write(this._PacketBuffer, NetworkDef.NET_HEADERSIZE, readaddr );
 
                     if ( sequence != sock.receiveSequence )
                     {
-                        receivedDuplicateCount++;
+                        this.receivedDuplicateCount++;
                         continue;
                     }
                     sock.receiveSequence++;
@@ -634,23 +650,23 @@ namespace SharpQuake
 
                     if ( ( flags & NetFlags.NETFLAG_EOM ) != 0 )
                     {
-                        Host.Network.Message.Clear( );
-                        Host.Network.Message.FillFrom( sock.receiveMessage, 0, sock.receiveMessageLength );
-                        Host.Network.Message.AppendFrom( _PacketBuffer, PacketHeader.SizeInBytes, length );
+                        this.Host.Network.Message.Clear( );
+                        this.Host.Network.Message.FillFrom( sock.receiveMessage, 0, sock.receiveMessageLength );
+                        this.Host.Network.Message.AppendFrom(this._PacketBuffer, PacketHeader.SizeInBytes, length );
                         sock.receiveMessageLength = 0;
 
                         ret = 1;
                         break;
                     }
 
-                    Buffer.BlockCopy( _PacketBuffer, PacketHeader.SizeInBytes, sock.receiveMessage, sock.receiveMessageLength, length );
+                    Buffer.BlockCopy(this._PacketBuffer, PacketHeader.SizeInBytes, sock.receiveMessage, sock.receiveMessageLength, length );
                     sock.receiveMessageLength += length;
                     continue;
                 }
             }
 
             if ( sock.sendNext )
-                SendMessageNext( sock );
+                this.SendMessageNext( sock );
 
             return ret;
         }
@@ -658,7 +674,7 @@ namespace SharpQuake
         /// <summary>
         /// Datagram_SendMessage
         /// </summary>
-        public Int32 SendMessage( qsocket_t sock, MessageWriter data )
+        public int SendMessage( qsocket_t sock, MessageWriter data )
         {
 #if DEBUG
             if ( data.IsEmpty )
@@ -673,7 +689,7 @@ namespace SharpQuake
             Buffer.BlockCopy( data.Data, 0, sock.sendMessage, 0, data.Length );
             sock.sendMessageLength = data.Length;
 
-            Int32 dataLen, eom;
+            int dataLen, eom;
             if ( data.Length <= QDef.MAX_DATAGRAM )
             {
                 dataLen = data.Length;
@@ -688,26 +704,26 @@ namespace SharpQuake
 
             PacketHeader header;
             header.length = EndianHelper.BigLong( packetLen | NetFlags.NETFLAG_DATA | eom );
-            header.sequence = EndianHelper.BigLong( ( Int32 ) sock.sendSequence++ );
-            Utilities.StructureToBytes( ref header, _PacketBuffer, 0 );
-            Buffer.BlockCopy( data.Data, 0, _PacketBuffer, PacketHeader.SizeInBytes, dataLen );
+            header.sequence = EndianHelper.BigLong( ( int ) sock.sendSequence++ );
+            Utilities.StructureToBytes( ref header, this._PacketBuffer, 0 );
+            Buffer.BlockCopy( data.Data, 0, this._PacketBuffer, PacketHeader.SizeInBytes, dataLen );
 
             sock.canSend = false;
 
-            if ( sock.Write( _PacketBuffer, packetLen, sock.addr ) == -1 )
+            if ( sock.Write(this._PacketBuffer, packetLen, sock.addr ) == -1 )
                 return -1;
 
-            sock.lastSendTime = Host.Network.Time;
-            packetsSent++;
+            sock.lastSendTime = this.Host.Network.Time;
+            this.packetsSent++;
             return 1;
         }
 
         /// <summary>
         /// Datagram_SendUnreliableMessage
         /// </summary>
-        public Int32 SendUnreliableMessage( qsocket_t sock, MessageWriter data )
+        public int SendUnreliableMessage( qsocket_t sock, MessageWriter data )
         {
-            Int32 packetLen;
+            int packetLen;
 
 #if DEBUG
             if ( data.IsEmpty )
@@ -721,24 +737,24 @@ namespace SharpQuake
 
             PacketHeader header;
             header.length = EndianHelper.BigLong( packetLen | NetFlags.NETFLAG_UNRELIABLE );
-            header.sequence = EndianHelper.BigLong( ( Int32 ) sock.unreliableSendSequence++ );
-            Utilities.StructureToBytes( ref header, _PacketBuffer, 0 );
-            Buffer.BlockCopy( data.Data, 0, _PacketBuffer, PacketHeader.SizeInBytes, data.Length );
+            header.sequence = EndianHelper.BigLong( ( int ) sock.unreliableSendSequence++ );
+            Utilities.StructureToBytes( ref header, this._PacketBuffer, 0 );
+            Buffer.BlockCopy( data.Data, 0, this._PacketBuffer, PacketHeader.SizeInBytes, data.Length );
 
-            if ( sock.Write( _PacketBuffer, packetLen, sock.addr ) == -1 )
+            if ( sock.Write(this._PacketBuffer, packetLen, sock.addr ) == -1 )
                 return -1;
 
-            packetsSent++;
+            this.packetsSent++;
             return 1;
         }
 
         /// <summary>
         /// Datagram_CanSendMessage
         /// </summary>
-        public Boolean CanSendMessage( qsocket_t sock )
+        public bool CanSendMessage( qsocket_t sock )
         {
             if ( sock.sendNext )
-                SendMessageNext( sock );
+                this.SendMessageNext( sock );
 
             return sock.canSend;
         }
@@ -746,7 +762,7 @@ namespace SharpQuake
         /// <summary>
         /// Datagram_CanSendUnreliableMessage
         /// </summary>
-        public Boolean CanSendUnreliableMessage( qsocket_t sock )
+        public bool CanSendUnreliableMessage( qsocket_t sock )
         {
             return true;
         }
@@ -767,86 +783,90 @@ namespace SharpQuake
             //
             // shutdown the lan drivers
             //
-            foreach ( var driver in Host.Network.LanDrivers )
+            foreach ( var driver in this.Host.Network.LanDrivers )
             {
                 if ( driver.IsInitialised )
                     driver.Dispose( );
             }
 
-            _IsInitialised = false;
+            this._IsInitialised = false;
         }
 
         /// <summary>
         /// _Datagram_SearchForHosts
         /// </summary>
-        private void InternalSearchForHosts( Boolean xmit )
+        private void InternalSearchForHosts( bool xmit )
         {
-            var myaddr = Host.Network.LanDriver.ControlSocket.LocalEndPoint;
+            var myaddr = this.Host.Network.LanDriver.ControlSocket.LocalEndPoint;
             if ( xmit )
             {
-                Host.Network.Message.Clear( );
+                this.Host.Network.Message.Clear( );
                 // save space for the header, filled in later
-                Host.Network.Message.WriteLong( 0 );
-                Host.Network.Message.WriteByte( CCReq.CCREQ_SERVER_INFO );
-                Host.Network.Message.WriteString( "QUAKE" );
-                Host.Network.Message.WriteByte( NetworkDef.NET_PROTOCOL_VERSION );
-                Utilities.WriteInt( Host.Network.Message.Data, 0, EndianHelper.BigLong( NetFlags.NETFLAG_CTL |
-                    ( Host.Network.Message.Length & NetFlags.NETFLAG_LENGTH_MASK ) ) );
-                Host.Network.LanDriver.Broadcast( Host.Network.LanDriver.ControlSocket, Host.Network.Message.Data, Host.Network.Message.Length );
-                Host.Network.Message.Clear( );
+                this.Host.Network.Message.WriteLong( 0 );
+                this.Host.Network.Message.WriteByte( CCReq.CCREQ_SERVER_INFO );
+                this.Host.Network.Message.WriteString( "QUAKE" );
+                this.Host.Network.Message.WriteByte( NetworkDef.NET_PROTOCOL_VERSION );
+                Utilities.WriteInt(
+                    this.Host.Network.Message.Data, 0, EndianHelper.BigLong( NetFlags.NETFLAG_CTL |
+                    (this.Host.Network.Message.Length & NetFlags.NETFLAG_LENGTH_MASK ) ) );
+
+                this.Host.Network.LanDriver.Broadcast(this.Host.Network.LanDriver.ControlSocket, this.Host.Network.Message.Data, this.Host.Network.Message.Length );
+                this.Host.Network.Message.Clear( );
             }
 
             EndPoint readaddr = new IPEndPoint( IPAddress.Any, 0 );
             while ( true )
             {
-                Host.Network.Message.FillFrom( Host.Network, Host.Network.LanDriver.ControlSocket, ref readaddr );
-                if ( Host.Network.Message.IsEmpty )
+                this.Host.Network.Message.FillFrom(this.Host.Network, this.Host.Network.LanDriver.ControlSocket, ref readaddr );
+                if (this.Host.Network.Message.IsEmpty )
                     break;
-                if ( Host.Network.Message.Length < sizeof( Int32 ) )
+                if (this.Host.Network.Message.Length < sizeof( int ) )
                     continue;
 
                 // don't answer our own query
-                if ( Host.Network.LanDriver.AddrCompare( readaddr, myaddr ) >= 0 )
+                if (this.Host.Network.LanDriver.AddrCompare( readaddr, myaddr ) >= 0 )
                     continue;
 
                 // is the cache full?
-                if ( Host.Network.HostCacheCount == NetworkDef.HOSTCACHESIZE )
+                if (this.Host.Network.HostCacheCount == NetworkDef.HOSTCACHESIZE )
                     continue;
 
-                Host.Network.Reader.Reset( );
-                var control = EndianHelper.BigLong( Host.Network.Reader.ReadLong( ) );// BigLong(*((int *)net_message.data));
+                this.Host.Network.Reader.Reset( );
+                var control = EndianHelper.BigLong(this.Host.Network.Reader.ReadLong( ) );// BigLong(*((int *)net_message.data));
                 //MSG_ReadLong();
                 if ( control == -1 )
                     continue;
-                if ( ( control & ( ~NetFlags.NETFLAG_LENGTH_MASK ) ) != NetFlags.NETFLAG_CTL )
+                if ( ( control & ~NetFlags.NETFLAG_LENGTH_MASK ) != NetFlags.NETFLAG_CTL )
                     continue;
-                if ( ( control & NetFlags.NETFLAG_LENGTH_MASK ) != Host.Network.Message.Length )
+                if ( ( control & NetFlags.NETFLAG_LENGTH_MASK ) != this.Host.Network.Message.Length )
                     continue;
 
-                if ( Host.Network.Reader.ReadByte( ) != CCRep.CCREP_SERVER_INFO )
+                if (this.Host.Network.Reader.ReadByte( ) != CCRep.CCREP_SERVER_INFO )
                     continue;
 
                 var _hostIP = readaddr;
 
-                readaddr = Host.Network.LanDriver.GetAddrFromName( Host.Network.Reader.ReadString( ) );
-                Int32 n;
+                readaddr = this.Host.Network.LanDriver.GetAddrFromName(this.Host.Network.Reader.ReadString( ) );
+                int n;
                 // search the cache for this server
-                for ( n = 0; n < Host.Network.HostCacheCount; n++ )
-                    if ( Host.Network.LanDriver.AddrCompare( readaddr, Host.Network.HostCache[n].addr ) == 0 )
+                for ( n = 0; n < this.Host.Network.HostCacheCount; n++ )
+                {
+                    if (this.Host.Network.LanDriver.AddrCompare( readaddr, this.Host.Network.HostCache[n].addr ) == 0 )
                         break;
+                }
 
                 // is it already there?
-                if ( n < Host.Network.HostCacheCount )
+                if ( n < this.Host.Network.HostCacheCount )
                     continue;
 
                 // add it
-                Host.Network.HostCacheCount++;
-                var hc = Host.Network.HostCache[n];
-                hc.name = Host.Network.Reader.ReadString( );
-                hc.map = Host.Network.Reader.ReadString( );
-                hc.users = Host.Network.Reader.ReadByte( );
-                hc.maxusers = Host.Network.Reader.ReadByte( );
-                if ( Host.Network.Reader.ReadByte( ) != NetworkDef.NET_PROTOCOL_VERSION )
+                this.Host.Network.HostCacheCount++;
+                var hc = this.Host.Network.HostCache[n];
+                hc.name = this.Host.Network.Reader.ReadString( );
+                hc.map = this.Host.Network.Reader.ReadString( );
+                hc.users = this.Host.Network.Reader.ReadByte( );
+                hc.maxusers = this.Host.Network.Reader.ReadByte( );
+                if (this.Host.Network.Reader.ReadByte( ) != NetworkDef.NET_PROTOCOL_VERSION )
                 {
                     hc.cname = hc.name;
                     hc.name = "*" + hc.name;
@@ -855,29 +875,27 @@ namespace SharpQuake
                 //hc.addr = new IPEndPoint( ep.Address, ep.Port );
                 var ip = readaddr.ToString( ).Split( ':' ); //readaddr.ToString()
                 IPAddress _ipAddress;
-                Int32 _port;
+                int _port;
                 IPAddress.TryParse( ip[0].ToString( ), out _ipAddress );
-                Int32.TryParse( ip[1].ToString( ), out _port );
+                int.TryParse( ip[1].ToString( ), out _port );
                 hc.addr = new IPEndPoint( _ipAddress, _port );
-                hc.driver = Host.Network.DriverLevel;
-                hc.ldriver = Host.Network.LanDriverLevel;
+                hc.driver = this.Host.Network.DriverLevel;
+                hc.ldriver = this.Host.Network.LanDriverLevel;
                 hc.cname = _hostIP.ToString( ); //readaddr.ToString();
 
                 // check for a name conflict
-                for ( var i = 0; i < Host.Network.HostCacheCount; i++ )
+                for ( var i = 0; i < this.Host.Network.HostCacheCount; i++ )
                 {
                     if ( i == n )
                         continue;
-                    var hc2 = Host.Network.HostCache[i];
+                    var hc2 = this.Host.Network.HostCache[i];
                     if ( hc.name == hc2.name )
                     {
                         i = hc.name.Length;
                         if ( i < 15 && hc.name[i - 1] > '8' )
-                        {
                             hc.name = hc.name.Substring( 0, i ) + '0';
-                        }
                         else
-                            hc.name = hc.name.Substring( 0, i - 1 ) + ( Char ) ( hc.name[i - 1] + 1 );
+                            hc.name = hc.name.Substring( 0, i - 1 ) + ( char ) ( hc.name[i - 1] + 1 );
                         i = 0;// -1;
                     }
                 }
@@ -887,50 +905,51 @@ namespace SharpQuake
         /// <summary>
         /// _Datagram_Connect
         /// </summary>
-        private qsocket_t InternalConnect( String host )
+        private qsocket_t InternalConnect( string host )
         {
             // see if we can resolve the host name
-            var sendaddr = Host.Network.LanDriver.GetAddrFromName( host );
+            var sendaddr = this.Host.Network.LanDriver.GetAddrFromName( host );
             if ( sendaddr == null )
                 return null;
 
-            var newsock = Host.Network.LanDriver.OpenSocket( 0 );
+            var newsock = this.Host.Network.LanDriver.OpenSocket( 0 );
             if ( newsock == null )
                 return null;
 
-            var sock = Host.Network.NewSocket( );
+            var sock = this.Host.Network.NewSocket( );
             if ( sock == null )
                 goto ErrorReturn2;
             sock.socket = newsock;
-            sock.landriver = Host.Network.LanDriverLevel;
+            sock.landriver = this.Host.Network.LanDriverLevel;
 
             // connect to the host
-            if ( Host.Network.LanDriver.Connect( newsock, sendaddr ) == -1 )
+            if (this.Host.Network.LanDriver.Connect( newsock, sendaddr ) == -1 )
                 goto ErrorReturn;
 
             // send the connection request
-            Host.Console.Print( "Connecting to " + sendaddr + "\n" );
-            Host.Console.Print( "trying...\n" );
-            Host.Screen.UpdateScreen( );
-            var start_time = Host.Network.Time;
+            this.Host.Console.Print( "Connecting to " + sendaddr + "\n" );
+            this.Host.Console.Print( "trying...\n" );
+            this.Host.Screen.UpdateScreen( );
+            var start_time = this.Host.Network.Time;
             var ret = 0;
             for ( var reps = 0; reps < 3; reps++ )
             {
-                Host.Network.Message.Clear( );
+                this.Host.Network.Message.Clear( );
                 // save space for the header, filled in later
-                Host.Network.Message.WriteLong( 0 );
-                Host.Network.Message.WriteByte( CCReq.CCREQ_CONNECT );
-                Host.Network.Message.WriteString( "QUAKE" );
-                Host.Network.Message.WriteByte( NetworkDef.NET_PROTOCOL_VERSION );
-                Utilities.WriteInt( Host.Network.Message.Data, 0, EndianHelper.BigLong( NetFlags.NETFLAG_CTL |
-                    ( Host.Network.Message.Length & NetFlags.NETFLAG_LENGTH_MASK ) ) );
+                this.Host.Network.Message.WriteLong( 0 );
+                this.Host.Network.Message.WriteByte( CCReq.CCREQ_CONNECT );
+                this.Host.Network.Message.WriteString( "QUAKE" );
+                this.Host.Network.Message.WriteByte( NetworkDef.NET_PROTOCOL_VERSION );
+                Utilities.WriteInt(
+                    this.Host.Network.Message.Data, 0, EndianHelper.BigLong( NetFlags.NETFLAG_CTL |
+                    (this.Host.Network.Message.Length & NetFlags.NETFLAG_LENGTH_MASK ) ) );
                 //*((int *)net_message.data) = BigLong(NETFLAG_CTL | (net_message.cursize & NETFLAG_LENGTH_MASK));
-                Host.Network.LanDriver.Write( newsock, Host.Network.Message.Data, Host.Network.Message.Length, sendaddr );
-                Host.Network.Message.Clear( );
+                this.Host.Network.LanDriver.Write( newsock, this.Host.Network.Message.Data, this.Host.Network.Message.Length, sendaddr );
+                this.Host.Network.Message.Clear( );
                 EndPoint readaddr = new IPEndPoint( IPAddress.Any, 0 );
                 do
                 {
-                    ret = Host.Network.Message.FillFrom( Host.Network, newsock, ref readaddr );
+                    ret = this.Host.Network.Message.FillFrom(this.Host.Network, newsock, ref readaddr );
                     // if we got something, validate it
                     if ( ret > 0 )
                     {
@@ -938,31 +957,31 @@ namespace SharpQuake
                         if ( sock.LanDriver.AddrCompare( readaddr, sendaddr ) != 0 )
                         {
 #if DEBUG
-                            Host.Console.Print( "wrong reply address\n" );
-                            Host.Console.Print( "Expected: {0}\n", StrAddr( sendaddr ) );
-                            Host.Console.Print( "Received: {0}\n", StrAddr( readaddr ) );
-                            Host.Screen.UpdateScreen( );
+                            this.Host.Console.Print( "wrong reply address\n" );
+                            this.Host.Console.Print( "Expected: {0}\n", net_datagram.StrAddr( sendaddr ) );
+                            this.Host.Console.Print( "Received: {0}\n", net_datagram.StrAddr( readaddr ) );
+                            this.Host.Screen.UpdateScreen( );
 #endif
                             ret = 0;
                             continue;
                         }
 
-                        if ( ret < sizeof( Int32 ) )
+                        if ( ret < sizeof( int ) )
                         {
                             ret = 0;
                             continue;
                         }
 
-                        Host.Network.Reader.Reset( );
+                        this.Host.Network.Reader.Reset( );
 
-                        var control = EndianHelper.BigLong( Host.Network.Reader.ReadLong( ) );// BigLong(*((int *)net_message.data));
+                        var control = EndianHelper.BigLong(this.Host.Network.Reader.ReadLong( ) );// BigLong(*((int *)net_message.data));
                         //MSG_ReadLong();
                         if ( control == -1 )
                         {
                             ret = 0;
                             continue;
                         }
-                        if ( ( control & ( ~NetFlags.NETFLAG_LENGTH_MASK ) ) != NetFlags.NETFLAG_CTL )
+                        if ( ( control & ~NetFlags.NETFLAG_LENGTH_MASK ) != NetFlags.NETFLAG_CTL )
                         {
                             ret = 0;
                             continue;
@@ -974,37 +993,38 @@ namespace SharpQuake
                         }
                     }
                 }
-                while ( ( ret == 0 ) && ( Host.Network.SetNetTime( ) - start_time ) < 2.5 );
+                while ( ret == 0 && this.Host.Network.SetNetTime( ) - start_time < 2.5 );
                 if ( ret > 0 )
                     break;
-                Host.Console.Print( "still trying...\n" );
-                Host.Screen.UpdateScreen( );
-                start_time = Host.Network.SetNetTime( );
+
+                this.Host.Console.Print( "still trying...\n" );
+                this.Host.Screen.UpdateScreen( );
+                start_time = this.Host.Network.SetNetTime( );
             }
 
-            var reason = String.Empty;
+            var reason = string.Empty;
             if ( ret == 0 )
             {
                 reason = "No Response";
-                Host.Console.Print( "{0}\n", reason );
-                Host.Menu.ReturnReason = reason;
+                this.Host.Console.Print( "{0}\n", reason );
+                this.Host.Menu.ReturnReason = reason;
                 goto ErrorReturn;
             }
 
             if ( ret == -1 )
             {
                 reason = "Network Error";
-                Host.Console.Print( "{0}\n", reason );
-                Host.Menu.ReturnReason = reason;
+                this.Host.Console.Print( "{0}\n", reason );
+                this.Host.Menu.ReturnReason = reason;
                 goto ErrorReturn;
             }
 
-            ret = Host.Network.Reader.ReadByte( );
+            ret = this.Host.Network.Reader.ReadByte( );
             if ( ret == CCRep.CCREP_REJECT )
             {
-                reason = Host.Network.Reader.ReadString( );
-                Host.Console.Print( reason );
-                Host.Menu.ReturnReason = reason;
+                reason = this.Host.Network.Reader.ReadString( );
+                this.Host.Console.Print( reason );
+                this.Host.Menu.ReturnReason = reason;
                 goto ErrorReturn;
             }
 
@@ -1012,41 +1032,41 @@ namespace SharpQuake
             {
                 var ep = ( IPEndPoint ) sendaddr;
                 sock.addr = new IPEndPoint( ep.Address, ep.Port );
-                Host.Network.LanDriver.SetSocketPort( sock.addr, Host.Network.Reader.ReadLong( ) );
+                this.Host.Network.LanDriver.SetSocketPort( sock.addr, this.Host.Network.Reader.ReadLong( ) );
             }
             else
             {
                 reason = "Bad Response";
-                Host.Console.Print( "{0}\n", reason );
-                Host.Menu.ReturnReason = reason;
+                this.Host.Console.Print( "{0}\n", reason );
+                this.Host.Menu.ReturnReason = reason;
                 goto ErrorReturn;
             }
 
-            sock.address = Host.Network.LanDriver.GetNameFromAddr( sendaddr );
+            sock.address = this.Host.Network.LanDriver.GetNameFromAddr( sendaddr );
 
-            Host.Console.Print( "Connection accepted\n" );
-            sock.lastMessageTime = Host.Network.SetNetTime( );
+            this.Host.Console.Print( "Connection accepted\n" );
+            sock.lastMessageTime = this.Host.Network.SetNetTime( );
 
             // switch the connection to the specified address
-            if ( Host.Network.LanDriver.Connect( newsock, sock.addr ) == -1 )
+            if (this.Host.Network.LanDriver.Connect( newsock, sock.addr ) == -1 )
             {
                 reason = "Connect to Game failed";
-                Host.Console.Print( "{0}\n", reason );
-                Host.Menu.ReturnReason = reason;
+                this.Host.Console.Print( "{0}\n", reason );
+                this.Host.Menu.ReturnReason = reason;
                 goto ErrorReturn;
             }
 
-            Host.Menu.ReturnOnError = false;
+            this.Host.Menu.ReturnOnError = false;
             return sock;
 
         ErrorReturn:
-            Host.Network.FreeSocket( sock );
+            this.Host.Network.FreeSocket( sock );
         ErrorReturn2:
-            Host.Network.LanDriver.CloseSocket( newsock );
-            if ( Host.Menu.ReturnOnError && Host.Menu.ReturnMenu != null )
+            this.Host.Network.LanDriver.CloseSocket( newsock );
+            if (this.Host.Menu.ReturnOnError && this.Host.Menu.ReturnMenu != null )
             {
-                Host.Menu.ReturnMenu.Show( Host );
-                Host.Menu.ReturnOnError = false;
+                this.Host.Menu.ReturnMenu.Show(this.Host );
+                this.Host.Menu.ReturnOnError = false;
             }
             return null;
         }
@@ -1054,10 +1074,10 @@ namespace SharpQuake
         /// <summary>
         /// SendMessageNext
         /// </summary>
-        private Int32 SendMessageNext( qsocket_t sock )
+        private int SendMessageNext( qsocket_t sock )
         {
-            Int32 dataLen;
-            Int32 eom;
+            int dataLen;
+            int eom;
             if ( sock.sendMessageLength <= QDef.MAX_DATAGRAM )
             {
                 dataLen = sock.sendMessageLength;
@@ -1071,27 +1091,27 @@ namespace SharpQuake
             var packetLen = NetworkDef.NET_HEADERSIZE + dataLen;
 
             PacketHeader header;
-            header.length = EndianHelper.BigLong( packetLen | ( NetFlags.NETFLAG_DATA | eom ) );
-            header.sequence = EndianHelper.BigLong( ( Int32 ) sock.sendSequence++ );
-            Utilities.StructureToBytes( ref header, _PacketBuffer, 0 );
-            Buffer.BlockCopy( sock.sendMessage, 0, _PacketBuffer, PacketHeader.SizeInBytes, dataLen );
+            header.length = EndianHelper.BigLong( packetLen | NetFlags.NETFLAG_DATA | eom );
+            header.sequence = EndianHelper.BigLong( ( int ) sock.sendSequence++ );
+            Utilities.StructureToBytes( ref header, this._PacketBuffer, 0 );
+            Buffer.BlockCopy( sock.sendMessage, 0, this._PacketBuffer, PacketHeader.SizeInBytes, dataLen );
 
             sock.sendNext = false;
 
-            if ( sock.Write( _PacketBuffer, packetLen, sock.addr ) == -1 )
+            if ( sock.Write(this._PacketBuffer, packetLen, sock.addr ) == -1 )
                 return -1;
 
-            sock.lastSendTime = Host.Network.Time;
-            packetsSent++;
+            sock.lastSendTime = this.Host.Network.Time;
+            this.packetsSent++;
             return 1;
         }
 
         /// <summary>
         /// ReSendMessage
         /// </summary>
-        private Int32 ReSendMessage( qsocket_t sock )
+        private int ReSendMessage( qsocket_t sock )
         {
-            Int32 dataLen, eom;
+            int dataLen, eom;
             if ( sock.sendMessageLength <= QDef.MAX_DATAGRAM )
             {
                 dataLen = sock.sendMessageLength;
@@ -1105,18 +1125,18 @@ namespace SharpQuake
             var packetLen = NetworkDef.NET_HEADERSIZE + dataLen;
 
             PacketHeader header;
-            header.length = EndianHelper.BigLong( packetLen | ( NetFlags.NETFLAG_DATA | eom ) );
-            header.sequence = EndianHelper.BigLong( ( Int32 ) ( sock.sendSequence - 1 ) );
-            Utilities.StructureToBytes( ref header, _PacketBuffer, 0 );
-            Buffer.BlockCopy( sock.sendMessage, 0, _PacketBuffer, PacketHeader.SizeInBytes, dataLen );
+            header.length = EndianHelper.BigLong( packetLen | NetFlags.NETFLAG_DATA | eom );
+            header.sequence = EndianHelper.BigLong( ( int ) ( sock.sendSequence - 1 ) );
+            Utilities.StructureToBytes( ref header, this._PacketBuffer, 0 );
+            Buffer.BlockCopy( sock.sendMessage, 0, this._PacketBuffer, PacketHeader.SizeInBytes, dataLen );
 
             sock.sendNext = false;
 
-            if ( sock.Write( _PacketBuffer, packetLen, sock.addr ) == -1 )
+            if ( sock.Write(this._PacketBuffer, packetLen, sock.addr ) == -1 )
                 return -1;
 
-            sock.lastSendTime = Host.Network.Time;
-            packetsReSent++;
+            sock.lastSendTime = this.Host.Network.Time;
+            this.packetsReSent++;
             return 1;
         }
 

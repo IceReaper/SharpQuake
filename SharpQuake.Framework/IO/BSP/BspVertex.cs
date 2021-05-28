@@ -22,17 +22,16 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.BSP
 {
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct BspVertex
     {
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Single[] point; //[3];
+        public float[] point; //[3];
 
-        public static Int32 SizeInBytes = Marshal.SizeOf( typeof( BspVertex ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( BspVertex ) );
     } // dvertex_t
 }

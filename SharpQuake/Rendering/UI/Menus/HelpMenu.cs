@@ -22,50 +22,50 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-
-namespace SharpQuake.Rendering.UI
+namespace SharpQuake.Rendering.UI.Menus
 {
+    using Engine.Host;
+    using Framework.Definitions;
+
     public class HelpMenu : MenuBase
     {
-        private const Int32 NUM_HELP_PAGES = 6;
+        private const int NUM_HELP_PAGES = 6;
 
-        private Int32 _Page;
+        private int _Page;
 
         public override void Show( Host host )
         {
-            _Page = 0;
+            this._Page = 0;
             base.Show( host );
         }
 
-        public override void KeyEvent( Int32 key )
+        public override void KeyEvent( int key )
         {
             switch ( key )
             {
                 case KeysDef.K_ESCAPE:
-                    MainMenu.Show( Host );
+                    MenuBase.MainMenuInstance.Show(this.Host );
                     break;
 
                 case KeysDef.K_UPARROW:
                 case KeysDef.K_RIGHTARROW:
-                    Host.Menu.EnterSound = true;
-                    if ( ++_Page >= NUM_HELP_PAGES )
-                        _Page = 0;
+                    this.Host.Menu.EnterSound = true;
+                    if ( ++this._Page >= HelpMenu.NUM_HELP_PAGES )
+                        this._Page = 0;
                     break;
 
                 case KeysDef.K_DOWNARROW:
                 case KeysDef.K_LEFTARROW:
-                    Host.Menu.EnterSound = true;
-                    if ( --_Page < 0 )
-                        _Page = NUM_HELP_PAGES - 1;
+                    this.Host.Menu.EnterSound = true;
+                    if ( --this._Page < 0 )
+                        this._Page = HelpMenu.NUM_HELP_PAGES - 1;
                     break;
             }
         }
 
         public override void Draw( )
         {
-            Host.Menu.DrawPic( 0, 0, Host.DrawingContext.CachePic( String.Format( "gfx/help{0}.lmp", _Page ), "GL_NEAREST" ) );
+            this.Host.Menu.DrawPic( 0, 0, this.Host.DrawingContext.CachePic( string.Format( "gfx/help{0}.lmp", this._Page ), "GL_NEAREST" ) );
         }
     }
 }

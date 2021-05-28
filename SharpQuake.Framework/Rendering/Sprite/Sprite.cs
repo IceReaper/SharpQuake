@@ -23,18 +23,17 @@
 /// </copyright>
 /// 
 
-using System;
-using SharpQuake.Framework.World;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Rendering.Sprite
 {
+    using World;
+
     public class msprite_t
     {
         public SpriteType type;
-        public Int32 maxwidth;
-        public Int32 maxheight;
-        public Int32 numframes;
-        public Single beamlength;		// remove?
+        public int maxwidth;
+        public int maxheight;
+        public int numframes;
+        public float beamlength;		// remove?
         //void				*cachespot;		// remove?
         public mspriteframedesc_t[] frames; // mspriteframedesc_t	frames[1];
     } // msprite_t;

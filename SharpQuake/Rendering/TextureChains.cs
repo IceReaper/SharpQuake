@@ -22,10 +22,10 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using SharpQuake.Game.Rendering.Memory;
-
 namespace SharpQuake.Rendering
 {
+	using Game.Rendering.Memory;
+
 	public class TextureChains
 	{
 		public MemorySurface SkyChain

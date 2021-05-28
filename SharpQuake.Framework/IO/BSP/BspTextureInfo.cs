@@ -22,19 +22,19 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.BSP
 {
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct BspTextureInfo
     {
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 8 )]
-        public System.Single[] vecs; //[2][4];		// [s/t][xyz offset]
+        public float[] vecs; //[2][4];		// [s/t][xyz offset]
 
-        public System.Int32 miptex;
-        public System.Int32 flags;
+        public int miptex;
+        public int flags;
 
-        public static System.Int32 SizeInBytes = Marshal.SizeOf( typeof( BspTextureInfo ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( BspTextureInfo ) );
     } // texinfo_t
 }

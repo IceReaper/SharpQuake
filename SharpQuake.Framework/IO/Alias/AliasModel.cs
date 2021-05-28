@@ -1,28 +1,29 @@
-﻿using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework.IO.Alias
+﻿namespace SharpQuake.Framework.IO.Alias
 {
+	using Rendering;
+	using System.Numerics;
+	using System.Runtime.InteropServices;
+
 	[StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct mdl_t
     {
-        public Int32 ident;
-        public Int32 version;
-        public Vector3f scale;
-        public Vector3f scale_origin;
-        public Single boundingradius;
-        public Vector3f eyeposition;
-        public Int32 numskins;
-        public Int32 skinwidth;
-        public Int32 skinheight;
-        public Int32 numverts;
-        public Int32 numtris;
-        public Int32 numframes;
+        public int ident;
+        public int version;
+        public Vector3 scale;
+        public Vector3 scale_origin;
+        public float boundingradius;
+        public Vector3 eyeposition;
+        public int numskins;
+        public int skinwidth;
+        public int skinheight;
+        public int numverts;
+        public int numtris;
+        public int numframes;
         public SyncType synctype;
-        public Int32 flags;
-        public Single size;
+        public int flags;
+        public float size;
 
-        public static readonly Int32 SizeInBytes = Marshal.SizeOf( typeof( mdl_t ) );
+        public static readonly int SizeInBytes = Marshal.SizeOf( typeof( mdl_t ) );
 
         //static mdl_t()
         //{

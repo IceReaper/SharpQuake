@@ -22,123 +22,110 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-
-namespace SharpQuake.Rendering.UI
+namespace SharpQuake.Rendering.UI.Menus
 {
+    using Engine.Host;
+    using Framework.Definitions;
+    using Framework.Mathematics;
+
     /// <summary>
     /// M_Menu_LanConfig_functions
     /// </summary>
     public class LanConfigMenu : MenuBase
     {
-        public Boolean JoiningGame
-        {
-            get
-            {
-                return MultiPlayerMenu.Cursor == 0;
-            }
-        }
+        public bool JoiningGame => MenuBase.MultiPlayerMenuInstance.Cursor == 0;
 
-        public Boolean StartingGame
-        {
-            get
-            {
-                return MultiPlayerMenu.Cursor == 1;
-            }
-        }
+        public bool StartingGame => MenuBase.MultiPlayerMenuInstance.Cursor == 1;
 
-        private const Int32 NUM_LANCONFIG_CMDS = 3;
+        private const int NUM_LANCONFIG_CMDS = 3;
 
-        private static readonly Int32[] _CursorTable = new Int32[] { 72, 92, 124 };
+        private static readonly int[] _CursorTable = new int[] { 72, 92, 124 };
 
-        private Int32 _Port;
-        private String _PortName;
-        private String _JoinName;
+        private int _Port;
+        private string _PortName;
+        private string _JoinName;
 
         public override void Show( Host host )
         {
             base.Show( host );
 
-            if ( _Cursor == -1 )
+            if (this._Cursor == -1 )
             {
-                if ( JoiningGame )
-                    _Cursor = 2;
+                if (this.JoiningGame )
+                    this._Cursor = 2;
                 else
-                    _Cursor = 1;
+                    this._Cursor = 1;
             }
-            if ( StartingGame && _Cursor == 2 )
-                _Cursor = 1;
-            _Port = Host.Network.DefaultHostPort;
-            _PortName = _Port.ToString( );
+            if (this.StartingGame && this._Cursor == 2 )
+                this._Cursor = 1;
 
-            Host.Menu.ReturnOnError = false;
-            Host.Menu.ReturnReason = String.Empty;
+            this._Port = this.Host.Network.DefaultHostPort;
+            this._PortName = this._Port.ToString( );
+
+            this.Host.Menu.ReturnOnError = false;
+            this.Host.Menu.ReturnReason = string.Empty;
         }
 
-        public override void KeyEvent( Int32 key )
+        public override void KeyEvent( int key )
         {
             switch ( key )
             {
                 case KeysDef.K_ESCAPE:
-                    MultiPlayerMenu.Show( Host );
+                    MenuBase.MultiPlayerMenuInstance.Show(this.Host );
                     break;
 
                 case KeysDef.K_UPARROW:
-                    Host.Sound.LocalSound( "misc/menu1.wav" );
-                    _Cursor--;
-                    if ( _Cursor < 0 )
-                        _Cursor = NUM_LANCONFIG_CMDS - 1;
+                    this.Host.Sound.LocalSound( "misc/menu1.wav" );
+                    this._Cursor--;
+                    if (this._Cursor < 0 )
+                        this._Cursor = LanConfigMenu.NUM_LANCONFIG_CMDS - 1;
                     break;
 
                 case KeysDef.K_DOWNARROW:
-                    Host.Sound.LocalSound( "misc/menu1.wav" );
-                    _Cursor++;
-                    if ( _Cursor >= NUM_LANCONFIG_CMDS )
-                        _Cursor = 0;
+                    this.Host.Sound.LocalSound( "misc/menu1.wav" );
+                    this._Cursor++;
+                    if (this._Cursor >= LanConfigMenu.NUM_LANCONFIG_CMDS )
+                        this._Cursor = 0;
                     break;
 
                 case KeysDef.K_ENTER:
-                    if ( _Cursor == 0 )
+                    if (this._Cursor == 0 )
                         break;
 
-                    Host.Menu.EnterSound = true;
-                    Host.Network.HostPort = _Port;
+                    this.Host.Menu.EnterSound = true;
+                    this.Host.Network.HostPort = this._Port;
 
-                    if ( _Cursor == 1 )
+                    if (this._Cursor == 1 )
                     {
-                        if ( StartingGame )
-                        {
-                            GameOptionsMenu.Show( Host );
-                        }
+                        if (this.StartingGame )
+                            MenuBase.GameOptionsMenuInstance.Show(this.Host );
                         else
-                        {
-                            SearchMenu.Show( Host );
-                        }
+                            MenuBase.SearchMenuInstance.Show(this.Host );
+
                         break;
                     }
 
-                    if ( _Cursor == 2 )
+                    if (this._Cursor == 2 )
                     {
-                        Host.Menu.ReturnMenu = this;
-                        Host.Menu.ReturnOnError = true;
-                        CurrentMenu.Hide( );
-                        Host.Commands.Buffer.Append( String.Format( "connect \"{0}\"\n", _JoinName ) );
+                        this.Host.Menu.ReturnMenu = this;
+                        this.Host.Menu.ReturnOnError = true;
+                        MenuBase.CurrentMenu.Hide( );
+                        this.Host.Commands.Buffer.Append( string.Format( "connect \"{0}\"\n", this._JoinName ) );
                         break;
                     }
                     break;
 
                 case KeysDef.K_BACKSPACE:
-                    if ( _Cursor == 0 )
+                    if (this._Cursor == 0 )
                     {
-                        if ( !String.IsNullOrEmpty( _PortName ) )
-                            _PortName = _PortName.Substring( 0, _PortName.Length - 1 );
+                        if ( !string.IsNullOrEmpty(this._PortName ) )
+                            this._PortName = this._PortName.Substring( 0, this._PortName.Length - 1 );
                     }
 
-                    if ( _Cursor == 2 )
+                    if (this._Cursor == 2 )
                     {
-                        if ( !String.IsNullOrEmpty( _JoinName ) )
-                            _JoinName = _JoinName.Substring( 0, _JoinName.Length - 1 );
+                        if ( !string.IsNullOrEmpty(this._JoinName ) )
+                            this._JoinName = this._JoinName.Substring( 0, this._JoinName.Length - 1 );
                     }
                     break;
 
@@ -146,91 +133,98 @@ namespace SharpQuake.Rendering.UI
                     if ( key < 32 || key > 127 )
                         break;
 
-                    if ( _Cursor == 2 )
+                    if (this._Cursor == 2 )
                     {
-                        if ( _JoinName.Length < 21 )
-                            _JoinName += ( Char ) key;
+                        if (this._JoinName.Length < 21 )
+                            this._JoinName += ( char ) key;
                     }
 
                     if ( key < '0' || key > '9' )
                         break;
 
-                    if ( _Cursor == 0 )
+                    if (this._Cursor == 0 )
                     {
-                        if ( _PortName.Length < 5 )
-                            _PortName += ( Char ) key;
+                        if (this._PortName.Length < 5 )
+                            this._PortName += ( char ) key;
                     }
                     break;
             }
 
-            if ( StartingGame && _Cursor == 2 )
+            if (this.StartingGame && this._Cursor == 2 )
+            {
                 if ( key == KeysDef.K_UPARROW )
-                    _Cursor = 1;
+                    this._Cursor = 1;
                 else
-                    _Cursor = 0;
+                    this._Cursor = 0;
+            }
 
-            var k = MathLib.atoi( _PortName );
+            var k = MathLib.atoi(this._PortName );
             if ( k > 65535 )
-                k = _Port;
+                k = this._Port;
             else
-                _Port = k;
-            _PortName = _Port.ToString( );
+                this._Port = k;
+
+            this._PortName = this._Port.ToString( );
         }
 
         public override void Draw( )
         {
-            Host.Menu.DrawTransPic( 16, 4, Host.DrawingContext.CachePic( "gfx/qplaque.lmp", "GL_NEAREST" ) );
-            var p = Host.DrawingContext.CachePic( "gfx/p_multi.lmp", "GL_NEAREST" );
+            this.Host.Menu.DrawTransPic( 16, 4, this.Host.DrawingContext.CachePic( "gfx/qplaque.lmp", "GL_NEAREST" ) );
+            var p = this.Host.DrawingContext.CachePic( "gfx/p_multi.lmp", "GL_NEAREST" );
             var basex = ( 320 - p.Width ) / 2;
-            Host.Menu.DrawPic( basex, 4, p );
+            this.Host.Menu.DrawPic( basex, 4, p );
 
-            String startJoin;
-            if ( StartingGame )
+            string startJoin;
+            if (this.StartingGame )
                 startJoin = "New Game - TCP/IP";
             else
                 startJoin = "Join Game - TCP/IP";
 
-            Host.Menu.Print( basex, 32, startJoin );
+            this.Host.Menu.Print( basex, 32, startJoin );
             basex += 8;
 
-            Host.Menu.Print( basex, 52, "Address:" );
-            Host.Menu.Print( basex + 9 * 8, 52, Host.Network.MyTcpIpAddress );
+            this.Host.Menu.Print( basex, 52, "Address:" );
+            this.Host.Menu.Print( basex + 9 * 8, 52, this.Host.Network.MyTcpIpAddress );
 
-            Host.Menu.Print( basex, _CursorTable[0], "Port" );
-            Host.Menu.DrawTextBox( basex + 8 * 8, _CursorTable[0] - 8, 6, 1 );
-            Host.Menu.Print( basex + 9 * 8, _CursorTable[0], _PortName );
+            this.Host.Menu.Print( basex, LanConfigMenu._CursorTable[0], "Port" );
+            this.Host.Menu.DrawTextBox( basex + 8 * 8, LanConfigMenu._CursorTable[0] - 8, 6, 1 );
+            this.Host.Menu.Print( basex + 9 * 8, LanConfigMenu._CursorTable[0], this._PortName );
 
-            if ( JoiningGame )
+            if (this.JoiningGame )
             {
-                Host.Menu.Print( basex, _CursorTable[1], "Search for local games..." );
-                Host.Menu.Print( basex, 108, "Join game at:" );
-                Host.Menu.DrawTextBox( basex + 8, _CursorTable[2] - 8, 22, 1 );
-                Host.Menu.Print( basex + 16, _CursorTable[2], _JoinName );
+                this.Host.Menu.Print( basex, LanConfigMenu._CursorTable[1], "Search for local games..." );
+                this.Host.Menu.Print( basex, 108, "Join game at:" );
+                this.Host.Menu.DrawTextBox( basex + 8, LanConfigMenu._CursorTable[2] - 8, 22, 1 );
+                this.Host.Menu.Print( basex + 16, LanConfigMenu._CursorTable[2], this._JoinName );
             }
             else
             {
-                Host.Menu.DrawTextBox( basex, _CursorTable[1] - 8, 2, 1 );
-                Host.Menu.Print( basex + 8, _CursorTable[1], "OK" );
+                this.Host.Menu.DrawTextBox( basex, LanConfigMenu._CursorTable[1] - 8, 2, 1 );
+                this.Host.Menu.Print( basex + 8, LanConfigMenu._CursorTable[1], "OK" );
             }
 
-            Host.Menu.DrawCharacter( basex - 8, _CursorTable[_Cursor], 12 + ( ( Int32 ) ( Host.RealTime * 4 ) & 1 ) );
+            this.Host.Menu.DrawCharacter( basex - 8, LanConfigMenu._CursorTable[this._Cursor], 12 + ( ( int ) (this.Host.RealTime * 4 ) & 1 ) );
 
-            if ( _Cursor == 0 )
-                Host.Menu.DrawCharacter( basex + 9 * 8 + 8 * _PortName.Length,
-                    _CursorTable[0], 10 + ( ( Int32 ) ( Host.RealTime * 4 ) & 1 ) );
+            if (this._Cursor == 0 )
+            {
+                this.Host.Menu.DrawCharacter( basex + 9 * 8 + 8 * this._PortName.Length,
+                    LanConfigMenu._CursorTable[0], 10 + ( ( int ) (this.Host.RealTime * 4 ) & 1 ) );
+            }
 
-            if ( _Cursor == 2 )
-                Host.Menu.DrawCharacter( basex + 16 + 8 * _JoinName.Length, _CursorTable[2],
-                    10 + ( ( Int32 ) ( Host.RealTime * 4 ) & 1 ) );
+            if (this._Cursor == 2 )
+            {
+                this.Host.Menu.DrawCharacter( basex + 16 + 8 * this._JoinName.Length, LanConfigMenu._CursorTable[2],
+                    10 + ( ( int ) (this.Host.RealTime * 4 ) & 1 ) );
+            }
 
-            if ( !String.IsNullOrEmpty( Host.Menu.ReturnReason ) )
-                Host.Menu.PrintWhite( basex, 148, Host.Menu.ReturnReason );
+            if ( !string.IsNullOrEmpty(this.Host.Menu.ReturnReason ) )
+                this.Host.Menu.PrintWhite( basex, 148, this.Host.Menu.ReturnReason );
         }
 
         public LanConfigMenu( )
         {
-            _Cursor = -1;
-            _JoinName = String.Empty;
+            this._Cursor = -1;
+            this._JoinName = string.Empty;
         }
     }
 }

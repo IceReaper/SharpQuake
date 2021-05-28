@@ -22,12 +22,12 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-using SharpQuake.Game.World;
-
 namespace SharpQuake.Game.Rendering.Memory
 {
+    using Framework;
+    using Framework.Definitions.Bsp;
+    using World;
+
     public class MemoryLeaf : MemoryNodeBase
     {
         // leaf specific
@@ -35,22 +35,22 @@ namespace SharpQuake.Game.Rendering.Memory
         /// loadmodel->visdata
         /// Use in pair with visofs!
         /// </summary>
-        public Byte[] compressed_vis; // byte*
-        public Int32 visofs; // added by Uze
+        public byte[] compressed_vis; // byte*
+        public int visofs; // added by Uze
         public EFrag efrags;
 
         /// <summary>
         /// loadmodel->marksurfaces
         /// </summary>
         public MemorySurface[] marksurfaces;
-        public Int32 firstmarksurface; // msurface_t	**firstmarksurface;
-        public Int32 nummarksurfaces;
+        public int firstmarksurface; // msurface_t	**firstmarksurface;
+        public int nummarksurfaces;
         //public int key;			// BSP sequence number for leaf's contents
-        public Byte[] ambient_sound_level; // [NUM_AMBIENTS];
+        public byte[] ambient_sound_level; // [NUM_AMBIENTS];
 
         public MemoryLeaf( )
         {
-            ambient_sound_level = new Byte[AmbientDef.NUM_AMBIENTS];
+            this.ambient_sound_level = new byte[AmbientDef.NUM_AMBIENTS];
         }
     } //mleaf_t;
 

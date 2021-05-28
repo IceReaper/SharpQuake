@@ -22,13 +22,13 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
 namespace SharpQuake.Framework.IO.Input
 {
-	public class MouseButtonEventArgs : EventArgs
+    using System;
+
+    public class MouseButtonEventArgs : EventArgs
     {
-        public Boolean IsPressed
+        public bool IsPressed
         {
             get;
             private set;
@@ -40,10 +40,10 @@ namespace SharpQuake.Framework.IO.Input
             private set;
         }
 
-        public MouseButtonEventArgs( MouseButton button, Boolean isPressed )
+        public MouseButtonEventArgs( MouseButton button, bool isPressed )
         {
-            Button = button;
-            IsPressed = isPressed;
+            this.Button = button;
+            this.IsPressed = isPressed;
         }
     }
 }

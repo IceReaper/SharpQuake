@@ -22,14 +22,12 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
 namespace SharpQuake.Game.Rendering.Memory
 {
     // !!! if this is changed, it must be changed in asm_draw.h too !!!
     public struct MemoryEdge
     {
-        public UInt16[] v; // [2];
+        public ushort[] v; // [2];
         //public uint cachededgeoffset;
     } //medge_t;
 }

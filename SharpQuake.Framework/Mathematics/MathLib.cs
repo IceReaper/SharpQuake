@@ -22,30 +22,33 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Globalization;
-using SharpQuake.Framework.Mathematics;
+
 
 // mathlib.h
 // mathlib.c
 
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Mathematics
 {
+    using Engine;
+    using System;
+    using System.Globalization;
+    using System.Numerics;
+
     /// <summary>
     /// Quake math functions
     /// </summary>
     public static class MathLib
     {
-        private static Random _Random = new Random( );
+        private static Random _Random = new( );
 
-        public static Int32 Random( )
+        public static int Random( )
         {
-            return _Random.Next( );
+            return MathLib._Random.Next( );
         }
 
-        public static Int32 Random( Int32 maxValue )
+        public static int Random( int maxValue )
         {
-            return _Random.Next( maxValue );
+            return MathLib._Random.Next( maxValue );
         }
 
         /// <summary>
@@ -53,7 +56,7 @@ namespace SharpQuake.Framework
         /// </summary>
         public static void AngleVectors( ref Vector3 angles, out Vector3 forward, out Vector3 right, out Vector3 up )
         {
-            Double angle, sr, sp, sy, cr, cp, cy;
+            double angle, sr, sp, sy, cr, cp, cy;
 
             angle = angles.Y * ( Math.PI * 2 / 360 );
             sy = Math.Sin( angle );
@@ -65,20 +68,20 @@ namespace SharpQuake.Framework
             sr = Math.Sin( angle );
             cr = Math.Cos( angle );
 
-            forward.X = ( Single ) ( cp * cy );
-            forward.Y = ( Single ) ( cp * sy );
-            forward.Z = -( ( Single ) sp );
-            right.X = ( Single ) ( -1 * sr * sp * cy + -1 * cr * -sy );
-            right.Y = ( Single ) ( -1 * sr * sp * sy + -1 * cr * cy );
-            right.Z = ( Single ) ( -1 * sr * cp );
-            up.X = ( Single ) ( cr * sp * cy + -sr * -sy );
-            up.Y = ( Single ) ( cr * sp * sy + -sr * cy );
-            up.Z = ( Single ) ( cr * cp );
+            forward.X = ( float ) ( cp * cy );
+            forward.Y = ( float ) ( cp * sy );
+            forward.Z = -( float ) sp;
+            right.X = ( float ) ( -1 * sr * sp * cy + -1 * cr * -sy );
+            right.Y = ( float ) ( -1 * sr * sp * sy + -1 * cr * cy );
+            right.Z = ( float ) ( -1 * sr * cp );
+            up.X = ( float ) ( cr * sp * cy + -sr * -sy );
+            up.Y = ( float ) ( cr * sp * sy + -sr * cy );
+            up.Z = ( float ) ( cr * cp );
         }
 
-        public static Single Normalize( ref Vector3 v )
+        public static float Normalize( ref Vector3 v )
         {
-            var length = v.Length;
+            var length = v.Length();
             if( length != 0 )
             {
                 var ool = 1 / length;
@@ -89,152 +92,103 @@ namespace SharpQuake.Framework
             return length;
         }
 
-        public static Single Length( ref Vector3f v )
+        public static float Length( ref Vector3 v )
         {
-            return ( Single ) Math.Sqrt( v.x * v.x + v.y * v.y + v.z * v.z );
+            return ( float ) Math.Sqrt( v.X * v.X + v.Y * v.Y + v.Z * v.Z );
         }
 
-        public static Single LengthXY( ref Vector3f v )
+        public static float LengthXY( ref Vector3 v )
         {
-            return ( Single ) Math.Sqrt( v.x * v.x + v.y * v.y );
-        }
-
-        public static Single Normalize( ref Vector3f v )
-        {
-            var length = ( Single ) Math.Sqrt( v.x * v.x + v.y * v.y + v.z * v.z );
-            if( length != 0 )
-            {
-                var ool = 1 / length;
-                v.x *= ool;
-                v.y *= ool;
-                v.z *= ool;
-            }
-            return length;
+            return ( float ) Math.Sqrt( v.X * v.X + v.Y * v.Y );
         }
 
         /// <summary>
         /// c = a + b * scale;
         /// </summary>
-        public static void VectorMA( ref Vector3f a, Single scale, ref Vector3f b, out Vector3f c )
+        public static void VectorMA( ref Vector3 a, float scale, ref Vector3 b, out Vector3 c )
         {
-            c.x = a.x + b.x * scale;
-            c.y = a.y + b.y * scale;
-            c.z = a.z + b.z * scale;
+            c.X = a.X + b.X * scale;
+            c.Y = a.Y + b.Y * scale;
+            c.Z = a.Z + b.Z * scale;
         }
 
-        public static void VectorScale( ref Vector3f a, Single scale, out Vector3f b )
+        public static void VectorScale( ref Vector3 a, float scale, out Vector3 b )
         {
-            b.x = a.x * scale;
-            b.y = a.y * scale;
-            b.z = a.z * scale;
+            b.X = a.X * scale;
+            b.Y = a.Y * scale;
+            b.Z = a.Z * scale;
         }
 
-        public static void VectorAdd( ref Vector3f a, ref Vector3f b, out Vector3f c )
+        public static void VectorAdd( ref Vector3 a, ref Vector3 b, out Vector3 c )
         {
-            c.x = a.x + b.x;
-            c.y = a.y + b.y;
-            c.z = a.z + b.z;
+            c.X = a.X + b.X;
+            c.Y = a.Y + b.Y;
+            c.Z = a.Z + b.Z;
         }
 
-        public static void VectorSubtract( ref Vector3f a, ref Vector3f b, out Vector3f c )
+        public static void VectorSubtract( ref Vector3 a, ref Vector3 b, out Vector3 c )
         {
-            c.x = a.x - b.x;
-            c.y = a.y - b.y;
-            c.z = a.z - b.z;
+            c.X = a.X - b.X;
+            c.Y = a.Y - b.Y;
+            c.Z = a.Z - b.Z;
         }
 
-        public static void Clamp( ref Vector3f src, ref Vector3 min, ref Vector3 max, out Vector3f dest )
+        public static void Clamp( ref Vector3 src, ref Vector3 min, ref Vector3 max, out Vector3 dest )
         {
-            dest.x = Math.Max( Math.Min( src.x, max.X ), min.X );
-            dest.y = Math.Max( Math.Min( src.y, max.Y ), min.Y );
-            dest.z = Math.Max( Math.Min( src.z, max.Z ), min.Z );
+            dest.X = Math.Max( Math.Min( src.X, max.X ), min.X );
+            dest.Y = Math.Max( Math.Min( src.Y, max.Y ), min.Y );
+            dest.Z = Math.Max( Math.Min( src.Z, max.Z ), min.Z );
         }
 
-        public static Single DotProduct( ref Vector3f a, ref Vector3f b )
+        public static float DotProduct( ref Vector3 a, ref Vector3 b )
         {
-            return a.x * b.x + a.y * b.y + a.z * b.z;
+            return a.X * b.X + a.Y * b.Y + a.Z * b.Z;
         }
 
-        public static Boolean CheckNaN( ref Vector3f v, Single defValue )
+        public static bool CheckNaN( ref Vector3 v, float defValue )
         {
             var flag = false;
-            if( Single.IsNaN( v.x ) )
+            if( float.IsNaN( v.X ) )
             {
                 flag = true;
-                v.x = defValue;
+                v.X = defValue;
             }
-            if( Single.IsNaN( v.y ) )
+            if( float.IsNaN( v.Y ) )
             {
                 flag = true;
-                v.y = defValue;
+                v.Y = defValue;
             }
-            if( Single.IsNaN( v.z ) )
+            if( float.IsNaN( v.Z ) )
             {
                 flag = true;
-                v.z = defValue;
+                v.Z = defValue;
             }
             return flag;
         }
 
-        public static Single Comp( ref Vector3f a, Int32 index )
+        public static float Comp( ref Vector3 a, int index )
         {
             if( index < 0 || index > 2 )
                 throw new ArgumentOutOfRangeException( "index" );
-            return ( index == 0 ? a.x : ( index == 1 ? a.y : a.z ) );
-        }
-
-        public static Single Comp( ref Vector3 a, Int32 index )
-        {
-            if( index < 0 || index > 2 )
-                throw new ArgumentOutOfRangeException( "index" );
-            return ( index == 0 ? a.X : ( index == 1 ? a.Y : a.Z ) );
+            return index == 0 ? a.X : index == 1 ? a.Y : a.Z;
         }
 
         /// <summary>
         /// anglemod()
         /// </summary>
-        public static Single AngleMod( Double a )
+        public static float AngleMod( double a )
         {
-            return ( Single ) ( ( 360.0 / 65536 ) * ( ( Int32 ) ( a * ( 65536 / 360.0 ) ) & 65535 ) );
+            return ( float ) ( 360.0 / 65536 * ( ( int ) ( a * ( 65536 / 360.0 ) ) & 65535 ) );
         }
 
-        public static Single DotProduct( ref Vector3 a, ref Vector4 b )
+        public static float DotProduct( ref Vector3 a, ref Vector4 b )
         {
-            return ( a.X * b.X + a.Y * b.Y + a.Z * b.Z );
+            return a.X * b.X + a.Y * b.Y + a.Z * b.Z;
         }
 
-        public static Int32 BoxOnPlaneSide( ref Vector3f emins, ref Vector3f emaxs, Plane p )
+        public static int BoxOnPlaneSide( ref Vector3 emins, ref Vector3 emaxs, Plane p )
         {
-            Single mindist, maxdist;
-            switch( p.type )
-            {
-                case 0:
-                    mindist = emins.x;
-                    maxdist = emaxs.x;
-                    break;
-
-                case 1:
-                    mindist = emins.y;
-                    maxdist = emaxs.y;
-                    break;
-
-                case 2:
-                    mindist = emins.z;
-                    maxdist = emaxs.z;
-                    break;
-
-                default:
-                    Vector3 mins, maxs;
-                    Copy( ref emins, out mins );
-                    Copy( ref emaxs, out maxs );
-                    return _BoxOnPlaneSide( ref mins, ref maxs, p );
-            }
-            return ( p.dist <= mindist ? 1 : ( p.dist >= maxdist ? 2 : 3 ) );
-        }
-
-        public static Int32 BoxOnPlaneSide( ref Vector3 emins, ref Vector3 emaxs, Plane p )
-        {
-            Single mindist, maxdist;
+            float mindist, maxdist;
             switch( p.type )
             {
                 case 0:
@@ -253,12 +207,12 @@ namespace SharpQuake.Framework
                     break;
 
                 default:
-                    return _BoxOnPlaneSide( ref emins, ref emaxs, p );
+                    return MathLib._BoxOnPlaneSide( ref emins, ref emaxs, p );
             }
-            return ( p.dist <= mindist ? 1 : ( p.dist >= maxdist ? 2 : 3 ) );
+            return p.dist <= mindist ? 1 : p.dist >= maxdist ? 2 : 3;
         }
 
-        public static void SetComp( ref Vector3 dest, Int32 index, Single value )
+        public static void SetComp( ref Vector3 dest, int index, float value )
         {
             if( index == 0 )
                 dest.X = value;
@@ -286,33 +240,26 @@ namespace SharpQuake.Framework
                 a.Z += 360;
         }
 
-        public static void RotatePointAroundVector( out Vector3 dst, ref Vector3 dir, ref Vector3 point, Single degrees )
+        public static void RotatePointAroundVector( out Vector3 dst, ref Vector3 dir, ref Vector3 point, float degrees )
         {
-            var m = Matrix3.CreateFromAxisAngle( dir, ( Single ) ( degrees * Math.PI / 180.0 ) );
-            Vector3.Transform( ref point, ref m, out dst );
-        }
-
-        public static void Copy( ref Vector3f src, out Vector3 dest )
-        {
-            dest.X = src.x;
-            dest.Y = src.y;
-            dest.Z = src.z;
+            var m = Matrix4x4.CreateFromAxisAngle( dir, ( float ) ( degrees * Math.PI / 180.0 ) );
+            dst = Vector3.Transform( point, m );
         }
 
         //    return p - d * n;
         //}
-        public static void Copy( ref Vector3 src, out Vector3f dest )
+        public static void Copy( ref Vector3 src, out Vector3 dest )
         {
-            dest.x = src.X;
-            dest.y = src.Y;
-            dest.z = src.Z;
+            dest.X = src.X;
+            dest.Y = src.Y;
+            dest.Z = src.Z;
         }
 
         //Returns 1, 2, or 1 + 2
-        private static Int32 _BoxOnPlaneSide( ref Vector3 emins, ref Vector3 emaxs, Plane p )
+        private static int _BoxOnPlaneSide( ref Vector3 emins, ref Vector3 emaxs, Plane p )
         {
             // general case
-            Single dist1, dist2;
+            float dist1, dist2;
 
             switch( p.signbits )
             {
@@ -376,9 +323,9 @@ namespace SharpQuake.Framework
             return sides;
         }
 
-        public static Int32 atoi( String s )
+        public static int atoi( string s )
         {
-            if ( String.IsNullOrEmpty( s ) )
+            if ( string.IsNullOrEmpty( s ) )
                 return 0;
 
             var sign = 1;
@@ -396,32 +343,26 @@ namespace SharpQuake.Framework
             {
                 i = s.IndexOf( "0x", offset, 2 );
                 if ( i == -1 )
-                {
                     i = s.IndexOf( "0X", offset, 2 );
-                }
             }
 
             if ( i == offset )
-            {
-                Int32.TryParse( s.Substring( offset + 2 ), NumberStyles.HexNumber, null, out result );
-            }
+                int.TryParse( s.Substring( offset + 2 ), NumberStyles.HexNumber, null, out result );
             else
             {
                 i = s.IndexOf( '\'', offset, 1 );
                 if ( i != -1 )
-                {
-                    result = ( Byte ) s[i + 1];
-                }
+                    result = ( byte ) s[i + 1];
                 else
-                    Int32.TryParse( s.Substring( offset ), out result );
+                    int.TryParse( s.Substring( offset ), out result );
             }
             return sign * result;
         }
 
-        public static Single atof( String s )
+        public static float atof( string s )
         {
-            Single v;
-            Single.TryParse( s, NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out v );
+            float v;
+            float.TryParse( s, NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out v );
             return v;
         }
 

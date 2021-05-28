@@ -22,45 +22,45 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.IO.Compression;
-
 namespace SharpQuake.Framework.IO
 {
+    using Engine;
+    using System.IO.Compression;
+
     public class SearchPath
     {
-        public String filename; // char[MAX_OSPATH];
-        public Pak pack; // only one of filename / pack will be used
+        public string filename; // char[MAX_OSPATH];
+        public Pak.Pak pack; // only one of filename / pack will be used
         public ZipArchive pk3;
-        public String pk3filename;
+        public string pk3filename;
 
-        public SearchPath( String path )
+        public SearchPath( string path )
         {
             if ( path.EndsWith( ".PAK" ) )
             {
-                pack = FileSystem.LoadPackFile( path );
-                if ( pack == null )
+                this.pack = FileSystem.LoadPackFile( path );
+                if (this.pack == null )
                     Utilities.Error( "Couldn't load packfile: {0}", path );
             }
             else if ( path.EndsWith( ".PK3" ) )
             {
-                pk3 = ZipFile.OpenRead( path );
-                pk3filename = path;
-                if ( pk3 == null )
+                this.pk3 = ZipFile.OpenRead( path );
+                this.pk3filename = path;
+                if (this.pk3 == null )
                     Utilities.Error( "Couldn't load pk3file: {0}", path );
             }
             else
-                filename = path;
+                this.filename = path;
         }
 
-        public SearchPath( Pak pak )
+        public SearchPath( Pak.Pak pak )
         {
-            pack = pak;
+            this.pack = pak;
         }
 
         public SearchPath( ZipArchive archive )
         {
-            pk3 = archive;
+            this.pk3 = archive;
         }
     } // searchpath_t;    
 }

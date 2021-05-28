@@ -22,21 +22,19 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
 namespace SharpQuake.Framework.IO.Sound
 {
 	public class DMA_t
 	{
-		public Boolean gamealive;
-		public Boolean soundalive;
-		public Boolean splitbuffer;
-		public Int32 channels;
-		public Int32 samples;             // mono samples in buffer
-		public Int32 submission_chunk;        // don't mix less than this #
-		public Int32 samplepos;               // in mono samples
-		public Int32 samplebits;
-		public Int32 speed;
-		public Byte[] buffer;
+		public bool gamealive;
+		public bool soundalive;
+		public bool splitbuffer;
+		public int channels;
+		public int samples;             // mono samples in buffer
+		public int submission_chunk;        // don't mix less than this #
+		public int samplepos;               // in mono samples
+		public int samplebits;
+		public int speed;
+		public byte[] buffer;
 	} // dma_t;
 }

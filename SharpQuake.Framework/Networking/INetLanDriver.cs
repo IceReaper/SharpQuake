@@ -22,21 +22,20 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Net;
-using System.Net.Sockets;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Networking
 {
+    using System.Net;
+    using System.Net.Sockets;
+
     // struct net_landriver_t
     public interface INetLanDriver
     {
-        String Name
+        string Name
         {
             get;
         }
 
-        Boolean IsInitialised
+        bool IsInitialised
         {
             get;
         }
@@ -46,34 +45,34 @@ namespace SharpQuake.Framework
             get;
         }
 
-        Boolean Initialise( );
+        bool Initialise( );
 
         void Dispose( );
 
-        void Listen( Boolean state );
+        void Listen( bool state );
 
-        Socket OpenSocket( Int32 port );
+        Socket OpenSocket( int port );
 
-        Int32 CloseSocket( Socket socket );
+        int CloseSocket( Socket socket );
 
-        Int32 Connect( Socket socket, EndPoint addr );
+        int Connect( Socket socket, EndPoint addr );
 
         Socket CheckNewConnections( );
 
-        Int32 Read( Socket socket, Byte[] buf, Int32 len, ref EndPoint ep );
+        int Read( Socket socket, byte[] buf, int len, ref EndPoint ep );
 
-        Int32 Write( Socket socket, Byte[] buf, Int32 len, EndPoint ep );
+        int Write( Socket socket, byte[] buf, int len, EndPoint ep );
 
-        Int32 Broadcast( Socket socket, Byte[] buf, Int32 len );
+        int Broadcast( Socket socket, byte[] buf, int len );
 
-        String GetNameFromAddr( EndPoint addr );
+        string GetNameFromAddr( EndPoint addr );
 
-        EndPoint GetAddrFromName( String name );
+        EndPoint GetAddrFromName( string name );
 
-        Int32 AddrCompare( EndPoint addr1, EndPoint addr2 );
+        int AddrCompare( EndPoint addr1, EndPoint addr2 );
 
-        Int32 GetSocketPort( EndPoint addr );
+        int GetSocketPort( EndPoint addr );
 
-        Int32 SetSocketPort( EndPoint addr, Int32 port );
+        int SetSocketPort( EndPoint addr, int port );
     } //net_landriver_t;
 }

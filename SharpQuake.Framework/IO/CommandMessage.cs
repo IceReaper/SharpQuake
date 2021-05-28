@@ -22,13 +22,13 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace SharpQuake.Framework.IO
 {
-	public class CommandMessage
+    using Engine;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    public class CommandMessage
     {
         public CommandSource Source
         {
@@ -36,63 +36,45 @@ namespace SharpQuake.Framework.IO
             private set;
         }
 
-        public String Name
+        public string Name
         {
             get;
             private set;
         }
 
-        public String[] Parameters
+        public string[] Parameters
         {
             get;
             private set;
         }
 
-        public String StringParameters
+        public string StringParameters => string.Join( " ", this.Parameters );
+
+        public string FullCommand => $"{this.Name} {string.Join( " ", this.Parameters )}";
+
+        public bool HasParameters => this.Parameters?.Length > 0;
+
+        public CommandMessage( string name, CommandSource source, params string[] parameters )
         {
-            get
-            {
-                return String.Join( " ", Parameters );
-            }
+            this.Name = name;
+            this.Parameters = parameters;
+            this.Source = source;
         }
 
-        public String FullCommand
+        public static CommandMessage FromString( string text, CommandSource source )
         {
-            get
-            {
-                return $"{Name} {String.Join( " ", Parameters )}";
-            }
-        }
-
-        public Boolean HasParameters
-        {
-            get
-            {
-                return Parameters?.Length > 0;
-            }
-        }
-
-        public CommandMessage( String name, CommandSource source, params String[] parameters )
-        {
-            Name = name;
-            Parameters = parameters;
-            Source = source;
-        }
-
-        public static CommandMessage FromString( String text, CommandSource source )
-        {
-            var argv = new List<String>( 80 );
+            var argv = new List<string>( 80 );
             var argc = 0;
-            var args = String.Empty;
+            var args = string.Empty;
 
-            while ( !String.IsNullOrEmpty( text ) )
+            while ( !string.IsNullOrEmpty( text ) )
             {
                 if ( argc == 1 )
                     args = text;
 
                 text = Tokeniser.Parse( text );
 
-                if ( String.IsNullOrEmpty( Tokeniser.Token ) )
+                if ( string.IsNullOrEmpty( Tokeniser.Token ) )
                     break;
 
                 if ( argc < 80 )
@@ -106,21 +88,21 @@ namespace SharpQuake.Framework.IO
                 return null;
 
             var vals = argc == 1 ? null : argv.GetRange( 1, argc - 1 ).ToArray( );
-            return new CommandMessage( argv[0], source, vals );
+            return new( argv[0], source, vals );
         }
 
-        public String ParametersFrom( Int32 index )
+        public string ParametersFrom( int index )
         {
-            if ( Parameters.Length > index )
+            if (this.Parameters.Length > index )
             {
-                var extraParameters = Parameters.ToList( )
-                    .GetRange( index, Parameters.Length - index )
+                var extraParameters = this.Parameters.ToList( )
+                    .GetRange( index, this.Parameters.Length - index )
                     .ToArray( );
 
-                return $"{String.Join( " ", extraParameters )}";
+                return $"{string.Join( " ", extraParameters )}";
             }
 
-            return String.Empty;
+            return string.Empty;
         }
     }
 }

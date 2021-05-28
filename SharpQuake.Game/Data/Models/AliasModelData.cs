@@ -1,15 +1,19 @@
-﻿using System;
-using System.Linq;
-using SharpQuake.Framework;
-using SharpQuake.Framework.World;
-using SharpQuake.Framework.IO.Alias;
-using SharpQuake.Framework.Mathematics;
-using SharpQuake.Framework.Rendering;
-using SharpQuake.Game.Rendering.Textures;
-
-namespace SharpQuake.Game.Data.Models
+﻿namespace SharpQuake.Game.Data.Models
 {
-	public class AliasModelData : ModelData
+    using Framework;
+    using Framework.Data;
+    using Framework.Definitions.Bsp;
+    using Framework.Engine;
+    using Framework.IO.Alias;
+    using Framework.Rendering;
+    using Framework.Rendering.Alias;
+    using Framework.World;
+    using Rendering.Textures;
+    using System;
+    using System.Linq;
+    using System.Numerics;
+
+    public class AliasModelData : ModelData
     {
         public aliashdr_t Header
         {
@@ -17,35 +21,17 @@ namespace SharpQuake.Game.Data.Models
             private set;
         }
 
-        private Int32 PoseNum
+        private int PoseNum
         {
             get;
             set;
         }
 
-        public trivertx_t[][] PoseVerts
-        {
-            get
-            {
-                return _PoseVerts;
-            }
-        }
+        public trivertx_t[][] PoseVerts => this._PoseVerts;
 
-        public stvert_t[] STVerts
-        {
-            get
-            {
-                return _STVerts;
-            }
-        }
+        public stvert_t[] STVerts => this._STVerts;
 
-        public dtriangle_t[] Triangles
-        {
-            get
-            {
-                return _Triangles;
-            }
-        }
+        public dtriangle_t[] Triangles => this._Triangles;
 
         private stvert_t[] _STVerts = new stvert_t[ModelDef.MAXALIASVERTS]; // stverts
         private dtriangle_t[] _Triangles = new dtriangle_t[ModelDef.MAXALIASTRIS]; // triangles
@@ -56,103 +42,102 @@ namespace SharpQuake.Game.Data.Models
 
         }
 
-        public void Load( UInt32[] table8to24, String name, Byte[] buffer, Func<String, ByteArraySegment, aliashdr_t, Int32> onLoadSkinTexture, Action<AliasModelData, aliashdr_t> onMakeAliasModelDisplayList )
+        public void Load( uint[] table8to24, string name, byte[] buffer, Func<string, ByteArraySegment, aliashdr_t, int> onLoadSkinTexture, Action<AliasModelData, aliashdr_t> onMakeAliasModelDisplayList )
         {
-            Name = name;
-            Buffer = buffer;
+            this.Name = name;
+            this.Buffer = buffer;
 
-            var pinmodel = Utilities.BytesToStructure<mdl_t>( Buffer, 0 );
+            var pinmodel = Utilities.BytesToStructure<mdl_t>(this.Buffer, 0 );
 
             var version = EndianHelper.LittleLong( pinmodel.version );
 
             if ( version != ModelDef.ALIAS_VERSION )
-                Utilities.Error( "{0} has wrong version number ({1} should be {2})",
-                    Name, version, ModelDef.ALIAS_VERSION );
+                Utilities.Error( "{0} has wrong version number ({1} should be {2})", this.Name, version, ModelDef.ALIAS_VERSION );
 
             //
             // allocate space for a working header, plus all the data except the frames,
             // skin and group info
             //
-            Header = new aliashdr_t( );
+            this.Header = new( );
 
-            Flags = ( EntityFlags ) EndianHelper.LittleLong( pinmodel.flags );
+            this.Flags = ( EntityFlags ) EndianHelper.LittleLong( pinmodel.flags );
 
             //
             // endian-adjust and copy the data, starting with the alias model header
             //
-            Header.boundingradius = EndianHelper.LittleFloat( pinmodel.boundingradius );
-            Header.numskins = EndianHelper.LittleLong( pinmodel.numskins );
-            Header.skinwidth = EndianHelper.LittleLong( pinmodel.skinwidth );
-            Header.skinheight = EndianHelper.LittleLong( pinmodel.skinheight );
+            this.Header.boundingradius = EndianHelper.LittleFloat( pinmodel.boundingradius );
+            this.Header.numskins = EndianHelper.LittleLong( pinmodel.numskins );
+            this.Header.skinwidth = EndianHelper.LittleLong( pinmodel.skinwidth );
+            this.Header.skinheight = EndianHelper.LittleLong( pinmodel.skinheight );
 
-            if ( Header.skinheight > ModelDef.MAX_LBM_HEIGHT )
-                Utilities.Error( "model {0} has a skin taller than {1}", Name, ModelDef.MAX_LBM_HEIGHT );
+            if (this.Header.skinheight > ModelDef.MAX_LBM_HEIGHT )
+                Utilities.Error( "model {0} has a skin taller than {1}", this.Name, ModelDef.MAX_LBM_HEIGHT );
 
-            Header.numverts = EndianHelper.LittleLong( pinmodel.numverts );
+            this.Header.numverts = EndianHelper.LittleLong( pinmodel.numverts );
 
-            if ( Header.numverts <= 0 )
-                Utilities.Error( "model {0} has no vertices", Name );
+            if (this.Header.numverts <= 0 )
+                Utilities.Error( "model {0} has no vertices", this.Name );
 
-            if ( Header.numverts > ModelDef.MAXALIASVERTS )
-                Utilities.Error( "model {0} has too many vertices", Name );
+            if (this.Header.numverts > ModelDef.MAXALIASVERTS )
+                Utilities.Error( "model {0} has too many vertices", this.Name );
 
-            Header.numtris = EndianHelper.LittleLong( pinmodel.numtris );
+            this.Header.numtris = EndianHelper.LittleLong( pinmodel.numtris );
 
-            if ( Header.numtris <= 0 )
-                Utilities.Error( "model {0} has no triangles", Name );
+            if (this.Header.numtris <= 0 )
+                Utilities.Error( "model {0} has no triangles", this.Name );
 
-            Header.numframes = EndianHelper.LittleLong( pinmodel.numframes );
-            var numframes = Header.numframes;
+            this.Header.numframes = EndianHelper.LittleLong( pinmodel.numframes );
+            var numframes = this.Header.numframes;
             if ( numframes < 1 )
                 Utilities.Error( "Mod_LoadAliasModel: Invalid # of frames: {0}\n", numframes );
 
-            Header.size = EndianHelper.LittleFloat( pinmodel.size ) * ModelDef.ALIAS_BASE_SIZE_RATIO;
-            SyncType = ( SyncType ) EndianHelper.LittleLong( ( Int32 ) pinmodel.synctype );
-            FrameCount = Header.numframes;
+            this.Header.size = EndianHelper.LittleFloat( pinmodel.size ) * ModelDef.ALIAS_BASE_SIZE_RATIO;
+            this.SyncType = ( SyncType ) EndianHelper.LittleLong( ( int ) pinmodel.synctype );
+            this.FrameCount = this.Header.numframes;
 
-            Header.scale = EndianHelper.LittleVector( Utilities.ToVector( ref pinmodel.scale ) );
-            Header.scale_origin = EndianHelper.LittleVector( Utilities.ToVector( ref pinmodel.scale_origin ) );
-            Header.eyeposition = EndianHelper.LittleVector( Utilities.ToVector( ref pinmodel.eyeposition ) );
+            this.Header.scale = EndianHelper.LittleVector( Utilities.ToVector( ref pinmodel.scale ) );
+            this.Header.scale_origin = EndianHelper.LittleVector( Utilities.ToVector( ref pinmodel.scale_origin ) );
+            this.Header.eyeposition = EndianHelper.LittleVector( Utilities.ToVector( ref pinmodel.eyeposition ) );
 
             //
             // load the skins
             //
-            var offset = LoadAllSkins( table8to24, Header.numskins, new ByteArraySegment( buffer, mdl_t.SizeInBytes ), onLoadSkinTexture );
+            var offset = this.LoadAllSkins( table8to24, this.Header.numskins, new( buffer, mdl_t.SizeInBytes ), onLoadSkinTexture );
 
             //
             // load base s and t vertices
             //
             var stvOffset = offset; // in bytes
-            for ( var i = 0; i < Header.numverts; i++, offset += stvert_t.SizeInBytes )
+            for ( var i = 0; i < this.Header.numverts; i++, offset += stvert_t.SizeInBytes )
             {
-                _STVerts[i] = Utilities.BytesToStructure<stvert_t>( buffer, offset );
+                this._STVerts[i] = Utilities.BytesToStructure<stvert_t>( buffer, offset );
 
-                _STVerts[i].onseam = EndianHelper.LittleLong( _STVerts[i].onseam );
-                _STVerts[i].s = EndianHelper.LittleLong( _STVerts[i].s );
-                _STVerts[i].t = EndianHelper.LittleLong( _STVerts[i].t );
+                this._STVerts[i].onseam = EndianHelper.LittleLong(this._STVerts[i].onseam );
+                this._STVerts[i].s = EndianHelper.LittleLong(this._STVerts[i].s );
+                this._STVerts[i].t = EndianHelper.LittleLong(this._STVerts[i].t );
             }
 
             //
             // load triangle lists
             //
-            var triOffset = stvOffset + Header.numverts * stvert_t.SizeInBytes;
+            var triOffset = stvOffset + this.Header.numverts * stvert_t.SizeInBytes;
             offset = triOffset;
-            for ( var i = 0; i < Header.numtris; i++, offset += dtriangle_t.SizeInBytes )
+            for ( var i = 0; i < this.Header.numtris; i++, offset += dtriangle_t.SizeInBytes )
             {
-                _Triangles[i] = Utilities.BytesToStructure<dtriangle_t>( buffer, offset );
-                _Triangles[i].facesfront = EndianHelper.LittleLong( _Triangles[i].facesfront );
+                this._Triangles[i] = Utilities.BytesToStructure<dtriangle_t>( buffer, offset );
+                this._Triangles[i].facesfront = EndianHelper.LittleLong(this._Triangles[i].facesfront );
 
                 for ( var j = 0; j < 3; j++ )
-                    _Triangles[i].vertindex[j] = EndianHelper.LittleLong( _Triangles[i].vertindex[j] );
+                    this._Triangles[i].vertindex[j] = EndianHelper.LittleLong(this._Triangles[i].vertindex[j] );
             }
 
             //
             // load the frames
             //
-            PoseNum = 0;
-            var framesOffset = triOffset + Header.numtris * dtriangle_t.SizeInBytes;
+            this.PoseNum = 0;
+            var framesOffset = triOffset + this.Header.numtris * dtriangle_t.SizeInBytes;
 
-            Header.frames = new maliasframedesc_t[Header.numframes];
+            this.Header.frames = new maliasframedesc_t[this.Header.numframes];
 
             for ( var i = 0; i < numframes; i++ )
             {
@@ -160,27 +145,23 @@ namespace SharpQuake.Game.Data.Models
                 framesOffset += 4;
 
                 if ( frametype == aliasframetype_t.ALIAS_SINGLE )
-                {
-                    framesOffset = LoadAliasFrame( new ByteArraySegment( buffer, framesOffset ), ref Header.frames[i] );
-                }
+                    framesOffset = this.LoadAliasFrame( new( buffer, framesOffset ), ref this.Header.frames[i] );
                 else
-                {
-                    framesOffset = LoadAliasGroup( new ByteArraySegment( buffer, framesOffset ), ref Header.frames[i] );
-                }
+                    framesOffset = this.LoadAliasGroup( new( buffer, framesOffset ), ref this.Header.frames[i] );
             }
 
-            Header.numposes = PoseNum;
+            this.Header.numposes = this.PoseNum;
 
-            Type = ModelType.mod_alias;
+            this.Type = ModelType.mod_alias;
 
             // FIXME: do this right
-            BoundsMin = -Vector3.One * 16.0f;
-            BoundsMax = -BoundsMin;
+            this.BoundsMin = -Vector3.One * 16.0f;
+            this.BoundsMax = -this.BoundsMin;
 
             //
             // build the draw lists
             //
-            onMakeAliasModelDisplayList( this, Header );
+            onMakeAliasModelDisplayList( this, this.Header );
             //mesh.MakeAliasModelDisplayLists( mod, Header );
 
             //
@@ -198,14 +179,14 @@ namespace SharpQuake.Game.Data.Models
         /// Mod_LoadAllSkins
         /// </summary>
         /// <returns>Offset of next data block in source byte array</returns>
-        private Int32 LoadAllSkins( UInt32[] table8to24, Int32 numskins, ByteArraySegment data, Func<String, ByteArraySegment, aliashdr_t, Int32> onLoadSkinTexture )
+        private int LoadAllSkins( uint[] table8to24, int numskins, ByteArraySegment data, Func<string, ByteArraySegment, aliashdr_t, int> onLoadSkinTexture )
         {
             if ( numskins < 1 || numskins > ModelDef.MAX_SKINS )
                 Utilities.Error( "Mod_LoadAliasModel: Invalid # of skins: {0}\n", numskins );
 
             var offset = data.StartIndex;
             var skinOffset = data.StartIndex + daliasskintype_t.SizeInBytes; //  skin = (byte*)(pskintype + 1);
-            var s = Header.skinwidth * Header.skinheight;
+            var s = this.Header.skinwidth * this.Header.skinheight;
 
             var pskintype = Utilities.BytesToStructure<daliasskintype_t>( data.Data, offset );
 
@@ -213,24 +194,21 @@ namespace SharpQuake.Game.Data.Models
             {
                 if ( pskintype.type == aliasskintype_t.ALIAS_SKIN_SINGLE )
                 {
-                    FloodFillSkin( table8to24, new ByteArraySegment( data.Data, skinOffset ), Header.skinwidth, Header.skinheight );
+                    this.FloodFillSkin( table8to24, new( data.Data, skinOffset ), this.Header.skinwidth, this.Header.skinheight );
 
                     // save 8 bit texels for the player model to remap
-                    var texels = new Byte[s]; // Hunk_AllocName(s, loadname);
-                    Header.texels[i] = texels;// -(byte*)pheader;
+                    var texels = new byte[s]; // Hunk_AllocName(s, loadname);
+                    this.Header.texels[i] = texels;// -(byte*)pheader;
                     System.Buffer.BlockCopy( data.Data, offset + daliasskintype_t.SizeInBytes, texels, 0, s );
 
                     // set offset to pixel data after daliasskintype_t block...
                     offset += daliasskintype_t.SizeInBytes;
 
-                    var name = Name + "_" + i.ToString( );
+                    var name = this.Name + "_" + i.ToString( );
 
-                    var index = onLoadSkinTexture( name, new ByteArraySegment( data.Data, offset ), Header );
-                    
-                    Header.gl_texturenum[i, 0] =
-                    Header.gl_texturenum[i, 1] =
-                    Header.gl_texturenum[i, 2] =
-                    Header.gl_texturenum[i, 3] = index;
+                    var index = onLoadSkinTexture( name, new( data.Data, offset ), this.Header );
+
+                    this.Header.gl_texturenum[i, 0] = this.Header.gl_texturenum[i, 1] = this.Header.gl_texturenum[i, 2] = this.Header.gl_texturenum[i, 3] = index;
                     // Host.DrawingContext.LoadTexture( name, Header.skinwidth,
                     //Header.skinheight, new ByteArraySegment( data.Data, offset ), true, false ); // (byte*)(pskintype + 1)
 
@@ -250,22 +228,22 @@ namespace SharpQuake.Game.Data.Models
                     offset += daliasskininterval_t.SizeInBytes * groupskins;
 
                     pskintype = Utilities.BytesToStructure<daliasskintype_t>( data.Data, offset );
-                    Int32 j;
+                    int j;
                     for ( j = 0; j < groupskins; j++ )
                     {
-                        FloodFillSkin( table8to24, new ByteArraySegment( data.Data, skinOffset ), Header.skinwidth, Header.skinheight );
+                        this.FloodFillSkin( table8to24, new( data.Data, skinOffset ), this.Header.skinwidth, this.Header.skinheight );
                         if ( j == 0 )
                         {
-                            var texels = new Byte[s]; // Hunk_AllocName(s, loadname);
-                            Header.texels[i] = texels;// -(byte*)pheader;
+                            var texels = new byte[s]; // Hunk_AllocName(s, loadname);
+                            this.Header.texels[i] = texels;// -(byte*)pheader;
                             System.Buffer.BlockCopy( data.Data, offset, texels, 0, s );
                         }
 
-                        var name = String.Format( "{0}_{1}_{2}", Name, i, j );
+                        var name = string.Format( "{0}_{1}_{2}", this.Name, i, j );
 
-                        var index = onLoadSkinTexture( name, new ByteArraySegment( data.Data, offset ), Header );
-                                               
-                        Header.gl_texturenum[i, j & 3] = index;// //  (byte*)(pskintype)
+                        var index = onLoadSkinTexture( name, new( data.Data, offset ), this.Header );
+
+                        this.Header.gl_texturenum[i, j & 3] = index;// //  (byte*)(pskintype)
 
                         offset += s;
 
@@ -273,7 +251,7 @@ namespace SharpQuake.Game.Data.Models
                     }
                     var k = j;
                     for ( ; j < 4; j++ )
-                        Header.gl_texturenum[i, j & 3] = Header.gl_texturenum[i, j - k];
+                        this.Header.gl_texturenum[i, j & 3] = this.Header.gl_texturenum[i, j - k];
                 }
             }
 
@@ -284,12 +262,12 @@ namespace SharpQuake.Game.Data.Models
         /// Mod_LoadAliasFrame
         /// </summary>
         /// <returns>Offset of next data block in source byte array</returns>
-        private Int32 LoadAliasFrame( ByteArraySegment pin, ref maliasframedesc_t frame )
+        private int LoadAliasFrame( ByteArraySegment pin, ref maliasframedesc_t frame )
         {
             var pdaliasframe = Utilities.BytesToStructure<daliasframe_t>( pin.Data, pin.StartIndex );
 
             frame.name = Utilities.GetString( pdaliasframe.name );
-            frame.firstpose = PoseNum;
+            frame.firstpose = this.PoseNum;
             frame.numposes = 1;
             frame.bboxmin.Init( );
             frame.bboxmax.Init( );
@@ -302,14 +280,13 @@ namespace SharpQuake.Game.Data.Models
                 frame.bboxmax.v[i] = pdaliasframe.bboxmax.v[i];
             }
 
-            var verts = new trivertx_t[Header.numverts];
+            var verts = new trivertx_t[this.Header.numverts];
             var offset = pin.StartIndex + daliasframe_t.SizeInBytes; //pinframe = (trivertx_t*)(pdaliasframe + 1);
             for ( var i = 0; i < verts.Length; i++, offset += trivertx_t.SizeInBytes )
-            {
                 verts[i] = Utilities.BytesToStructure<trivertx_t>( pin.Data, offset );
-            }
-            _PoseVerts[PoseNum] = verts;
-            PoseNum++;
+
+            this._PoseVerts[this.PoseNum] = verts;
+            this.PoseNum++;
 
             return offset;
         }
@@ -318,14 +295,14 @@ namespace SharpQuake.Game.Data.Models
         /// Mod_LoadAliasGroup
         /// </summary>
         /// <returns>Offset of next data block in source byte array</returns>
-        private Int32 LoadAliasGroup( ByteArraySegment pin, ref maliasframedesc_t frame )
+        private int LoadAliasGroup( ByteArraySegment pin, ref maliasframedesc_t frame )
         {
             var offset = pin.StartIndex;
             var pingroup = Utilities.BytesToStructure<daliasgroup_t>( pin.Data, offset );
             var numframes = EndianHelper.LittleLong( pingroup.numframes );
 
             frame.Init( );
-            frame.firstpose = PoseNum;
+            frame.firstpose = this.PoseNum;
             frame.numposes = numframes;
 
             for ( var i = 0; i < 3; i++ )
@@ -344,16 +321,15 @@ namespace SharpQuake.Game.Data.Models
 
             for ( var i = 0; i < numframes; i++ )
             {
-                var tris = new trivertx_t[Header.numverts];
+                var tris = new trivertx_t[this.Header.numverts];
                 var offset1 = offset + daliasframe_t.SizeInBytes;
-                for ( var j = 0; j < Header.numverts; j++, offset1 += trivertx_t.SizeInBytes )
-                {
+                for ( var j = 0; j < this.Header.numverts; j++, offset1 += trivertx_t.SizeInBytes )
                     tris[j] = Utilities.BytesToStructure<trivertx_t>( pin.Data, offset1 );
-                }
-                _PoseVerts[PoseNum] = tris;
-                PoseNum++;
 
-                offset += daliasframe_t.SizeInBytes + Header.numverts * trivertx_t.SizeInBytes;
+                this._PoseVerts[this.PoseNum] = tris;
+                this.PoseNum++;
+
+                offset += daliasframe_t.SizeInBytes + this.Header.numverts * trivertx_t.SizeInBytes;
             }
 
             return offset;
@@ -363,7 +339,7 @@ namespace SharpQuake.Game.Data.Models
         /// Mod_FloodFillSkin
         /// Fill background pixels so mipmapping doesn't have haloes - Ed
         /// </summary>
-        private void FloodFillSkin( UInt32[] table8To24, ByteArraySegment skin, Int32 skinwidth, Int32 skinheight )
+        private void FloodFillSkin( uint[] table8To24, ByteArraySegment skin, int skinwidth, int skinheight )
         {
             var filler = new FloodFiller( skin, skinwidth, skinheight );
             filler.Perform( table8To24 );
@@ -373,29 +349,29 @@ namespace SharpQuake.Game.Data.Models
         {
             base.Clear( );
 
-            Header = null;
-            PoseNum = 0;
-            _PoseVerts = null;
-            _STVerts = null;
-            _Triangles = null;
+            this.Header = null;
+            this.PoseNum = 0;
+            this._PoseVerts = null;
+            this._STVerts = null;
+            this._Triangles = null;
         }
 
         public override void CopyFrom( ModelData src )
         {
             base.CopyFrom( src );
 
-            Type = ModelType.mod_alias;
+            this.Type = ModelType.mod_alias;
 
             if ( ! ( src is AliasModelData ) )
                 return;
             
             var aliasSrc = ( AliasModelData ) src;
 
-            Header = aliasSrc.Header;
-            PoseNum = aliasSrc.PoseNum;
-            _PoseVerts = aliasSrc.PoseVerts.ToArray( );
-            _STVerts = aliasSrc.STVerts.ToArray( );
-            _Triangles = aliasSrc.Triangles.ToArray( );
+            this.Header = aliasSrc.Header;
+            this.PoseNum = aliasSrc.PoseNum;
+            this._PoseVerts = aliasSrc.PoseVerts.ToArray( );
+            this._STVerts = aliasSrc.STVerts.ToArray( );
+            this._Triangles = aliasSrc.Triangles.ToArray( );
         }
     }
 }

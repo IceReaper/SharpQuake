@@ -22,29 +22,28 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework.IO.BSP
+namespace SharpQuake.Framework.IO.BSP.Q3
 {
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct Q3Vertex
     {
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Single[] origin;
+        public float[] origin;
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 2 )]
-        public Single[] texCoord;
+        public float[] texCoord;
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 2 )]
-        public Single[] lightMap;
+        public float[] lightMap;
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Single[] normal;
+        public float[] normal;
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 4 )]
-        public Byte[] colour;
+        public byte[] colour;
 
-        public static Int32 SizeInBytes = Marshal.SizeOf( typeof( Q3Vertex ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( Q3Vertex ) );
     }
 }

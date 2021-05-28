@@ -22,14 +22,12 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Definitions.Bsp
 {
     public static class SideDef
     {
-        public const Int32 SIDE_FRONT = 0;
-        public const Int32 SIDE_BACK = 1;
-        public const Int32 SIDE_ON = 2;
+        public const int SIDE_FRONT = 0;
+        public const int SIDE_BACK = 1;
+        public const int SIDE_ON = 2;
     }
 }

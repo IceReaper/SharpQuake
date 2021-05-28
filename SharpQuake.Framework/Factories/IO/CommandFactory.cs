@@ -22,24 +22,24 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using SharpQuake.Framework.IO;
-
 namespace SharpQuake.Framework.Factories.IO
 {
-	// Command execution takes a string, breaks it into tokens,
+    using Engine;
+    using Framework.IO;
+    using System.Collections.Generic;
+    using System.Text;
+
+    // Command execution takes a string, breaks it into tokens,
 	// then searches for a command or variable that matches the first token.
 	//
 	// Commands can come from three sources, but the handler functions may choose
 	// to dissallow the action or forward it to a remote server if the source is
 	// not apropriate.
-	public class CommandFactory : BaseFactory<String, CommandDelegate>
+	public class CommandFactory : BaseFactory<string, CommandDelegate>
     {
-        public const Int32 MAX_ALIAS_NAME = 32;
+        public const int MAX_ALIAS_NAME = 32;
 
-        private Dictionary<String, String> Aliases
+        private Dictionary<string, string> Aliases
         {
             get;
             set;
@@ -59,41 +59,41 @@ namespace SharpQuake.Framework.Factories.IO
 
         public CommandFactory( ) : base( )
         {
-            Aliases = new Dictionary<String, String>( );
-            Buffer = new CommandBuffer( this );
+            this.Aliases = new( );
+            this.Buffer = new( this );
         }
 
         public void Initialise( ClientVariableFactory cvars )
         {
-            Cvars = cvars;
+            this.Cvars = cvars;
 
-            Add( "stuffcmds", StuffCmds_f );
-            Add( "exec", Exec_f );
-            Add( "echo", Echo_f );
-            Add( "alias", Alias_f );
-            Add( "wait", Buffer.Wait_f ); // todo: move to Cbuf class?
+            this.Add( "stuffcmds", this.StuffCmds_f );
+            this.Add( "exec", this.Exec_f );
+            this.Add( "echo", this.Echo_f );
+            this.Add( "alias", this.Alias_f );
+            this.Add( "wait", this.Buffer.Wait_f ); // todo: move to Cbuf class?
         }
 
-        public Boolean ContainsAlias( String name )
+        public bool ContainsAlias( string name )
         {
-            return Aliases.ContainsKey( name );
+            return this.Aliases.ContainsKey( name );
         }
 
         // Cmd_CompleteCommand()
         // attempts to match a partial command for automatic command line completion
         // returns NULL if nothing fits
-        public String[] Complete( String partial )
+        public string[] Complete( string partial )
         {
-            if ( String.IsNullOrEmpty( partial ) )
+            if ( string.IsNullOrEmpty( partial ) )
                 return null;
 
-            var result = new List<String>( );
-            foreach ( var cmd in DictionaryItems.Keys )
+            var result = new List<string>( );
+            foreach ( var cmd in this.DictionaryItems.Keys )
             {
                 if ( cmd.StartsWith( partial ) )
                     result.Add( cmd );
             }
-            return ( result.Count > 0 ? result.ToArray( ) : null );
+            return result.Count > 0 ? result.ToArray( ) : null;
         }
 
         // void	Cmd_ExecuteString (char *text, cmd_source_t src);
@@ -102,7 +102,7 @@ namespace SharpQuake.Framework.Factories.IO
         //
         // A complete command line has been parsed, so try to execute it
         // FIXME: lookupnoadd the token to speed search?
-        public Boolean ExecuteString( String text, CommandSource source )
+        public bool ExecuteString( string text, CommandSource source )
         {
             var handled = false;
 
@@ -112,21 +112,19 @@ namespace SharpQuake.Framework.Factories.IO
             if ( msg == null )
                 return handled;
 
-            if ( Contains( msg.Name ) )
+            if (this.Contains( msg.Name ) )
             {
-                var handler = Get( msg.Name );
+                var handler = this.Get( msg.Name );
                 handler?.Invoke( msg );
                 handled = true;
             }
             else
             {
-                if ( ContainsAlias( msg.Name ) )
-                {
-                    Buffer.Insert( Aliases[msg.Name] );
-                }
+                if (this.ContainsAlias( msg.Name ) )
+                    this.Buffer.Insert(this.Aliases[msg.Name] );
                 else
                 {
-                    if ( !Cvars.HandleCommand( msg ) )
+                    if ( !this.Cvars.HandleCommand( msg ) )
                         ConsoleWrapper.Print( $"Unknown command \"{msg.Name}\"\n" );
                 }
             }
@@ -164,10 +162,8 @@ namespace SharpQuake.Framework.Factories.IO
                     i++;
 
                     var j = i;
-                    while ( ( j < text.Length ) && ( text[j] != '+' ) && ( text[j] != '-' ) )
-                    {
+                    while ( j < text.Length && text[j] != '+' && text[j] != '-' )
                         j++;
-                    }
 
                     sb.Append( text.Substring( i, j - i + 1 ) );
                     sb.AppendLine( );
@@ -176,7 +172,7 @@ namespace SharpQuake.Framework.Factories.IO
             }
 
             if ( sb.Length > 0 )
-                Buffer.Insert( sb.ToString( ) );
+                this.Buffer.Insert( sb.ToString( ) );
         }
 
 
@@ -200,7 +196,7 @@ namespace SharpQuake.Framework.Factories.IO
 
             var script = Encoding.ASCII.GetString( bytes );
             ConsoleWrapper.Print( $"execing {file}\n" );
-            Buffer.Insert( script );
+            this.Buffer.Insert( script );
         }
 
         // Cmd_Echo_f
@@ -208,9 +204,8 @@ namespace SharpQuake.Framework.Factories.IO
         private void Echo_f( CommandMessage msg )
         {
             foreach ( var parameter in msg.Parameters )
-            {
                 ConsoleWrapper.Print( $"{parameter} " );
-            }
+
             ConsoleWrapper.Print( "\n" );
         }
 
@@ -222,31 +217,30 @@ namespace SharpQuake.Framework.Factories.IO
             {
                 ConsoleWrapper.Print( "Current alias commands:\n" );
 
-                foreach ( var alias in Aliases )
-                {
+                foreach ( var alias in this.Aliases )
                     ConsoleWrapper.Print( $"{alias.Key} : {alias.Value}\n" );
-                }
+
                 return;
             }
 
             var name = msg.Parameters[0];
 
-            if ( name.Length >= MAX_ALIAS_NAME )
+            if ( name.Length >= CommandFactory.MAX_ALIAS_NAME )
             {
                 ConsoleWrapper.Print( "Alias name is too long\n" );
                 return;
             }
 
-            var args = String.Empty;
+            var args = string.Empty;
 
             // copy the rest of the command line
             if ( msg.Parameters.Length > 1 )
                 args = msg.ParametersFrom( 1 );
 
-            if ( Aliases.ContainsKey( name ) )
-                Aliases[name] = args;
+            if (this.Aliases.ContainsKey( name ) )
+                this.Aliases[name] = args;
             else
-                Aliases.Add( name, args );
+                this.Aliases.Add( name, args );
         }
     }
 }

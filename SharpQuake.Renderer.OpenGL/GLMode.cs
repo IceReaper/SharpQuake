@@ -22,22 +22,21 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using OpenTK.Graphics.OpenGL;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Renderer.OpenGL
 {
+    using OpenTK.Graphics.OpenGL;
+
     public class GLMode
     {
-        public String name;
+        public string name;
         public TextureMinFilter minimize;
         public TextureMagFilter maximize;
 
-        public GLMode( String name, TextureMinFilter minFilter, TextureMagFilter magFilter )
+        public GLMode( string name, TextureMinFilter minFilter, TextureMagFilter magFilter )
         {
             this.name = name;
-            minimize = minFilter;
-            maximize = magFilter;
+            this.minimize = minFilter;
+            this.maximize = magFilter;
         }
     } //glmode_t;
 }

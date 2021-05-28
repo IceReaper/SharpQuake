@@ -45,11 +45,9 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework.IO.BSP
+namespace SharpQuake.Framework.IO.BSP.Q3
 {
-	public enum Q3FaceType : Int32
+	public enum Q3FaceType : int
     {
         Flat = 1,
         Patch = 2,

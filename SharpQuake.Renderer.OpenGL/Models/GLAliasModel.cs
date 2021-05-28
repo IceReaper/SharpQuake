@@ -22,51 +22,52 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework.Mathematics;
-using SharpQuake.Renderer.Models;
-using OpenTK.Graphics.OpenGL;
-using SharpQuake.Framework;
-
 namespace SharpQuake.Renderer.OpenGL.Models
 {
+	using Framework;
+	using Framework.Mathematics;
+	using Framework.Rendering.Alias;
+	using OpenTK.Graphics.OpenGL;
+	using Renderer.Models;
+	using System.Numerics;
+
 	public class GLAliasModel : BaseAliasModel
 	{
 		public GLAliasModel( BaseDevice device, BaseAliasModelDesc desc ) : base( device, desc )
 		{
 		}
 
-		public override void DrawAliasModel( Single shadeLight, Vector3 shadeVector, Single[] shadeDots, Single lightSpotZ, aliashdr_t paliashdr, Double realTime, Double time, ref Int32 poseNum, ref Int32 poseNum2, ref Single frameStartTime, ref Single frameInterval, ref Vector3 origin1, ref Vector3 origin2, ref Single translateStartTime, ref Vector3 angles1, ref Vector3 angles2, ref Single rotateStartTime, System.Boolean shadows = true, System.Boolean smoothModels = true, System.Boolean affineModels = false, System.Boolean noColours = false, System.Boolean isEyes = false, System.Boolean useInterpolation = true )
+		public override void DrawAliasModel( float shadeLight, Vector3 shadeVector, float[] shadeDots, float lightSpotZ, aliashdr_t paliashdr, double realTime, double time, ref int poseNum, ref int poseNum2, ref float frameStartTime, ref float frameInterval, ref Vector3 origin1, ref Vector3 origin2, ref float translateStartTime, ref Vector3 angles1, ref Vector3 angles2, ref float rotateStartTime, bool shadows = true, bool smoothModels = true, bool affineModels = false, bool noColours = false, bool isEyes = false, bool useInterpolation = true )
 		{
-			Device.DisableMultitexture( );
+			this.Device.DisableMultitexture( );
 
 			GL.Enable( EnableCap.Texture2D );
 
 			GL.PushMatrix( );
 
 			if ( useInterpolation )
-				Device.BlendedRotateForEntity( Desc.Origin, Desc.EulerAngles, realTime, ref origin1, ref origin2, ref translateStartTime, ref angles1, ref angles2, ref rotateStartTime );
+				this.Device.BlendedRotateForEntity(this.Desc.Origin, this.Desc.EulerAngles, realTime, ref origin1, ref origin2, ref translateStartTime, ref angles1, ref angles2, ref rotateStartTime );
 			else
-				Device.RotateForEntity( Desc.Origin, Desc.EulerAngles );
+				this.Device.RotateForEntity(this.Desc.Origin, this.Desc.EulerAngles );
 
 			if ( isEyes )
 			{
-				var v = Desc.ScaleOrigin;
-				v.Z -= ( 22 + 8 );
+				var v = this.Desc.ScaleOrigin;
+				v.Z -= 22 + 8;
 				GL.Translate( v.X, v.Y, v.Z );
 				// double size of eyes, since they are really hard to see in gl
-				var s = Desc.Scale * 2.0f;
+				var s = this.Desc.Scale * 2.0f;
 				GL.Scale( s.X, s.Y, s.Z );
 			}
 			else
 			{
-				GL.Translate( Desc.ScaleOrigin.X, Desc.ScaleOrigin.Y, Desc.ScaleOrigin.Z );
-				GL.Scale( Desc.Scale.X, Desc.Scale.Y, Desc.Scale.Z );
+				GL.Translate(this.Desc.ScaleOrigin.X, this.Desc.ScaleOrigin.Y, this.Desc.ScaleOrigin.Z );
+				GL.Scale(this.Desc.Scale.X, this.Desc.Scale.Y, this.Desc.Scale.Z );
 			}
 
-			var anim = ( Int32 ) ( time * 10 ) & 3;
+			var anim = ( int ) ( time * 10 ) & 3;
 			//var texture = Host.Model.SkinTextures[paliashdr.gl_texturenum[_CurrentEntity.skinnum, anim]];
-			Desc.Texture.Bind( );
+			this.Desc.Texture.Bind( );
 
 			// we can't dynamically colormap textures, so they are cached
 			// seperately for the players.  Heads are just uncolored.
@@ -79,15 +80,15 @@ namespace SharpQuake.Renderer.OpenGL.Models
 			if ( smoothModels )
 				GL.ShadeModel( ShadingModel.Smooth );
 
-			GL.TexEnv( TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, ( Int32 ) TextureEnvMode.Modulate );
+			GL.TexEnv( TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, ( int ) TextureEnvMode.Modulate );
 
 			if ( affineModels )
 				GL.Hint( HintTarget.PerspectiveCorrectionHint, HintMode.Fastest );
 
 			//SetupAliasFrame( shadeLight, Desc.AliasFrame, time, paliashdr, shadeDots );
-			SetupAliasBlendedFrame( shadeLight, AliasDesc.AliasFrame, realTime, time, paliashdr, shadeDots, ref poseNum, ref poseNum2, ref frameStartTime, ref frameInterval );
+			this.SetupAliasBlendedFrame( shadeLight, this.AliasDesc.AliasFrame, realTime, time, paliashdr, shadeDots, ref poseNum, ref poseNum2, ref frameStartTime, ref frameInterval );
 
-			GL.TexEnv( TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, ( Int32 ) TextureEnvMode.Replace );
+			GL.TexEnv( TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, ( int ) TextureEnvMode.Replace );
 
 			GL.ShadeModel( ShadingModel.Flat );
 			if ( affineModels )
@@ -98,11 +99,11 @@ namespace SharpQuake.Renderer.OpenGL.Models
 			if ( shadows )
 			{
 				GL.PushMatrix( );
-				Device.RotateForEntity( Desc.Origin, Desc.EulerAngles );
+				this.Device.RotateForEntity(this.Desc.Origin, this.Desc.EulerAngles );
 				GL.Disable( EnableCap.Texture2D );
 				GL.Enable( EnableCap.Blend );
 				GL.Color4( 0, 0, 0, 0.5f );
-				DrawAliasShadow( paliashdr, AliasDesc.LastPoseNumber, lightSpotZ, shadeVector );
+				this.DrawAliasShadow( paliashdr, this.AliasDesc.LastPoseNumber, lightSpotZ, shadeVector );
 				GL.Enable( EnableCap.Texture2D );
 				GL.Disable( EnableCap.Blend );
 				GL.Color4( 1f, 1, 1, 1 );
@@ -112,10 +113,10 @@ namespace SharpQuake.Renderer.OpenGL.Models
 			GL.Disable( EnableCap.Texture2D );
 		}
 
-		protected override void DrawAliasShadow( aliashdr_t paliashdr, Int32 posenum, Single lightSpotZ, Vector3 shadeVector )
+		protected override void DrawAliasShadow( aliashdr_t paliashdr, int posenum, float lightSpotZ, Vector3 shadeVector )
 		{
-			var lheight = Desc.Origin.Z - lightSpotZ;
-			Single height = 0;
+			var lheight = this.Desc.Origin.Z - lightSpotZ;
+			float height = 0;
 			var verts = paliashdr.posedata;
 			var voffset = posenum * paliashdr.poseverts;
 			var order = paliashdr.commands;
@@ -172,10 +173,10 @@ namespace SharpQuake.Renderer.OpenGL.Models
          =============
          */
 
-		protected override void DrawAliasBlendedFrame( Single shadeLight, Single[] shadeDots, aliashdr_t paliashdr, Int32 posenum, Int32 posenum2, Single blend )
+		protected override void DrawAliasBlendedFrame( float shadeLight, float[] shadeDots, aliashdr_t paliashdr, int posenum, int posenum2, float blend )
 		{
-			AliasDesc.LastPoseNumber0 = posenum;
-			AliasDesc.LastPoseNumber = posenum2;
+			this.AliasDesc.LastPoseNumber0 = posenum;
+			this.AliasDesc.LastPoseNumber = posenum2;
 
 			var verts = paliashdr.posedata;
 			var vert2 = verts;
@@ -218,7 +219,7 @@ namespace SharpQuake.Renderer.OpenGL.Models
 
 					// normals and vertexes come from the frame list
 					// blend the light intensity from the two frames together
-					Vector3 d = Vector3.Zero;
+					var d = Vector3.Zero;
 
 					if ( vertsOffset >= verts.Length )
 					{
@@ -230,14 +231,14 @@ namespace SharpQuake.Renderer.OpenGL.Models
 						   shadeDots[verts[vertsOffset].lightnormalindex];
 
 					//var l = shadeDots[verts[vertsOffset].lightnormalindex] * shadeLight;
-					var l = shadeLight * ( shadeDots[verts[vertsOffset].lightnormalindex] + ( blend * d.X ) );
+					var l = shadeLight * ( shadeDots[verts[vertsOffset].lightnormalindex] + blend * d.X );
 					GL.Color3( l, l, l );
 
 					var v = new Vector3( verts[vertsOffset].v[0], verts[vertsOffset].v[1], verts[vertsOffset].v[2] );
 					var v2 = new Vector3( vert2[verts2Offset].v[0], vert2[verts2Offset].v[1], verts[verts2Offset].v[2] );
 					d = v2 - v;
 
-					GL.Vertex3( ( Single ) verts[vertsOffset].v[0] + ( blend * d[0] ), verts[vertsOffset].v[1] + ( blend * d[1] ), verts[vertsOffset].v[2] + ( blend * d[2] ) );
+					GL.Vertex3( ( float ) verts[vertsOffset].v[0] + blend * d.X, verts[vertsOffset].v[1] + blend * d.Y, verts[vertsOffset].v[2] + blend * d.Z );
 					vertsOffset++;
 					verts2Offset++;
 				} while ( --count > 0 );
@@ -248,9 +249,9 @@ namespace SharpQuake.Renderer.OpenGL.Models
 		/// <summary>
 		/// GL_DrawAliasFrame
 		/// </summary>
-		protected override void DrawAliasFrame( Single shadeLight, Single[] shadeDots, aliashdr_t paliashdr, Int32 posenum )
+		protected override void DrawAliasFrame( float shadeLight, float[] shadeDots, aliashdr_t paliashdr, int posenum )
 		{
-			AliasDesc.LastPoseNumber = posenum;
+			this.AliasDesc.LastPoseNumber = posenum;
 
 			var verts = paliashdr.posedata;
 			var vertsOffset = posenum * paliashdr.poseverts;
@@ -284,7 +285,7 @@ namespace SharpQuake.Renderer.OpenGL.Models
 					// normals and vertexes come from the frame list
 					var l = shadeDots[verts[vertsOffset].lightnormalindex] * shadeLight;
 					GL.Color3( l, l, l );
-					GL.Vertex3( ( Single ) verts[vertsOffset].v[0], verts[vertsOffset].v[1], verts[vertsOffset].v[2] );
+					GL.Vertex3( ( float ) verts[vertsOffset].v[0], verts[vertsOffset].v[1], verts[vertsOffset].v[2] );
 					vertsOffset++;
 				} while ( --count > 0 );
 				GL.End( );

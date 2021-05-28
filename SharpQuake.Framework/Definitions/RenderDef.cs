@@ -1,14 +1,12 @@
-﻿using System;
-
-namespace SharpQuake.Framework
+﻿namespace SharpQuake.Framework.Definitions
 {
     public static class RenderDef
     {
-        public const Single ONE_OVER_16 = 1.0f / 16.0f;
+        public const float ONE_OVER_16 = 1.0f / 16.0f;
 
-        public const Int32 MAX_LIGHTMAPS = 64;
+        public const int MAX_LIGHTMAPS = 64;
 
-        public const Int32 BLOCK_WIDTH = 128;
-        public const Int32 BLOCK_HEIGHT = 128;
+        public const int BLOCK_WIDTH = 128;
+        public const int BLOCK_HEIGHT = 128;
     }
 }

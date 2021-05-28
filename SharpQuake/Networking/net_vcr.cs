@@ -22,46 +22,37 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
-using SharpQuake.Framework;
-
-namespace SharpQuake
+namespace SharpQuake.Networking
 {
+    using Engine.Host;
+    using Framework.Definitions;
+    using Framework.Engine;
+    using Framework.Networking;
+    using System;
+    using System.IO;
+    using System.Runtime.InteropServices;
+    using System.Text;
+
     internal static class VcrOp
     {
-        public const Int32 VCR_OP_CONNECT = 1;
-        public const Int32 VCR_OP_GETMESSAGE = 2;
-        public const Int32 VCR_OP_SENDMESSAGE = 3;
-        public const Int32 VCR_OP_CANSENDMESSAGE = 4;
+        public const int VCR_OP_CONNECT = 1;
+        public const int VCR_OP_GETMESSAGE = 2;
+        public const int VCR_OP_SENDMESSAGE = 3;
+        public const int VCR_OP_CANSENDMESSAGE = 4;
 
-        public const Int32 VCR_MAX_MESSAGE = 4;
+        public const int VCR_MAX_MESSAGE = 4;
     }
 
     internal class net_vcr : INetDriver
     {
         private VcrRecord _Next;
-        private Boolean _IsInitialised;
+        private bool _IsInitialised;
 
         #region INetDriver Members
 
-        public String Name
-        {
-            get
-            {
-                return "VCR";
-            }
-        }
+        public string Name => "VCR";
 
-        public Boolean IsInitialised
-        {
-            get
-            {
-                return _IsInitialised;
-            }
-        }
+        public bool IsInitialised => this._IsInitialised;
 
         // CHANGE
         private Host Host
@@ -70,102 +61,102 @@ namespace SharpQuake
             set;
         }
 
-        public void Initialise( Object host )
+        public void Initialise( object host )
         {
-            Host = ( Host ) host;
+            this.Host = ( Host ) host;
 
-            _Next = Utilities.ReadStructure<VcrRecord>( Host.VcrReader.BaseStream );
-            _IsInitialised = true;
+            this._Next = Utilities.ReadStructure<VcrRecord>(this.Host.VcrReader.BaseStream );
+            this._IsInitialised = true;
         }
 
-        public void Listen( Boolean state )
-        {
-            // nothing to do
-        }
-
-        public void SearchForHosts( Boolean xmit )
+        public void Listen( bool state )
         {
             // nothing to do
         }
 
-        public qsocket_t Connect( String host )
+        public void SearchForHosts( bool xmit )
+        {
+            // nothing to do
+        }
+
+        public qsocket_t Connect( string host )
         {
             return null;
         }
 
         public qsocket_t CheckNewConnections()
         {
-            if( Host.Time != _Next.time || _Next.op != VcrOp.VCR_OP_CONNECT )
+            if(this.Host.Time != this._Next.time || this._Next.op != VcrOp.VCR_OP_CONNECT )
                 Utilities.Error( "VCR missmatch" );
 
-            if( _Next.session == 0 )
+            if(this._Next.session == 0 )
             {
-                ReadNext();
+                this.ReadNext();
                 return null;
             }
 
-            var sock = Host.Network.NewSocket();
-            sock.driverdata = _Next.session;
+            var sock = this.Host.Network.NewSocket();
+            sock.driverdata = this._Next.session;
 
-            var buf = new Byte[NetworkDef.NET_NAMELEN];
-            Host.VcrReader.Read( buf, 0, buf.Length );
+            var buf = new byte[NetworkDef.NET_NAMELEN];
+            this.Host.VcrReader.Read( buf, 0, buf.Length );
             sock.address = Encoding.ASCII.GetString( buf );
 
-            ReadNext();
+            this.ReadNext();
 
             return sock;
         }
 
-        public Int32 GetMessage( qsocket_t sock )
+        public int GetMessage( qsocket_t sock )
         {
-            if( Host.Time != _Next.time || _Next.op != VcrOp.VCR_OP_GETMESSAGE || _Next.session != SocketToSession( sock ) )
+            if(this.Host.Time != this._Next.time || this._Next.op != VcrOp.VCR_OP_GETMESSAGE || this._Next.session != this.SocketToSession( sock ) )
                 Utilities.Error( "VCR missmatch" );
 
-            var ret = Host.VcrReader.ReadInt32();
+            var ret = this.Host.VcrReader.ReadInt32();
             if( ret != 1 )
             {
-                ReadNext();
+                this.ReadNext();
                 return ret;
             }
 
-            var length = Host.VcrReader.ReadInt32();
-            Host.Network.Message.FillFrom( Host.VcrReader.BaseStream, length );
+            var length = this.Host.VcrReader.ReadInt32();
+            this.Host.Network.Message.FillFrom(this.Host.VcrReader.BaseStream, length );
 
-            ReadNext();
+            this.ReadNext();
 
             return 1;
         }
 
-        public Int32 SendMessage( qsocket_t sock, MessageWriter data )
+        public int SendMessage( qsocket_t sock, MessageWriter data )
         {
-            if( Host.Time != _Next.time || _Next.op != VcrOp.VCR_OP_SENDMESSAGE || _Next.session != SocketToSession( sock ) )
+            if(this.Host.Time != this._Next.time || this._Next.op != VcrOp.VCR_OP_SENDMESSAGE || this._Next.session != this.SocketToSession( sock ) )
                 Utilities.Error( "VCR missmatch" );
 
-            var ret = Host.VcrReader.ReadInt32();
+            var ret = this.Host.VcrReader.ReadInt32();
 
-            ReadNext();
+            this.ReadNext();
 
             return ret;
         }
 
-        public Int32 SendUnreliableMessage( qsocket_t sock, MessageWriter data )
+        public int SendUnreliableMessage( qsocket_t sock, MessageWriter data )
         {
             throw new NotImplementedException();
         }
 
-        public Boolean CanSendMessage( qsocket_t sock )
+        public bool CanSendMessage( qsocket_t sock )
         {
-            if( Host.Time != _Next.time || _Next.op != VcrOp.VCR_OP_CANSENDMESSAGE || _Next.session != SocketToSession( sock ) )
+            if(this.Host.Time != this._Next.time || this._Next.op != VcrOp.VCR_OP_CANSENDMESSAGE || this._Next.session != this.SocketToSession( sock ) )
                 Utilities.Error( "VCR missmatch" );
 
-            var ret = Host.VcrReader.ReadInt32();
+            var ret = this.Host.VcrReader.ReadInt32();
 
-            ReadNext();
+            this.ReadNext();
 
             return ret != 0;
         }
 
-        public Boolean CanSendUnreliableMessage( qsocket_t sock )
+        public bool CanSendUnreliableMessage( qsocket_t sock )
         {
             return true;
         }
@@ -187,33 +178,33 @@ namespace SharpQuake
         {
             try
             {
-                _Next = Utilities.ReadStructure<VcrRecord>( Host.VcrReader.BaseStream );
+                this._Next = Utilities.ReadStructure<VcrRecord>(this.Host.VcrReader.BaseStream );
             }
             catch( IOException )
             {
-                _Next = new VcrRecord();
-                _Next.op = 255;
+                this._Next = new();
+                this._Next.op = 255;
                 Utilities.Error( "=== END OF PLAYBACK===\n" );
             }
-            if( _Next.op < 1 || _Next.op > VcrOp.VCR_MAX_MESSAGE )
+            if(this._Next.op < 1 || this._Next.op > VcrOp.VCR_MAX_MESSAGE )
                 Utilities.Error( "VCR_ReadNext: bad op" );
         }
 
         #endregion INetDriver Members
 
-        public Int64 SocketToSession( qsocket_t sock )
+        public long SocketToSession( qsocket_t sock )
         {
-            return ( Int64 ) sock.driverdata;
+            return ( long ) sock.driverdata;
         }
     }
 
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     internal class VcrRecord
     {
-        public Double time;
-        public Int32 op;
-        public Int64 session;
+        public double time;
+        public int op;
+        public long session;
 
-        public static Int32 SizeInBytes = Marshal.SizeOf(typeof(VcrRecord));
+        public static int SizeInBytes = Marshal.SizeOf(typeof(VcrRecord));
     }
 }

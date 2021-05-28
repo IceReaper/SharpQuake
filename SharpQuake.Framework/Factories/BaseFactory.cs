@@ -22,13 +22,13 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace SharpQuake.Framework.Factories
 {
-	public class BaseFactory<TKey, TItem> : IBaseFactory, IDisposable where TItem : class
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    public class BaseFactory<TKey, TItem> : IBaseFactory, IDisposable where TItem : class
     {
         protected Type KeyType
         {
@@ -42,13 +42,13 @@ namespace SharpQuake.Framework.Factories
             set;
         }
 
-        protected Boolean UniqueKeys
+        protected bool UniqueKeys
         {
             get;
             private set;
         }
 
-        private Object Items
+        private object Items
         {
             get;
             set;
@@ -56,117 +56,105 @@ namespace SharpQuake.Framework.Factories
 
         protected Dictionary<TKey, TItem> DictionaryItems
         {
-            get
-            {
-                return ( Dictionary<TKey, TItem> ) Items;
-            }
-            private set
-            {
-                Items = value;
-            }
+            get => ( Dictionary<TKey, TItem> )this.Items;
+            private set => this.Items = value;
         }
 
         protected List<KeyValuePair<TKey, TItem>> ListItems
         {
-            get
-            {
-                return ( List<KeyValuePair<TKey, TItem>> ) Items;
-            }
-            private set
-            {
-                Items = value;
-            }
+            get => ( List<KeyValuePair<TKey, TItem>> )this.Items;
+            private set => this.Items = value;
         }
 
-        public BaseFactory( Boolean uniqueKeys = true )
+        public BaseFactory( bool uniqueKeys = true )
         {
-            KeyType = typeof( TKey );
-            ItemType = typeof( TItem );
-            UniqueKeys = uniqueKeys;
+            this.KeyType = typeof( TKey );
+            this.ItemType = typeof( TItem );
+            this.UniqueKeys = uniqueKeys;
 
-            if ( UniqueKeys )
-                Items = new Dictionary<TKey, TItem>( );
+            if (this.UniqueKeys )
+                this.Items = new Dictionary<TKey, TItem>( );
             else
-                Items = new List<KeyValuePair<TKey, TItem>>( );
+                this.Items = new List<KeyValuePair<TKey, TItem>>( );
         }
 
-        public Boolean Contains( TKey key )
+        public bool Contains( TKey key )
         {
-            if ( UniqueKeys )
-                return DictionaryItems.ContainsKey( key );
+            if (this.UniqueKeys )
+                return this.DictionaryItems.ContainsKey( key );
             else
-                return ListItems.Count( i => i.Key.Equals( key ) ) > 0;
+                return this.ListItems.Count( i => i.Key.Equals( key ) ) > 0;
         }
 
         public TItem Get( TKey key )
         {
-            var exists = Contains( key );
+            var exists = this.Contains( key );
 
             if ( !exists )
                 return null;
 
-            if ( UniqueKeys )
-                return DictionaryItems[key];
+            if (this.UniqueKeys )
+                return this.DictionaryItems[key];
             else
-                return ListItems.Where( i => i.Key.Equals( key ) ).FirstOrDefault().Value;
+                return this.ListItems.Where( i => i.Key.Equals( key ) ).FirstOrDefault().Value;
         }
 
-        public Int32 IndexOf( TKey key )
+        public int IndexOf( TKey key )
         {
-            var exists = Contains( key );
+            var exists = this.Contains( key );
 
             if ( !exists )
                 return -1;
 
-            if ( UniqueKeys )
-                return DictionaryItems.Keys.ToList( ).IndexOf( key );
+            if (this.UniqueKeys )
+                return this.DictionaryItems.Keys.ToList( ).IndexOf( key );
             else
-                return ListItems.IndexOf( ListItems.Where( i => i.Key.Equals( key ) ).First( ) );
+                return this.ListItems.IndexOf(this.ListItems.Where( i => i.Key.Equals( key ) ).First( ) );
         }
 
-        public TItem GetByIndex( Int32 index )
+        public TItem GetByIndex( int index )
         {
-            if ( index >= ( UniqueKeys ? DictionaryItems.Count : ListItems.Count ) )
+            if ( index >= (this.UniqueKeys ? this.DictionaryItems.Count : this.ListItems.Count ) )
                 return null;
 
-            if ( UniqueKeys )
-                return DictionaryItems.Values.Select( v => v ).ToArray()[index];
+            if (this.UniqueKeys )
+                return this.DictionaryItems.Values.Select( v => v ).ToArray()[index];
             else
-                return ListItems.Select( v => v.Value ).ToArray( )[index];
+                return this.ListItems.Select( v => v.Value ).ToArray( )[index];
         }
 
         public void Add( TKey key, TItem item )
         {
-            var exists = Contains( key );
+            var exists = this.Contains( key );
 
             if ( exists )
                 return;
 
-            if ( UniqueKeys )
-                DictionaryItems.Add( key, item );
+            if (this.UniqueKeys )
+                this.DictionaryItems.Add( key, item );
             else
-                ListItems.Add( new KeyValuePair<TKey, TItem>( key, item ) );
+                this.ListItems.Add( new( key, item ) );
         }
 
         public void Remove( TKey key )
         {
-            var exists = Contains( key );
+            var exists = this.Contains( key );
 
             if ( !exists )
                 return;
 
-            if ( UniqueKeys )
-                DictionaryItems.Remove( key );
+            if (this.UniqueKeys )
+                this.DictionaryItems.Remove( key );
             else
-                ListItems.RemoveAll( i => i.Key.Equals( key ) );
+                this.ListItems.RemoveAll( i => i.Key.Equals( key ) );
         }
 
         public void Clear( )
         {
-            if ( UniqueKeys )
-                DictionaryItems.Clear( );
+            if (this.UniqueKeys )
+                this.DictionaryItems.Clear( );
             else
-                ListItems.Clear( );
+                this.ListItems.Clear( );
         }
 
         public virtual void Dispose( )

@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace SharpQuake.Framework.IO
+﻿namespace SharpQuake.Framework.IO
 {
+	using System;
+
 	[Flags]
     public enum ClientVariableFlags
     {

@@ -22,60 +22,60 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Rendering.UI
+namespace SharpQuake.Rendering.UI.Menus
 {
+    using Engine.Host;
+
     public class SearchMenu : MenuBase
     {
-        private Boolean _SearchComplete;
-        private Double _SearchCompleteTime;
+        private bool _SearchComplete;
+        private double _SearchCompleteTime;
 
         public override void Show( Host host )
         {
             base.Show( host );
-            Host.Network.SlistSilent = true;
-            Host.Network.SlistLocal = false;
-            _SearchComplete = false;
-            Host.Network.Slist_f( null );
+            this.Host.Network.SlistSilent = true;
+            this.Host.Network.SlistLocal = false;
+            this._SearchComplete = false;
+            this.Host.Network.Slist_f( null );
         }
 
-        public override void KeyEvent( Int32 key )
+        public override void KeyEvent( int key )
         {
             // nothing to do
         }
 
         public override void Draw( )
         {
-            var p = Host.DrawingContext.CachePic( "gfx/p_multi.lmp", "GL_NEAREST" );
-            Host.Menu.DrawPic( ( 320 - p.Width ) / 2, 4, p );
-            var x = ( 320 / 2 ) - ( ( 12 * 8 ) / 2 ) + 4;
-            Host.Menu.DrawTextBox( x - 8, 32, 12, 1 );
-            Host.Menu.Print( x, 40, "Searching..." );
+            var p = this.Host.DrawingContext.CachePic( "gfx/p_multi.lmp", "GL_NEAREST" );
+            this.Host.Menu.DrawPic( ( 320 - p.Width ) / 2, 4, p );
+            var x = 320 / 2 - 12 * 8 / 2 + 4;
+            this.Host.Menu.DrawTextBox( x - 8, 32, 12, 1 );
+            this.Host.Menu.Print( x, 40, "Searching..." );
 
-            if ( Host.Network.SlistInProgress )
+            if (this.Host.Network.SlistInProgress )
             {
-                Host.Network.Poll( );
+                this.Host.Network.Poll( );
                 return;
             }
 
-            if ( !_SearchComplete )
+            if ( !this._SearchComplete )
             {
-                _SearchComplete = true;
-                _SearchCompleteTime = Host.RealTime;
+                this._SearchComplete = true;
+                this._SearchCompleteTime = this.Host.RealTime;
             }
 
-            if ( Host.Network.HostCacheCount > 0 )
+            if (this.Host.Network.HostCacheCount > 0 )
             {
-                ServerListMenu.Show( Host );
+                MenuBase.ServerListMenuInstance.Show(this.Host );
                 return;
             }
 
-            Host.Menu.PrintWhite( ( 320 / 2 ) - ( ( 22 * 8 ) / 2 ), 64, "No Quake servers found" );
-            if ( ( Host.RealTime - _SearchCompleteTime ) < 3.0 )
+            this.Host.Menu.PrintWhite( 320 / 2 - 22 * 8 / 2, 64, "No Quake servers found" );
+            if ( this.Host.RealTime - this._SearchCompleteTime < 3.0 )
                 return;
 
-            LanConfigMenu.Show( Host );
+            MenuBase.LanConfigMenuInstance.Show(this.Host );
         }
     }
 }

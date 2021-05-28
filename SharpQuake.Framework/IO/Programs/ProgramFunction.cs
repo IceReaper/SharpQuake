@@ -22,61 +22,48 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-using string_t = System.Int32;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.Programs
 {
+    using Data;
+    using Definitions;
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public class ProgramFunction
     {
-        public string_t first_statement;	// negative numbers are builtins
-        public string_t parm_start;
-        public string_t locals;				// total ints of parms + locals
+        public int first_statement;	// negative numbers are builtins
+        public int parm_start;
+        public int locals;				// total ints of parms + locals
 
-        public string_t profile;		// runtime
+        public int profile;		// runtime
 
-        public string_t s_name;
-        public string_t s_file;			// source file defined in
+        public int s_name;
+        public int s_file;			// source file defined in
 
-        public string_t numparms;
+        public int numparms;
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = ProgramDef.MAX_PARMS )]
-        public Byte[] parm_size; // [MAX_PARMS];
+        public byte[] parm_size; // [MAX_PARMS];
 
-        public static string_t SizeInBytes = Marshal.SizeOf( typeof( ProgramFunction ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( ProgramFunction ) );
 
-        public String FileName
-        {
-            get
-            {
-                return ProgramsWrapper.GetString( s_file );
-            }
-        }
+        public string FileName => ProgramsWrapper.GetString(this.s_file );
 
-        public String Name
-        {
-            get
-            {
-                return ProgramsWrapper.GetString( s_name );
-            }
-        }
+        public string Name => ProgramsWrapper.GetString(this.s_name );
 
         public void SwapBytes( )
         {
-            first_statement = EndianHelper.LittleLong( first_statement );
-            parm_start = EndianHelper.LittleLong( parm_start );
-            locals = EndianHelper.LittleLong( locals );
-            s_name = EndianHelper.LittleLong( s_name );
-            s_file = EndianHelper.LittleLong( s_file );
-            numparms = EndianHelper.LittleLong( numparms );
+            this.first_statement = EndianHelper.LittleLong(this.first_statement );
+            this.parm_start = EndianHelper.LittleLong(this.parm_start );
+            this.locals = EndianHelper.LittleLong(this.locals );
+            this.s_name = EndianHelper.LittleLong(this.s_name );
+            this.s_file = EndianHelper.LittleLong(this.s_file );
+            this.numparms = EndianHelper.LittleLong(this.numparms );
         }
 
-        public override String ToString( )
+        public override string ToString( )
         {
-            return String.Format( "{{{0}: {1}()}}", FileName, Name );
+            return string.Format( "{{{0}: {1}()}}", this.FileName, this.Name );
         }
     } // dfunction_t;
 }

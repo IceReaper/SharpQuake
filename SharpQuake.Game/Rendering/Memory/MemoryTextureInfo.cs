@@ -22,22 +22,21 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework.Mathematics;
-using SharpQuake.Game.Rendering.Textures;
-
 namespace SharpQuake.Game.Rendering.Memory
 {
+    using System.Numerics;
+    using Textures;
+
     public class MemoryTextureInfo
     {
         public Vector4[] vecs; //public float[][] vecs; //[2][4];
-        public Single mipadjust;
+        public float mipadjust;
         public ModelTexture texture;
-        public Int32 flags;
+        public int flags;
 
         public MemoryTextureInfo( )
         {
-            vecs = new Vector4[2];// float[2][] { new float[4], new float[4] };
+            this.vecs = new Vector4[2];// float[2][] { new float[4], new float[4] };
         }
     } //mtexinfo_t;
 }

@@ -22,51 +22,50 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-
-namespace SharpQuake.Rendering.UI
+namespace SharpQuake.Rendering.UI.Menus
 {
+    using Framework.Definitions;
+
     public class MultiplayerMenu : MenuBase
     {
-        private const Int32 MULTIPLAYER_ITEMS = 3;
+        private const int MULTIPLAYER_ITEMS = 3;
 
-        public override void KeyEvent( Int32 key )
+        public override void KeyEvent( int key )
         {
             switch ( key )
             {
                 case KeysDef.K_ESCAPE:
-                    MainMenu.Show( Host );
+                    MenuBase.MainMenuInstance.Show(this.Host );
                     break;
 
                 case KeysDef.K_DOWNARROW:
-                    Host.Sound.LocalSound( "misc/menu1.wav" );
-                    if ( ++_Cursor >= MULTIPLAYER_ITEMS )
-                        _Cursor = 0;
+                    this.Host.Sound.LocalSound( "misc/menu1.wav" );
+                    if ( ++this._Cursor >= MultiplayerMenu.MULTIPLAYER_ITEMS )
+                        this._Cursor = 0;
                     break;
 
                 case KeysDef.K_UPARROW:
-                    Host.Sound.LocalSound( "misc/menu1.wav" );
-                    if ( --_Cursor < 0 )
-                        _Cursor = MULTIPLAYER_ITEMS - 1;
+                    this.Host.Sound.LocalSound( "misc/menu1.wav" );
+                    if ( --this._Cursor < 0 )
+                        this._Cursor = MultiplayerMenu.MULTIPLAYER_ITEMS - 1;
                     break;
 
                 case KeysDef.K_ENTER:
-                    Host.Menu.EnterSound = true;
-                    switch ( _Cursor )
+                    this.Host.Menu.EnterSound = true;
+                    switch (this._Cursor )
                     {
                         case 0:
-                            if ( Host.Network.TcpIpAvailable )
-                                LanConfigMenu.Show( Host );
+                            if (this.Host.Network.TcpIpAvailable )
+                                MenuBase.LanConfigMenuInstance.Show(this.Host );
                             break;
 
                         case 1:
-                            if ( Host.Network.TcpIpAvailable )
-                                LanConfigMenu.Show( Host );
+                            if (this.Host.Network.TcpIpAvailable )
+                                MenuBase.LanConfigMenuInstance.Show(this.Host );
                             break;
 
                         case 2:
-                            SetupMenu.Show( Host );
+                            MenuBase.SetupMenuInstance.Show(this.Host );
                             break;
                     }
                     break;
@@ -75,18 +74,19 @@ namespace SharpQuake.Rendering.UI
 
         public override void Draw( )
         {
-            Host.Menu.DrawTransPic( 16, 4, Host.DrawingContext.CachePic( "gfx/qplaque.lmp", "GL_NEAREST" ) );
-            var p = Host.DrawingContext.CachePic( "gfx/p_multi.lmp", "GL_NEAREST" );
-            Host.Menu.DrawPic( ( 320 - p.Width ) / 2, 4, p );
-            Host.Menu.DrawTransPic( 72, 32, Host.DrawingContext.CachePic( "gfx/mp_menu.lmp", "GL_NEAREST" ) );
+            this.Host.Menu.DrawTransPic( 16, 4, this.Host.DrawingContext.CachePic( "gfx/qplaque.lmp", "GL_NEAREST" ) );
+            var p = this.Host.DrawingContext.CachePic( "gfx/p_multi.lmp", "GL_NEAREST" );
+            this.Host.Menu.DrawPic( ( 320 - p.Width ) / 2, 4, p );
+            this.Host.Menu.DrawTransPic( 72, 32, this.Host.DrawingContext.CachePic( "gfx/mp_menu.lmp", "GL_NEAREST" ) );
 
-            Single f = ( Int32 ) ( Host.Time * 10 ) % 6;
+            float f = ( int ) (this.Host.Time * 10 ) % 6;
 
-            Host.Menu.DrawTransPic( 54, 32 + _Cursor * 20, Host.DrawingContext.CachePic( String.Format( "gfx/menudot{0}.lmp", f + 1 ), "GL_NEAREST" ) );
+            this.Host.Menu.DrawTransPic( 54, 32 + this._Cursor * 20, this.Host.DrawingContext.CachePic( string.Format( "gfx/menudot{0}.lmp", f + 1 ), "GL_NEAREST" ) );
 
-            if ( Host.Network.TcpIpAvailable )
+            if (this.Host.Network.TcpIpAvailable )
                 return;
-            Host.Menu.PrintWhite( ( 320 / 2 ) - ( ( 27 * 8 ) / 2 ), 148, "No Communications Available" );
+
+            this.Host.Menu.PrintWhite( 320 / 2 - 27 * 8 / 2, 148, "No Communications Available" );
         }
     }
 }

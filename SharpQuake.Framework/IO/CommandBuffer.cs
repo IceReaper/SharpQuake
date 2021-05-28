@@ -22,12 +22,12 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Text;
-using SharpQuake.Framework.Factories.IO;
-
 namespace SharpQuake.Framework.IO
 {
+    using Engine;
+    using Factories.IO;
+    using System.Text;
+
     //Any number of commands can be added in a frame, from several different sources.
     //Most commands come from either keybindings or console line input, but remote
     //servers can also send across commands and entire text files can be execed.
@@ -50,7 +50,7 @@ namespace SharpQuake.Framework.IO
             set;
         }
 
-        private Boolean Wait
+        private bool Wait
         {
             get;
             set;
@@ -58,22 +58,22 @@ namespace SharpQuake.Framework.IO
 
         public CommandBuffer( CommandFactory commands )
         {
-            Commands = commands;
-            Buffer = new StringBuilder( 8192 );
+            this.Commands = commands;
+            this.Buffer = new( 8192 );
         }
 
         // Cbuf_AddText()
         // as new commands are generated from the console or keybindings,
         // the text is added to the end of the command buffer.
-        public void Append( String text )
+        public void Append( string text )
         {
-            if ( String.IsNullOrEmpty( text ) )
+            if ( string.IsNullOrEmpty( text ) )
                 return;
             
-            if ( Buffer.Length + text.Length > Buffer.Capacity )
+            if (this.Buffer.Length + text.Length > this.Buffer.Capacity )
                 ConsoleWrapper.Print( "Cbuf.AddText: overflow!\n" );
             else
-                Buffer.Append( text );
+                this.Buffer.Append( text );
         }
 
         // Cbuf_InsertText()
@@ -83,9 +83,9 @@ namespace SharpQuake.Framework.IO
         // Adds command text immediately after the current command
         // ???Adds a \n to the text
         // FIXME: actually change the command buffer to do less copying
-        public void Insert( String text )
+        public void Insert( string text )
         {
-            Buffer.Insert( 0, text );
+            this.Buffer.Insert( 0, text );
         }
 
         // Cbuf_Execute()
@@ -95,18 +95,18 @@ namespace SharpQuake.Framework.IO
         // Do not call inside a command function!
         public void Execute( )
         {
-            while ( Buffer.Length > 0 )
+            while (this.Buffer.Length > 0 )
             {
-                var text = Buffer.ToString( );
+                var text = this.Buffer.ToString( );
 
                 // find a \n or ; line break
-                Int32 quotes = 0, i;
+                int quotes = 0, i;
                 for ( i = 0; i < text.Length; i++ )
                 {
                     if ( text[i] == '"' )
                         quotes++;
 
-                    if ( ( ( quotes & 1 ) == 0 ) && ( text[i] == ';' ) )
+                    if ( ( quotes & 1 ) == 0 && text[i] == ';' )
                         break;  // don't break if inside a quoted string
 
                     if ( text[i] == '\n' )
@@ -119,21 +119,21 @@ namespace SharpQuake.Framework.IO
                 // this is necessary because commands (exec, alias) can insert data at the
                 // beginning of the text buffer
 
-                if ( i == Buffer.Length )
-                    Buffer.Length = 0;
+                if ( i == this.Buffer.Length )
+                    this.Buffer.Length = 0;
                 else
-                    Buffer.Remove( 0, i + 1 );
+                    this.Buffer.Remove( 0, i + 1 );
 
                 // execute the command line
-                if ( !String.IsNullOrEmpty( line ) )
+                if ( !string.IsNullOrEmpty( line ) )
                 {
-                    Commands.ExecuteString( line, CommandSource.Command );
+                    this.Commands.ExecuteString( line, CommandSource.Command );
 
-                    if ( Wait )
+                    if (this.Wait )
                     {
                         // skip out while text still remains in buffer, leaving it
                         // for next frame
-                        Wait = false;
+                        this.Wait = false;
                         break;
                     }
                 }
@@ -146,7 +146,7 @@ namespace SharpQuake.Framework.IO
         // bind g "impulse 5 ; +attack ; wait ; -attack ; impulse 2"
         public void Wait_f( CommandMessage msg )
         {
-            Wait = true;
+            this.Wait = true;
         }
     }
 }

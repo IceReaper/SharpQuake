@@ -22,76 +22,42 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-using SharpQuake.Framework.IO;
-using SharpQuake.Game.Networking.Server;
-
-namespace SharpQuake
+namespace SharpQuake.Networking.Server
 {
+    using Engine.Host;
+    using Framework.Definitions;
+    using Framework.Engine;
+    using Framework.Networking.Server;
+    using Game.Networking.Server;
+    using System;
+
     public partial class server
     {
-        public server_t sv
-        {
-            get
-            {
-                return _Server;
-            }
-        }
+        public server_t sv => this._Server;
 
-        public server_static_t svs
-        {
-            get
-            {
-                return _ServerStatic;
-            }
-        }
+        public server_static_t svs => this._ServerStatic;
 
-        public Boolean IsActive
-        {
-            get
-            {
-                return _Server.active;
-            }
-        }
+        public bool IsActive => this._Server.active;
 
-        public Single Gravity
-        {
-            get
-            {
-                return Host.Cvars.Gravity.Get<Single>( );
-            }
-        }
+        public float Gravity => this.Host.Cvars.Gravity.Get<float>( );
 
-        public Boolean IsLoading
-        {
-            get
-            {
-                return _Server.state == server_state_t.Loading;
-            }
-        }
+        public bool IsLoading => this._Server.state == server_state_t.Loading;
 
-        public Single Aim
-        {
-            get
-            {
-                return Host.Cvars.Aim.Get<Single>( );
-            }
-        }
+        public float Aim => this.Host.Cvars.Aim.Get<float>( );
 
         private server_t _Server;
         private server_static_t _ServerStatic;
 
-        private String[] _LocalModels = new String[QDef.MAX_MODELS]; //[MAX_MODELS][5];	// inline model names for precache
+        private string[] _LocalModels = new string[QDef.MAX_MODELS]; //[MAX_MODELS][5];	// inline model names for precache
 
         /// <summary>
         /// EDICT_NUM
         /// </summary>
-        public MemoryEdict EdictNum( Int32 n )
+        public MemoryEdict EdictNum( int n )
         {
-            if( n < 0 || n >= _Server.max_edicts )
+            if( n < 0 || n >= this._Server.max_edicts )
                 Utilities.Error( "EDICT_NUM: bad number {0}", n );
-            return _Server.edicts[n];
+            return this._Server.edicts[n];
         }
 
         /// <summary>
@@ -105,14 +71,14 @@ namespace SharpQuake
         public MemoryEdict AllocEdict()
         {
             MemoryEdict e;
-            Int32 i;
-            for( i = svs.maxclients + 1; i < sv.num_edicts; i++ )
+            int i;
+            for( i = this.svs.maxclients + 1; i < this.sv.num_edicts; i++ )
             {
-                e = EdictNum( i );
+                e = this.EdictNum( i );
 
                 // the first couple seconds of server time can involve a lot of
                 // freeing and allocating, so relax the replacement policy
-                if( e.free && ( e.freetime < 2 || sv.time - e.freetime > 0.5 ) )
+                if( e.free && ( e.freetime < 2 || this.sv.time - e.freetime > 0.5 ) )
                 {
                     e.Clear();
                     return e;
@@ -122,8 +88,8 @@ namespace SharpQuake
             if( i == QDef.MAX_EDICTS )
                 Utilities.Error( "ED_Alloc: no free edicts" );
 
-            sv.num_edicts++;
-            e = EdictNum( i );
+            this.sv.num_edicts++;
+            e = this.EdictNum( i );
             e.Clear();
 
             return e;
@@ -136,7 +102,7 @@ namespace SharpQuake
         /// </summary>
         public void FreeEdict( MemoryEdict ed )
         {
-            UnlinkEdict( ed );		// unlink from world bsp
+            this.UnlinkEdict( ed );		// unlink from world bsp
 
             ed.free = true;
             ed.v.model = 0;
@@ -145,39 +111,39 @@ namespace SharpQuake
             ed.v.colormap = 0;
             ed.v.skin = 0;
             ed.v.frame = 0;
-            ed.v.origin = default( Vector3f );
-            ed.v.angles = default( Vector3f );
+            ed.v.origin = default;
+            ed.v.angles = default;
             ed.v.nextthink = -1;
             ed.v.solid = 0;
 
-            ed.freetime = ( Single ) sv.time;
+            ed.freetime = ( float )this.sv.time;
         }
 
         /// <summary>
         /// EDICT_TO_PROG(e)
         /// </summary>
-        public Int32 EdictToProg( MemoryEdict e )
+        public int EdictToProg( MemoryEdict e )
         {
-            return Array.IndexOf( _Server.edicts, e ); // todo: optimize this
+            return Array.IndexOf(this._Server.edicts, e ); // todo: optimize this
         }
 
         /// <summary>
         /// PROG_TO_EDICT(e)
         /// Offset in bytes!
         /// </summary>
-        public MemoryEdict ProgToEdict( Int32 e )
+        public MemoryEdict ProgToEdict( int e )
         {
-            if( e < 0 || e > sv.edicts.Length )
+            if( e < 0 || e > this.sv.edicts.Length )
                 Utilities.Error( "ProgToEdict: Bad prog!" );
-            return sv.edicts[e];
+            return this.sv.edicts[e];
         }
 
         /// <summary>
         /// NUM_FOR_EDICT
         /// </summary>
-        public Int32 NumForEdict( MemoryEdict e )
+        public int NumForEdict( MemoryEdict e )
         {
-            var i = Array.IndexOf( sv.edicts, e ); // todo: optimize this
+            var i = Array.IndexOf(this.sv.edicts, e ); // todo: optimize this
 
             if( i < 0 )
                 Utilities.Error( "NUM_FOR_EDICT: bad pointer" );
@@ -186,10 +152,10 @@ namespace SharpQuake
 
         public server( Host host )
         {
-            Host = host;
+            this.Host = host;
 
-            _Server = new server_t();
-            _ServerStatic = new server_static_t();
+            this._Server = new();
+            this._ServerStatic = new();
         }
     }    
 }

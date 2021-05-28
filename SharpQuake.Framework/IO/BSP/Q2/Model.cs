@@ -22,26 +22,25 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework.IO.BSP
+namespace SharpQuake.Framework.IO.BSP.Q2
 {
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct Q2Model
     {
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Single[] mins; // [3];
+        public float[] mins; // [3];
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Single[] maxs; //[3];
+        public float[] maxs; //[3];
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Single[] origin; // [3];
+        public float[] origin; // [3];
 
-        public Int32 headnode;
-        public Int32 firstface, numfaces;
+        public int headnode;
+        public int firstface, numfaces;
 
-        public static Int32 SizeInBytes = Marshal.SizeOf( typeof( Q2Model ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( Q2Model ) );
     } // dmodel_t
 }

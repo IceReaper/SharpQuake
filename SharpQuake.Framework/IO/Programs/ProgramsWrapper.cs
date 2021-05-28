@@ -22,17 +22,17 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.Programs
 {
+    using System;
+
     public static class ProgramsWrapper
     {
-        public static Func<Int32, String> OnGetString;
+        public static Func<int, string> OnGetString;
 
-        public static String GetString( Int32 strId )
+        public static string GetString( int strId )
         {
-            return OnGetString?.Invoke( strId );
+            return ProgramsWrapper.OnGetString?.Invoke( strId );
         }
     }
 }

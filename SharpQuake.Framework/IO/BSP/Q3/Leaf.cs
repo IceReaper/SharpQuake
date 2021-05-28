@@ -22,29 +22,28 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.BSP.Q3
 {
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct Q3Leaf
     {
-        public Int32 contents;
-        public Int32 areaIndex;
+        public int contents;
+        public int areaIndex;
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Int32[] mins;
+        public int[] mins;
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Int32[] maxs;
+        public int[] maxs;
 
-        public Int32 firstLeafFace;
-        public Int32 numLeafFaces;
+        public int firstLeafFace;
+        public int numLeafFaces;
 
-        public Int32 firstLeafBrush;
-        public Int32 numLeafBrushes;
+        public int firstLeafBrush;
+        public int numLeafBrushes;
 
-        public static Int32 SizeInBytes = Marshal.SizeOf( typeof( Q3Leaf ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( Q3Leaf ) );
     }
 }

@@ -22,24 +22,24 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using SharpQuake.Framework.IO;
-
 namespace SharpQuake.Framework.Factories.IO
 {
-	public class ClientVariableFactory : BaseFactory<String, ClientVariable>
+    using Engine;
+    using Framework.IO;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+
+    public class ClientVariableFactory : BaseFactory<string, ClientVariable>
     {
         public ClientVariableFactory() : base( )
         {
         }
 
-        public ClientVariable Add<T>( String name, T defaultValue, ClientVariableFlags flags = ClientVariableFlags.None )
+        public ClientVariable Add<T>( string name, T defaultValue, ClientVariableFlags flags = ClientVariableFlags.None )
         {
-            if ( Contains( name ) )
+            if (this.Contains( name ) )
                 return null;
 
             var result = new ClientVariable( name, defaultValue, typeof( T ), flags );
@@ -49,22 +49,22 @@ namespace SharpQuake.Framework.Factories.IO
             return result;
         }
 
-        public void Set<T>( String name, T value )
+        public void Set<T>( string name, T value )
         {
-            if ( !Contains( name ) )
+            if ( !this.Contains( name ) )
                 return;
 
-            Get( name ).Set( value );
+            this.Get( name ).Set( value );
         }
 
-        public String[] CompleteName( String partial )
+        public string[] CompleteName( string partial )
         {
-            if ( String.IsNullOrEmpty( partial ) )
+            if ( string.IsNullOrEmpty( partial ) )
                 return null;
 
-            var results = new List<String>( );
+            var results = new List<string>( );
 
-            var keysList = UniqueKeys ? DictionaryItems.Select( i => i.Key ) : ListItems.Select( i => i.Key );
+            var keysList = this.UniqueKeys ? this.DictionaryItems.Select( i => i.Key ) : this.ListItems.Select( i => i.Key );
 
             foreach ( var key in keysList )
             {
@@ -84,7 +84,7 @@ namespace SharpQuake.Framework.Factories.IO
         {
             var sb = new StringBuilder( 4096 );
 
-            var list = UniqueKeys ? DictionaryItems.Select( i => i.Value ) : ListItems.Select( i => i.Value );
+            var list = this.UniqueKeys ? this.DictionaryItems.Select( i => i.Value ) : this.ListItems.Select( i => i.Value );
 
             foreach ( var cvar in list )
             {
@@ -92,7 +92,7 @@ namespace SharpQuake.Framework.Factories.IO
                 {
                     sb.Append( cvar.Name );
                     sb.Append( " \"" );
-                    sb.Append( cvar.ValueType == typeof( Boolean ) ? cvar.Get<Boolean>() ? "1" : "0" : cvar.Get().ToString() );
+                    sb.Append( cvar.ValueType == typeof( bool ) ? cvar.Get<bool>() ? "1" : "0" : cvar.Get().ToString() );
                     sb.AppendLine( "\"" );
                 }
             }
@@ -103,12 +103,12 @@ namespace SharpQuake.Framework.Factories.IO
 
         // Cvar_Command()
         // Handles variable inspection and changing from the console
-        public Boolean HandleCommand( CommandMessage msg )
+        public bool HandleCommand( CommandMessage msg )
         {
-            if ( !Contains( msg.Name ) )
+            if ( !this.Contains( msg.Name ) )
                 return false;
 
-            var cvar = Get( msg.Name );
+            var cvar = this.Get( msg.Name );
 
             if ( msg.Parameters == null || msg.Parameters.Length <= 0 )
                 ConsoleWrapper.Print( $"\"{cvar.Name}\" is \"{cvar.Get()}\"\n" );

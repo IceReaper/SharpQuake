@@ -22,45 +22,29 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using SharpQuake.Framework;
-using SharpQuake.Framework.IO.Input;
-using SharpQuake.Renderer;
-using SharpQuake.Renderer.Desktop;
-using SharpQuake.Renderer.OpenGL.Desktop;
-
-namespace SharpQuake
+namespace SharpQuake.Desktop
 {
-	public class MainWindow : GLWindow//GameWindow
+    using Engine;
+    using Engine.Host;
+    using Framework.Definitions;
+    using Framework.Engine;
+    using Framework.IO.Input;
+    using Renderer;
+    using Renderer.OpenGL.Desktop;
+    using System;
+    using System.Diagnostics;
+    using System.Drawing;
+    using System.IO;
+
+    public class MainWindow : GLWindow//GameWindow
     {
-        public static MainWindow Instance
-        {
-            get
-            {
-                return ( MainWindow ) _Instance.Target;
-            }
-        }
+        public static MainWindow Instance => ( MainWindow ) MainWindow._Instance.Target;
 
-        public static Boolean IsFullscreen
-        {
-            get
-            {
-                return Instance.IsFullScreen;
-            }
-        }
+        public static bool IsFullscreen => MainWindow.Instance.IsFullScreen;
 
-        public Boolean ConfirmExit = true;
+        public bool ConfirmExit = true;
 
-        private static String DumpFilePath
-        {
-            get
-            {
-                return Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "error.txt" );
-            }
-        }
+        private static string DumpFilePath => Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "error.txt" );
 
         // This is where we start porting stuff over to proper instanced classes - TODO
         public Host Host
@@ -83,10 +67,10 @@ namespace SharpQuake
 
         private static WeakReference _Instance;
 
-        private Int32 _MouseBtnState;
+        private int _MouseBtnState;
         private Stopwatch _Swatch;
 
-        public Boolean IsDisposing
+        public bool IsDisposing
         {
             get;
             private set;
@@ -96,10 +80,10 @@ namespace SharpQuake
         {
             base.OnFocusedChanged( );
 
-            if ( Focused )
-                Host.Sound.UnblockSound( );
+            if (this.Focused )
+                this.Host.Sound.UnblockSound( );
             else
-                Host.Sound.BlockSound( );
+                this.Host.Sound.BlockSound( );
         }
 
         protected override void OnClosing(  )
@@ -143,18 +127,18 @@ namespace SharpQuake
             base.OnClosing(  );
         }
 
-        protected override void OnUpdateFrame( Double time )
+        protected override void OnUpdateFrame( double time )
         {
             try
             {
-                if ( IsMinimised || Host.Screen.BlockDrawing || Host.IsDisposing )
-                    Host.Screen.SkipUpdate = true;	// no point in bothering to draw
+                if (this.IsMinimised || this.Host.Screen.BlockDrawing || this.Host.IsDisposing )
+                    this.Host.Screen.SkipUpdate = true;	// no point in bothering to draw
 
-                _Swatch.Stop( );
-                var ts = _Swatch.Elapsed.TotalSeconds;
-                _Swatch.Reset( );
-                _Swatch.Start( );
-                Host.Frame( ts );
+                this._Swatch.Stop( );
+                var ts = this._Swatch.Elapsed.TotalSeconds;
+                this._Swatch.Reset( );
+                this._Swatch.Start( );
+                this.Host.Frame( ts );
             }
             catch ( EndGameException )
             {
@@ -162,20 +146,19 @@ namespace SharpQuake
             }
         }
 
-        private static MainWindow CreateInstance( Size size, Boolean fullScreen )
+        private static MainWindow CreateInstance( Size size, bool fullScreen )
         {
-            if ( _Instance != null )
-            {
-                throw new Exception( "Game instance is already created!" );
-            }
-            return new MainWindow( size, fullScreen );
+            if ( MainWindow._Instance != null )
+                throw new( "Game instance is already created!" );
+
+            return new( size, fullScreen );
         }
 
         private static void DumpError( Exception ex )
         {
             try
             {
-                var fs = new FileStream( DumpFilePath, FileMode.Append, FileAccess.Write, FileShare.Read );
+                var fs = new FileStream( MainWindow.DumpFilePath, FileMode.Append, FileAccess.Write, FileShare.Read );
                 using ( var writer = new StreamWriter( fs ) )
                 {
                     writer.WriteLine( );
@@ -203,37 +186,37 @@ namespace SharpQuake
         {
             try
             {
-                Instance.Dispose( );
+                MainWindow.Instance.Dispose( );
             }
             catch ( Exception ex )
             {
-                DumpError( ex );
+                MainWindow.DumpError( ex );
 
                 if ( Debugger.IsAttached )
-                    throw new Exception( "Exception in SafeShutdown()!", ex );
+                    throw new( "Exception in SafeShutdown()!", ex );
             }
         }
 
         [STAThread]
-        private static Int32 Main( String[] args )
+        private static int Main( string[] args )
         {
-            if ( File.Exists( DumpFilePath ) )
-                File.Delete( DumpFilePath );
+            if ( File.Exists( MainWindow.DumpFilePath ) )
+                File.Delete( MainWindow.DumpFilePath );
 
             var parms = new QuakeParameters( );
 
             parms.basedir = AppDomain.CurrentDomain.BaseDirectory; //Application.StartupPath;
 
-            var args2 = new String[args.Length + 1];
-            args2[0] = String.Empty;
+            var args2 = new string[args.Length + 1];
+            args2[0] = string.Empty;
             args.CopyTo( args2, 1 );
 
-            Common = new Common( );
-            Common.InitArgv( args2 );
+            MainWindow.Common = new( );
+            MainWindow.Common.InitArgv( args2 );
 
-            Input = new Input( );
+            MainWindow.Input = new( );
 
-            parms.argv = new String[CommandLine.Argc];
+            parms.argv = new string[CommandLine.Argc];
             CommandLine.Args.CopyTo( parms.argv, 0 );
 
             if ( CommandLine.HasParam( "-dedicated" ) )
@@ -241,11 +224,11 @@ namespace SharpQuake
 
             var size = new Size( 1280, 720 );
 
-            using ( var form = CreateInstance( size, false ) )
+            using ( var form = MainWindow.CreateInstance( size, false ) )
             {
                 form.Host.Console.DPrint( "Host.Init\n" );
                 form.Host.Initialise( parms );
-                Instance.CursorVisible = false; //Hides mouse cursor during main menu on start up
+                MainWindow.Instance.CursorVisible = false; //Hides mouse cursor during main menu on start up
                 form.Run( );
             }
             // host.Shutdown();
@@ -263,89 +246,88 @@ namespace SharpQuake
             return 0; // all Ok
         }
 
-        private void Mouse_WheelChanged( Object sender, MouseWheelEventArgs e )
+        private void Mouse_WheelChanged( object sender, MouseWheelEventArgs e )
         {
             if ( e.Delta > 0 )
             {
-                Instance.Host.Keyboard.Event( KeysDef.K_MWHEELUP, true );
-                Instance.Host.Keyboard.Event( KeysDef.K_MWHEELUP, false );
+                MainWindow.Instance.Host.Keyboard.Event( KeysDef.K_MWHEELUP, true );
+                MainWindow.Instance.Host.Keyboard.Event( KeysDef.K_MWHEELUP, false );
             }
             else
             {
-                Instance.Host.Keyboard.Event( KeysDef.K_MWHEELDOWN, true );
-                Instance.Host.Keyboard.Event( KeysDef.K_MWHEELDOWN, false );
+                MainWindow.Instance.Host.Keyboard.Event( KeysDef.K_MWHEELDOWN, true );
+                MainWindow.Instance.Host.Keyboard.Event( KeysDef.K_MWHEELDOWN, false );
             }
         }
 
-        private void Mouse_ButtonEvent( Object sender, MouseButtonEventArgs e )
+        private void Mouse_ButtonEvent( object sender, MouseButtonEventArgs e )
         {
-            _MouseBtnState = 0;
+            this._MouseBtnState = 0;
 
             if ( e.Button == MouseButton.Left && e.IsPressed )
-                _MouseBtnState |= 1;
+                this._MouseBtnState |= 1;
 
             if ( e.Button == MouseButton.Right && e.IsPressed )
-                _MouseBtnState |= 2;
+                this._MouseBtnState |= 2;
 
             if ( e.Button == MouseButton.Middle && e.IsPressed )
-                _MouseBtnState |= 4;
+                this._MouseBtnState |= 4;
 
-            Input.MouseEvent( _MouseBtnState );
+            MainWindow.Input.MouseEvent(this._MouseBtnState );
         }
 
-        private void Mouse_Move( Object sender, EventArgs e )
+        private void Mouse_Move( object sender, EventArgs e )
         {
-            Input.MouseEvent( _MouseBtnState );
+            MainWindow.Input.MouseEvent(this._MouseBtnState );
         }
 
-        private Int32 MapKey( Key srcKey )
+        private int MapKey( Key srcKey )
         {
-            var key = ( Int32 ) srcKey;
-            key &= 255;
+            var key = ( int ) srcKey;
 
-            if ( key >= KeysDef.KeyTable.Length )
+            if ( key >= KeysDef.KeyTable.Length || key < 0 )
                 return 0;
 
             if ( KeysDef.KeyTable[key] == 0 )
-                Host.Console.DPrint( "key 0x{0:X} has no translation\n", key );
+                this.Host.Console.DPrint( "key 0x{0:X} has no translation\n", key );
 
             return KeysDef.KeyTable[key];
         }
 
-        private void Keyboard_KeyUp( Object sender, KeyboardKeyEventArgs e )
+        private void Keyboard_KeyUp( object sender, KeyboardKeyEventArgs e )
         {
-            Host.Keyboard.Event( MapKey( e.Key ), false );
+            this.Host.Keyboard.Event(this.MapKey( e.Key ), false );
         }
 
-        private void Keyboard_KeyDown( Object sender, KeyboardKeyEventArgs e )
+        private void Keyboard_KeyDown( object sender, KeyboardKeyEventArgs e )
         {
-            Host.Keyboard.Event( MapKey( e.Key ), true );
+            this.Host.Keyboard.Event(this.MapKey( e.Key ), true );
         }
 
-        private MainWindow( Size size, Boolean isFullScreen )
+        private MainWindow( Size size, bool isFullScreen )
         : base( "SharpQuakeEvolved", size, isFullScreen )
         {
-            _Instance = new WeakReference( this );
-            _Swatch = new Stopwatch( );
-            VSync = VSyncMode.One;
+            MainWindow._Instance = new( this );
+            this._Swatch = new( );
+            this.VSync = VSyncMode.One;
             //Icon = Icon.ExtractAssociatedIcon( AppDomain.CurrentDomain.FriendlyName ); //Application.ExecutablePath
 
-            KeyDown += new EventHandler<KeyboardKeyEventArgs>( Keyboard_KeyDown );
-            KeyUp += new EventHandler<KeyboardKeyEventArgs>( Keyboard_KeyUp );
+            this.KeyDown += new EventHandler<KeyboardKeyEventArgs>(this.Keyboard_KeyDown );
+            this.KeyUp += new EventHandler<KeyboardKeyEventArgs>(this.Keyboard_KeyUp );
 
-            MouseMove += new EventHandler<EventArgs>( Mouse_Move );
-            MouseDown += new EventHandler<MouseButtonEventArgs>( Mouse_ButtonEvent );
-            MouseUp += new EventHandler<MouseButtonEventArgs>( Mouse_ButtonEvent );
-            MouseWheel += new EventHandler<MouseWheelEventArgs>( Mouse_WheelChanged );
+            this.MouseMove += new EventHandler<EventArgs>(this.Mouse_Move );
+            this.MouseDown += new EventHandler<MouseButtonEventArgs>(this.Mouse_ButtonEvent );
+            this.MouseUp += new EventHandler<MouseButtonEventArgs>(this.Mouse_ButtonEvent );
+            this.MouseWheel += new EventHandler<MouseWheelEventArgs>(this.Mouse_WheelChanged );
 
-            Host = new Host( this );
+            this.Host = new( this );
         }
 
         public override void Dispose( )
         {
-            IsDisposing = true;
+            this.IsDisposing = true;
 
-            Host.Dispose( );
+            this.Host.Dispose( );
 
             base.Dispose( );
 		}
@@ -355,8 +337,8 @@ namespace SharpQuake
 		/// </summary>
 		public void SendKeyEvents( )
 		{
-			Host.Screen.SkipUpdate = false;
-			ProcessEvents( );
+            this.Host.Screen.SkipUpdate = false;
+            this.ProcessEvents( );
 		}
 
 		/// <summary>
@@ -364,9 +346,9 @@ namespace SharpQuake
 		/// </summary>
 		public void Quit( )
 		{
-			ConfirmExit = false;
-			Exit( );
-			Dispose( );
+            this.ConfirmExit = false;
+            this.Exit( );
+            this.Dispose( );
 
 			// Temp fix
 			Environment.Exit( 0 );

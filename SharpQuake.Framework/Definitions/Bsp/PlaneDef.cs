@@ -23,20 +23,20 @@
 /// </copyright>
 
 
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Definitions.Bsp
 {
     public static class PlaneDef
     {
         // 0-2 are axial planes
-        public const System.Int32 PLANE_X = 0;
+        public const int PLANE_X = 0;
 
-        public const System.Int32 PLANE_Y = 1;
-        public const System.Int32 PLANE_Z = 2;
+        public const int PLANE_Y = 1;
+        public const int PLANE_Z = 2;
 
         // 3-5 are non-axial planes snapped to the nearest
-        public const System.Int32 PLANE_ANYX = 3;
+        public const int PLANE_ANYX = 3;
 
-        public const System.Int32 PLANE_ANYY = 4;
-        public const System.Int32 PLANE_ANYZ = 5;
+        public const int PLANE_ANYY = 4;
+        public const int PLANE_ANYZ = 5;
     }
 }

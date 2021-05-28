@@ -22,38 +22,38 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Data
 {
+    using System;
+
     public static class SwapHelper
     {
-        public static Int16 ShortSwap( Int16 l )
+        public static short ShortSwap( short l )
         {
-            Byte b1, b2;
+            byte b1, b2;
 
-            b1 = ( Byte ) ( l & 255 );
-            b2 = ( Byte ) ( ( l >> 8 ) & 255 );
+            b1 = ( byte ) ( l & 255 );
+            b2 = ( byte ) ( ( l >> 8 ) & 255 );
 
-            return ( Int16 ) ( ( b1 << 8 ) + b2 );
+            return ( short ) ( ( b1 << 8 ) + b2 );
         }
 
-        public static Int32 LongSwap( Int32 l )
+        public static int LongSwap( int l )
         {
-            Byte b1, b2, b3, b4;
+            byte b1, b2, b3, b4;
 
-            b1 = ( Byte ) ( l & 255 );
-            b2 = ( Byte ) ( ( l >> 8 ) & 255 );
-            b3 = ( Byte ) ( ( l >> 16 ) & 255 );
-            b4 = ( Byte ) ( ( l >> 24 ) & 255 );
+            b1 = ( byte ) ( l & 255 );
+            b2 = ( byte ) ( ( l >> 8 ) & 255 );
+            b3 = ( byte ) ( ( l >> 16 ) & 255 );
+            b4 = ( byte ) ( ( l >> 24 ) & 255 );
 
-            return ( ( Int32 ) b1 << 24 ) + ( ( Int32 ) b2 << 16 ) + ( ( Int32 ) b3 << 8 ) + b4;
+            return ( ( int ) b1 << 24 ) + ( ( int ) b2 << 16 ) + ( ( int ) b3 << 8 ) + b4;
         }
 
-        public static Single FloatSwap( Single f )
+        public static float FloatSwap( float f )
         {
             var bytes = BitConverter.GetBytes( f );
-            var bytes2 = new Byte[4];
+            var bytes2 = new byte[4];
 
             bytes2[0] = bytes[3];
             bytes2[1] = bytes[2];
@@ -63,9 +63,9 @@ namespace SharpQuake.Framework
             return BitConverter.ToSingle( bytes2, 0 );
         }
 
-        public static void Swap4b( Byte[] buff, Int32 offset )
+        public static void Swap4b( byte[] buff, int offset )
         {
-            Byte b1, b2, b3, b4;
+            byte b1, b2, b3, b4;
 
             b1 = buff[offset + 0];
             b2 = buff[offset + 1];

@@ -22,30 +22,31 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.BSP
 {
+    using Definitions.Bsp;
+    using System.Runtime.InteropServices;
+
     // leaf 0 is the generic CONTENTS_SOLID leaf, used for all solid areas
     // all other leafs need visibility info
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct BspLeaf
     {
-        public System.Int32 contents;
-        public System.Int32 visofs;				// -1 = no visibility info
+        public int contents;
+        public int visofs;				// -1 = no visibility info
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public System.Int16[] mins;//[3];			// for frustum culling
+        public short[] mins;//[3];			// for frustum culling
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public System.Int16[] maxs;//[3];
+        public short[] maxs;//[3];
 
-        public System.UInt16 firstmarksurface;
-        public System.UInt16 nummarksurfaces;
+        public ushort firstmarksurface;
+        public ushort nummarksurfaces;
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = AmbientDef.NUM_AMBIENTS )]
-        public System.Byte[] ambient_level; // [NUM_AMBIENTS];
+        public byte[] ambient_level; // [NUM_AMBIENTS];
 
-        public static System.Int32 SizeInBytes = Marshal.SizeOf( typeof( BspLeaf ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( BspLeaf ) );
     } // dleaf_t
 }

@@ -22,30 +22,31 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using SharpQuake.Framework.Mathematics;
-
 namespace SharpQuake.Framework.World
 {
+	using Engine;
+	using System.Numerics;
+
 	public class Trace_t
 	{
-		public System.Boolean allsolid; // if true, plane is not valid
-		public System.Boolean startsolid;   // if true, the initial point was in a solid area
-		public System.Boolean inopen, inwater;
-		public System.Single fraction;      // time completed, 1.0 = didn't hit anything
+		public bool allsolid; // if true, plane is not valid
+		public bool startsolid;   // if true, the initial point was in a solid area
+		public bool inopen, inwater;
+		public float fraction;      // time completed, 1.0 = didn't hit anything
 		public Vector3 endpos;          // final position
 		public Plane_t plane;           // surface normal at impact
 		public MemoryEdict ent;         // entity the surface is on
 
 		public void CopyFrom( Trace_t src )
 		{
-			allsolid = src.allsolid;
-			startsolid = src.startsolid;
-			inopen = src.inopen;
-			inwater = src.inwater;
-			fraction = src.fraction;
-			endpos = src.endpos;
-			plane = src.plane;
-			ent = src.ent;
+			this.allsolid = src.allsolid;
+			this.startsolid = src.startsolid;
+			this.inopen = src.inopen;
+			this.inwater = src.inwater;
+			this.fraction = src.fraction;
+			this.endpos = src.endpos;
+			this.plane = src.plane;
+			this.ent = src.ent;
 		}
 	} // trace_t;
 }

@@ -22,20 +22,20 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework.IO.BSP
+namespace SharpQuake.Framework.IO.BSP.Q3
 {
+    using Definitions.Bsp;
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi )]
     public struct Q3Texture
     {
         [MarshalAs( UnmanagedType.ByValTStr, SizeConst = BspDef.Q3_PATH_LENGTH )]
-        public String name; 
+        public string name; 
 
-        public Int32 surfaceFlags;
-        public Int32 contents;
+        public int surfaceFlags;
+        public int contents;
 
-        public static Int32 SizeInBytes = Marshal.SizeOf( typeof( Q3Texture ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( Q3Texture ) );
     }
 }

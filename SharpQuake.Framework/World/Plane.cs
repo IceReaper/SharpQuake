@@ -22,13 +22,13 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using SharpQuake.Framework.Mathematics;
-
 namespace SharpQuake.Framework.World
 {
+	using System.Numerics;
+
 	public struct Plane_t
 	{
 		public Vector3 normal;
-		public System.Single dist;
+		public float dist;
 	} // plane_t;
 }

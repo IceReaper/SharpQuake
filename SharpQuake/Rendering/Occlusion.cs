@@ -22,19 +22,24 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using SharpQuake.Framework;
-using SharpQuake.Framework.IO;
-using SharpQuake.Framework.IO.BSP;
-using SharpQuake.Framework.Mathematics;
-using SharpQuake.Game.Rendering.Memory;
-using SharpQuake.Game.World;
-using System;
-
 namespace SharpQuake.Rendering
 {
+	using Engine.Host;
+	using Framework;
+	using Framework.Definitions;
+	using Framework.Definitions.Bsp;
+	using Framework.Engine;
+	using Framework.IO.BSP;
+	using Framework.IO.BSP.Q1;
+	using Game.Rendering.Memory;
+	using Game.World;
+	using System;
+	using System.Numerics;
+	using Plane = Framework.Mathematics.Plane;
+
 	public class Occlusion
 	{
-		public Int32 VisFrameCount
+		public int VisFrameCount
 		{
 			get;
 			set;
@@ -66,14 +71,14 @@ namespace SharpQuake.Rendering
 
 		public Occlusion( Host host, TextureChains textureChains )
 		{
-			Host = host;
-			TextureChains = textureChains;
+			this.Host = host;
+			this.TextureChains = textureChains;
 		}
 
 		public void SetupFrame( ref Vector3 origin )
 		{
-			OldViewLeaf = ViewLeaf;
-			ViewLeaf = Host.Client.cl.worldmodel.PointInLeaf( ref origin );
+			this.OldViewLeaf = this.ViewLeaf;
+			this.ViewLeaf = this.Host.Client.cl.worldmodel.PointInLeaf( ref origin );
 		}
 
 		/// <summary>
@@ -81,36 +86,36 @@ namespace SharpQuake.Rendering
 		/// </summary>
 		public void MarkLeaves( )
 		{
-			if ( OldViewLeaf == ViewLeaf && !Host.Cvars.NoVis.Get<Boolean>() )
+			if (this.OldViewLeaf == this.ViewLeaf && !this.Host.Cvars.NoVis.Get<bool>() )
 				return;
 
 			//if( _IsMirror )
 			//  return;
 
-			VisFrameCount++;
-			OldViewLeaf = ViewLeaf;
+			this.VisFrameCount++;
+			this.OldViewLeaf = this.ViewLeaf;
 
-			Byte[] vis;
-			if ( Host.Cvars.NoVis.Get<Boolean>() )
+			byte[] vis;
+			if (this.Host.Cvars.NoVis.Get<bool>() )
 			{
-				vis = new Byte[4096];
-				Utilities.FillArray<Byte>( vis, 0xff ); // todo: add count parameter?
+				vis = new byte[4096];
+				Utilities.FillArray<byte>( vis, 0xff ); // todo: add count parameter?
 														//memset(solid, 0xff, (cl.worldmodel->numleafs + 7) >> 3);
 			}
 			else
-				vis = Host.Client.cl.worldmodel.LeafPVS( ViewLeaf );
+				vis = this.Host.Client.cl.worldmodel.LeafPVS(this.ViewLeaf );
 
-			var world = Host.Client.cl.worldmodel;
+			var world = this.Host.Client.cl.worldmodel;
 			for ( var i = 0; i < world.NumLeafs; i++ )
 			{
-				if ( vis[i >> 3] != 0 & ( 1 << ( i & 7 ) ) != 0 )
+				if ( (vis[i >> 3] != 0) & (1 << ( i & 7 ) != 0) )
 				{
 					MemoryNodeBase node = world.Leaves[i + 1];
 					do
 					{
-						if ( node.visframe == VisFrameCount )
+						if ( node.visframe == this.VisFrameCount )
 							break;
-						node.visframe = VisFrameCount;
+						node.visframe = this.VisFrameCount;
 						node = node.parent;
 					} while ( node != null );
 				}
@@ -120,18 +125,18 @@ namespace SharpQuake.Rendering
 		/// <summary>
 		/// R_RecursiveWorldNode
 		/// </summary>
-		public void RecursiveWorldNode( MemoryNodeBase node, Vector3 modelOrigin, Int32 frameCount, ref Plane[] frustum, Action<MemorySurface> onDrawSurface, Action<EFrag> onStoreEfrags )
+		public void RecursiveWorldNode( MemoryNodeBase node, Vector3 modelOrigin, int frameCount, ref Plane[] frustum, Action<MemorySurface> onDrawSurface, Action<EFrag> onStoreEfrags )
 		{
-			if ( node.contents == ( Int32 ) Q1Contents.Solid )
+			if ( node.contents == ( int ) Q1Contents.Solid )
 				return;     // solid
 
-			if ( node.visframe != VisFrameCount )
+			if ( node.visframe != this.VisFrameCount )
 				return;
 
 			if ( Utilities.CullBox( ref node.mins, ref node.maxs, ref frustum ) )
 				return;
 
-			Int32 c;
+			int c;
 
 			// if a leaf node, draw stuff
 			if ( node.contents < 0 )
@@ -163,7 +168,7 @@ namespace SharpQuake.Rendering
 
 			// find which side of the node we are on
 			var plane = n.plane;
-			Double dot;
+			double dot;
 
 			switch ( plane.type )
 			{
@@ -184,21 +189,21 @@ namespace SharpQuake.Rendering
 					break;
 			}
 
-			var side = ( dot >= 0 ? 0 : 1 );
+			var side = dot >= 0 ? 0 : 1;
 
 			// recurse down the children, front side first
-			RecursiveWorldNode( n.children[side], modelOrigin, frameCount, ref frustum, onDrawSurface, onStoreEfrags );
+			this.RecursiveWorldNode( n.children[side], modelOrigin, frameCount, ref frustum, onDrawSurface, onStoreEfrags );
 
 			// draw stuff
 			c = n.numsurfaces;
 
 			if ( c != 0 )
 			{
-				var surf = Host.Client.cl.worldmodel.Surfaces;
-				Int32 offset = n.firstsurface;
+				var surf = this.Host.Client.cl.worldmodel.Surfaces;
+				int offset = n.firstsurface;
 
 				if ( dot < 0 - QDef.BACKFACE_EPSILON )
-					side = ( Int32 ) Q1SurfaceFlags.PlaneBack;
+					side = ( int ) Q1SurfaceFlags.PlaneBack;
 				else if ( dot > QDef.BACKFACE_EPSILON )
 					side = 0;
 
@@ -208,11 +213,11 @@ namespace SharpQuake.Rendering
 						continue;
 
 					// don't backface underwater surfaces, because they warp
-					if ( ( surf[offset].flags & ( Int32 ) Q1SurfaceFlags.Underwater ) == 0 && ( ( dot < 0 ) ^ ( ( surf[offset].flags & ( Int32 ) Q1SurfaceFlags.PlaneBack ) != 0 ) ) )
+					if ( ( surf[offset].flags & ( int ) Q1SurfaceFlags.Underwater ) == 0 && ( dot < 0 ) ^ ( ( surf[offset].flags & ( int ) Q1SurfaceFlags.PlaneBack ) != 0 ) )
 						continue;       // wrong side
 
 					// if sorting by texture, just store it out
-					if ( Host.Cvars.glTexSort.Get<Boolean>() )
+					if (this.Host.Cvars.glTexSort.Get<bool>() )
 					{
 						//if( !_IsMirror || surf[offset].texinfo.texture != Host.Client.cl.worldmodel.textures[_MirrorTextureNum] )
 						//{
@@ -220,15 +225,15 @@ namespace SharpQuake.Rendering
 						surf[offset].texinfo.texture.texturechain = surf[offset];
 						//}
 					}
-					else if ( ( surf[offset].flags & ( Int32 ) Q1SurfaceFlags.Sky ) != 0 )
+					else if ( ( surf[offset].flags & ( int ) Q1SurfaceFlags.Sky ) != 0 )
 					{
-						surf[offset].texturechain = TextureChains.SkyChain;
-						TextureChains.SkyChain = surf[offset];
+						surf[offset].texturechain = this.TextureChains.SkyChain;
+						this.TextureChains.SkyChain = surf[offset];
 					}
-					else if ( ( surf[offset].flags & ( Int32 ) Q1SurfaceFlags.Turbulence ) != 0 )
+					else if ( ( surf[offset].flags & ( int ) Q1SurfaceFlags.Turbulence ) != 0 )
 					{
-						surf[offset].texturechain = TextureChains.WaterChain;
-						TextureChains.WaterChain = surf[offset];
+						surf[offset].texturechain = this.TextureChains.WaterChain;
+						this.TextureChains.WaterChain = surf[offset];
 					}
 					else
 						onDrawSurface( surf[offset] );
@@ -236,7 +241,7 @@ namespace SharpQuake.Rendering
 			}
 
 			// recurse down the back side
-			RecursiveWorldNode( n.children[side == 0 ? 1 : 0], modelOrigin, frameCount, ref frustum, onDrawSurface, onStoreEfrags );
+			this.RecursiveWorldNode( n.children[side == 0 ? 1 : 0], modelOrigin, frameCount, ref frustum, onDrawSurface, onStoreEfrags );
 		}
 	}
 }

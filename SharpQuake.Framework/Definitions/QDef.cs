@@ -24,60 +24,60 @@
 
 //define	PARANOID			// speed sapping error checking
 
-using System;
+
 // quakedef.h
 
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Definitions
 {
     public static class QDef
     {
-        public const Single VERSION = 1.09f;
-        public const Single CSQUAKE_VERSION = 1.50f;
-        public const Single GLQUAKE_VERSION = 1.00f;
-        public const Single D3DQUAKE_VERSION = 0.01f;
-        public const Single WINQUAKE_VERSION = 0.996f;
-        public const Single LINUX_VERSION = 1.30f;
-        public const Single X11_VERSION = 1.10f;
+        public const float VERSION = 1.09f;
+        public const float CSQUAKE_VERSION = 1.50f;
+        public const float GLQUAKE_VERSION = 1.00f;
+        public const float D3DQUAKE_VERSION = 0.01f;
+        public const float WINQUAKE_VERSION = 0.996f;
+        public const float LINUX_VERSION = 1.30f;
+        public const float X11_VERSION = 1.10f;
 
-        public const String GAMENAME = "Id1";		// directory to look in by default
+        public const string GAMENAME = "Id1";		// directory to look in by default
 
-        public const Int32 MAX_NUM_ARGVS = 50;
+        public const int MAX_NUM_ARGVS = 50;
 
         // up / down
-        public const Int32 PITCH = 0;
+        public const int PITCH = 0;
 
         // left / right
-        public const Int32 YAW = 1;
+        public const int YAW = 1;
 
         // fall over
-        public const Int32 ROLL = 2;
+        public const int ROLL = 2;
 
-        public const Int32 MAX_QPATH = 64;			// max length of a quake game pathname
-        public const Int32 MAX_OSPATH = 128;			// max length of a filesystem pathname
+        public const int MAX_QPATH = 64;			// max length of a quake game pathname
+        public const int MAX_OSPATH = 128;			// max length of a filesystem pathname
 
-        public const Single ON_EPSILON = 0.1f;		// point on plane side epsilon
+        public const float ON_EPSILON = 0.1f;		// point on plane side epsilon
 
-        public const Int32 MAX_MSGLEN = 8000;		// max length of a reliable message
-        public const Int32 MAX_DATAGRAM = 1024;		// max length of unreliable message
+        public const int MAX_MSGLEN = 8000;		// max length of a reliable message
+        public const int MAX_DATAGRAM = 1024;		// max length of unreliable message
 
         //
         // per-level limits
         //
-        public const Int32 MAX_EDICTS = 600;	//600 	// FIXME: ouch! ouch! ouch!
+        public const int MAX_EDICTS = 600;	//600 	// FIXME: ouch! ouch! ouch!
 
-        public const Int32 MAX_LIGHTSTYLES = 64;
-        public const Int32 MAX_MODELS = 256;	//256		// these are sent over the net as bytes
-        public const Int32 MAX_SOUNDS = 256;			// so they cannot be blindly increased
+        public const int MAX_LIGHTSTYLES = 64;
+        public const int MAX_MODELS = 256;	//256		// these are sent over the net as bytes
+        public const int MAX_SOUNDS = 256;			// so they cannot be blindly increased
 
-        public const Int32 SAVEGAME_COMMENT_LENGTH = 39;
+        public const int SAVEGAME_COMMENT_LENGTH = 39;
 
-        public const Int32 MAX_STYLESTRING = 64;
+        public const int MAX_STYLESTRING = 64;
 
-        public const Int32 MAX_SCOREBOARD = 16;
-        public const Int32 MAX_SCOREBOARDNAME = 32;
+        public const int MAX_SCOREBOARD = 16;
+        public const int MAX_SCOREBOARDNAME = 32;
 
-        public const Int32 SOUND_CHANNELS = 8;
+        public const int SOUND_CHANNELS = 8;
 
-        public const Double BACKFACE_EPSILON = 0.01;
+        public const double BACKFACE_EPSILON = 0.01;
     }
 }

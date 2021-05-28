@@ -22,19 +22,19 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
 namespace SharpQuake.Framework.IO.Sound
 {
+	using Engine;
+
 	public class SoundEffect_t
 	{
-		public String name; // char[MAX_QPATH];
+		public string name; // char[MAX_QPATH];
 		public CacheUser cache; // cache_user_t
 
 		public void Clear( )
 		{
-			name = null;
-			cache = null;
+			this.name = null;
+			this.cache = null;
 		}
 	} // sfx_t;
 }

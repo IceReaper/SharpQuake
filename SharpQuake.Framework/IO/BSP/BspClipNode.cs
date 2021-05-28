@@ -22,18 +22,18 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.BSP
 {
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct BspClipNode
     {
-        public System.Int32 planenum;
+        public int planenum;
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 2 )]
-        public System.Int16[] children; //[2];	// negative numbers are contents
+        public short[] children; //[2];	// negative numbers are contents
 
-        public static System.Int32 SizeInBytes = Marshal.SizeOf( typeof( BspClipNode ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( BspClipNode ) );
     } // dclipnode_t
 }

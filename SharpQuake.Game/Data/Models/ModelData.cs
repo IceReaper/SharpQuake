@@ -22,24 +22,25 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-using SharpQuake.Framework.World;
-using SharpQuake.Framework.Mathematics;
-using SharpQuake.Game.Rendering.Textures;
-
 namespace SharpQuake.Game.Data.Models
 {
-	public class ModelData
+    using Framework;
+    using Framework.Engine;
+    using Framework.Rendering;
+    using Framework.World;
+    using Rendering.Textures;
+    using System.Numerics;
+
+    public class ModelData
     {
-        public String Name
+        public string Name
         {
             get;
             set;
         }
 
         // bmodels and sprites don't cache normally
-        public Boolean IsLoadRequired
+        public bool IsLoadRequired
         {
             get;
             set;
@@ -51,7 +52,7 @@ namespace SharpQuake.Game.Data.Models
             set;
         }
 
-        public Int32 FrameCount
+        public int FrameCount
         {
             get;
             set;
@@ -84,7 +85,7 @@ namespace SharpQuake.Game.Data.Models
             set;
         }
 
-        public Single Radius
+        public float Radius
         {
             get;
             set;
@@ -93,7 +94,7 @@ namespace SharpQuake.Game.Data.Models
         //
         // solid volume for clipping 
         //
-        public Boolean ClipBox
+        public bool ClipBox
         {
             get;
             set;
@@ -127,7 +128,7 @@ namespace SharpQuake.Game.Data.Models
             set;
         }
 
-        protected Byte[] Buffer
+        protected byte[] Buffer
         {
             get;
             set;
@@ -135,42 +136,42 @@ namespace SharpQuake.Game.Data.Models
 
         public ModelData( ModelTexture noTexture )
         {
-            NoTexture = noTexture;
+            this.NoTexture = noTexture;
         }
 
         public virtual void Clear( )
         {
-            Name = null;
-            IsLoadRequired = false;
-            Type = 0;
-            FrameCount = 0;
-            SyncType = 0;
-            Flags = 0;
-            BoundsMin = Vector3.Zero;
-            BoundsMax = Vector3.Zero;
-            Radius = 0;
-            ClipBox = false;
-            ClipMin = Vector3.Zero;
-            ClipMax = Vector3.Zero;
-            cache = null;
+            this.Name = null;
+            this.IsLoadRequired = false;
+            this.Type = 0;
+            this.FrameCount = 0;
+            this.SyncType = 0;
+            this.Flags = 0;
+            this.BoundsMin = Vector3.Zero;
+            this.BoundsMax = Vector3.Zero;
+            this.Radius = 0;
+            this.ClipBox = false;
+            this.ClipMin = Vector3.Zero;
+            this.ClipMax = Vector3.Zero;
+            this.cache = null;
         }
 
         public virtual void CopyFrom( ModelData src )
         {
-            Name = src.Name;
-            IsLoadRequired = src.IsLoadRequired;
-            Type = src.Type;
-            FrameCount = src.FrameCount;
-            SyncType = src.SyncType;
-            Flags = src.Flags;
-            BoundsMin = src.BoundsMin;
-            BoundsMax = src.BoundsMax;
-            Radius = src.Radius;
-            ClipBox = src.ClipBox;
-            ClipMin = src.ClipMin;
-            ClipMax = src.ClipMax;
+            this.Name = src.Name;
+            this.IsLoadRequired = src.IsLoadRequired;
+            this.Type = src.Type;
+            this.FrameCount = src.FrameCount;
+            this.SyncType = src.SyncType;
+            this.Flags = src.Flags;
+            this.BoundsMin = src.BoundsMin;
+            this.BoundsMax = src.BoundsMax;
+            this.Radius = src.Radius;
+            this.ClipBox = src.ClipBox;
+            this.ClipMin = src.ClipMin;
+            this.ClipMax = src.ClipMax;
 
-            cache = src.cache;
+            this.cache = src.cache;
         }
     } //model_t;
 }

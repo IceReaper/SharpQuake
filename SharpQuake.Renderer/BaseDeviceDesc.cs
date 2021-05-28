@@ -22,86 +22,85 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Drawing;
-
 namespace SharpQuake.Renderer
 {
+    using System.Drawing;
+
     public class BaseDeviceDesc
     {
-        public virtual Boolean IsFullScreen
+        public virtual bool IsFullScreen
         {
             get;
             set;
         }
 
-        public virtual Boolean SupportsMultiTexture
+        public virtual bool SupportsMultiTexture
         {
             get;
             set;
         }
 
-        public virtual Boolean MultiTexturing
+        public virtual bool MultiTexturing
         {
             get;
             set;
         }
 
-        public virtual Int32 Width
+        public virtual int Width
         {
             get;
             set;
         }
 
-        public virtual Int32 Height
+        public virtual int Height
         {
             get;
             set;
         }
 
-        public virtual Int32 ActualWidth
+        public virtual int ActualWidth
         {
             get;
             set;
         }
 
-        public virtual Int32 ActualHeight
+        public virtual int ActualHeight
         {
             get;
             set;
         }
 
-        public virtual Double AspectRatio
+        public virtual double AspectRatio
         {
             get;
             set;
         }
 
-        public virtual Single Gamma
+        public virtual float Gamma
         {
             get;
             set;
         }
 
-        public virtual String Renderer
+        public virtual string Renderer
         {
             get;
             set;
         }
 
-        public virtual String Vendor
+        public virtual string Vendor
         {
             get;
             set;
         }
 
-        public virtual String Version
+        public virtual string Version
         {
             get;
             set;
         }
 
-        public virtual String Extensions
+        public virtual string Extensions
         {
             get;
             set;
@@ -113,19 +112,19 @@ namespace SharpQuake.Renderer
             set;
         }
 
-        public virtual Single DepthMinimum
+        public virtual float DepthMinimum
         {
             get;
             set;
         }
 
-        public virtual Single DepthMaximum
+        public virtual float DepthMaximum
         {
             get;
             set;
         }
 
-        public virtual Int32 TrickFrame
+        public virtual int TrickFrame
         {
             get;
             set;

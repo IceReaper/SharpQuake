@@ -22,33 +22,31 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
 namespace SharpQuake.Renderer
 {
     public class VideoMode
     {
-        public Int32 Width
+        public int Width
         {
             get;
             set;
         }
-        public Int32 Height
+        public int Height
         {
             get;
             set;
         }
-        public Int32 BitsPerPixel
+        public int BitsPerPixel
         {
             get;
             set;
         }
-        public Single RefreshRate
+        public float RefreshRate
         {
             get;
             set;
         }
-        public Boolean FullScreen
+        public bool FullScreen
         {
             get;
             set;

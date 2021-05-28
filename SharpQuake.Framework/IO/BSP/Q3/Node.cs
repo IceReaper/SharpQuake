@@ -22,25 +22,24 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework.IO.BSP
+namespace SharpQuake.Framework.IO.BSP.Q3
 {
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct Q3Node
     {
-        public Int32 planenum;
+        public int planenum;
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 2 )]
-        public Int32[] children;
+        public int[] children;
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Int32[] mins;
+        public int[] mins;
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Int32[] maxs;
+        public int[] maxs;
 
-        public static Int32 SizeInBytes = Marshal.SizeOf( typeof( Q3Node ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( Q3Node ) );
     }
 }

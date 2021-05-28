@@ -22,12 +22,11 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Renderer.Textures;
-using OpenTK.Graphics.OpenGL;
-
 namespace SharpQuake.Renderer.OpenGL.Textures
 {
+    using OpenTK.Graphics.OpenGL;
+    using Renderer.Textures;
+
     public class GLTextureBlendMode : BaseTextureBlendMode
     {
         public TextureEnvMode Mode
@@ -36,10 +35,10 @@ namespace SharpQuake.Renderer.OpenGL.Textures
             private set;
         }
 
-        public GLTextureBlendMode( String name, TextureEnvMode mode )
+        public GLTextureBlendMode( string name, TextureEnvMode mode )
             : base( name )
         {
-            Mode = mode;
+            this.Mode = mode;
         }
     }
 }

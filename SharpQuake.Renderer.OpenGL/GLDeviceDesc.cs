@@ -22,43 +22,18 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using OpenTK.Graphics.OpenGL;
-
 namespace SharpQuake.Renderer.OpenGL
 {
+    using OpenTK.Graphics.OpenGL;
+
     public class GLDeviceDesc : BaseDeviceDesc
     {
-        public override String Renderer
-        {
-            get
-            {
-                return GL.GetString( StringName.Renderer );
-            }
-        }
+        public override string Renderer => GL.GetString( StringName.Renderer );
 
-        public override String Vendor
-        {
-            get
-            {
-                return GL.GetString( StringName.Vendor );
-            }
-        }
+        public override string Vendor => GL.GetString( StringName.Vendor );
 
-        public override String Version
-        {
-            get
-            {
-                return GL.GetString( StringName.Version );
-            }
-        }
+        public override string Version => GL.GetString( StringName.Version );
 
-        public override String Extensions
-        {
-            get
-            {
-                return GL.GetString( StringName.Extensions );
-            }
-        }
+        public override string Extensions => GL.GetString( StringName.Extensions );
     }
 }

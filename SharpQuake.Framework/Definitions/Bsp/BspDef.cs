@@ -22,63 +22,61 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Definitions.Bsp
 {
     public static class BspDef
     {
         // upper design bounds
 
-        public const Int32 MAX_MAP_HULLS = 4;
+        public const int MAX_MAP_HULLS = 4;
 
-        public const Int32 MAX_MAP_MODELS = 256;
-        public const Int32 MAX_MAP_BRUSHES = 32768; // 4096
-        public const Int32 MAX_MAP_ENTITIES = 1024;
-        public const Int32 MAX_MAP_ENTSTRING = 65536;
+        public const int MAX_MAP_MODELS = 256;
+        public const int MAX_MAP_BRUSHES = 32768; // 4096
+        public const int MAX_MAP_ENTITIES = 1024;
+        public const int MAX_MAP_ENTSTRING = 65536;
 
-        public const Int32 MAX_MAP_PLANES = 32767;
-        public const Int32 MAX_MAP_NODES = 32767;		// because negative shorts are contents
-        public const Int32 MAX_MAP_CLIPNODES = 32767;		//
-        public const Int32 MAX_MAP_LEAFS = 8192;
-        public const Int32 MAX_MAP_VERTS = 65535;
-        public const Int32 MAX_MAP_FACES = 65535;
-        public const Int32 MAX_MAP_MARKSURFACES = 65535;
-        public const Int32 MAX_MAP_TEXINFO = 4096;
-        public const Int32 MAX_MAP_EDGES = 256000;
-        public const Int32 MAX_MAP_SURFEDGES = 512000;
-        public const Int32 MAX_MAP_TEXTURES = 512;
-        public const Int32 MAX_MAP_MIPTEX = 0x200000;
-        public const Int32 MAX_MAP_LIGHTING = 0x100000;
-        public const Int32 MAX_MAP_VISIBILITY = 0x100000;
+        public const int MAX_MAP_PLANES = 32767;
+        public const int MAX_MAP_NODES = 32767;		// because negative shorts are contents
+        public const int MAX_MAP_CLIPNODES = 32767;		//
+        public const int MAX_MAP_LEAFS = 8192;
+        public const int MAX_MAP_VERTS = 65535;
+        public const int MAX_MAP_FACES = 65535;
+        public const int MAX_MAP_MARKSURFACES = 65535;
+        public const int MAX_MAP_TEXINFO = 4096;
+        public const int MAX_MAP_EDGES = 256000;
+        public const int MAX_MAP_SURFEDGES = 512000;
+        public const int MAX_MAP_TEXTURES = 512;
+        public const int MAX_MAP_MIPTEX = 0x200000;
+        public const int MAX_MAP_LIGHTING = 0x100000;
+        public const int MAX_MAP_VISIBILITY = 0x100000;
 
-        public const Int32 MAX_MAP_PORTALS = 65536;
+        public const int MAX_MAP_PORTALS = 65536;
 
         // key / value pair sizes
 
-        public const Int32 MAX_KEY = 32;
-        public const Int32 MAX_VALUE = 1024;
+        public const int MAX_KEY = 32;
+        public const int MAX_VALUE = 1024;
 
-        public const Int32 MAXLIGHTMAPS = 4;
+        public const int MAXLIGHTMAPS = 4;
 
-        public const Int32 Q1_BSPVERSION = 29;
-        public const Int32 HL_BSPVERSION = 30;
-        public const Int32 Q2_BSPVERSION = 38;
-        public const Int32 Q3_BSPVERSION = 46;
+        public const int Q1_BSPVERSION = 29;
+        public const int HL_BSPVERSION = 30;
+        public const int Q2_BSPVERSION = 38;
+        public const int Q3_BSPVERSION = 46;
 
-        public const Int32 Q3_PATH_LENGTH = 64;
+        public const int Q3_PATH_LENGTH = 64;
 
-        public static Int32[] SUPPORTED_BSPS =
+        public static int[] SUPPORTED_BSPS =
         {
-            Q1_BSPVERSION,
-            HL_BSPVERSION,
-            Q3_BSPVERSION
+            BspDef.Q1_BSPVERSION,
+            BspDef.HL_BSPVERSION,
+            BspDef.Q3_BSPVERSION
         };
 
-        public const Int32 TOOLVERSION = 2;
+        public const int TOOLVERSION = 2;
 
-        public const Int32 MIPLEVELS = 4;
+        public const int MIPLEVELS = 4;
 
-        public const Int32 TEX_SPECIAL = 1;		// sky or slime, no lightmap or 256 subdivision
+        public const int TEX_SPECIAL = 1;		// sky or slime, no lightmap or 256 subdivision
     } // bsp_file
 }

@@ -22,14 +22,12 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Collections.Generic;
-using SharpQuake.Framework;
-using SharpQuake.Framework.Mathematics;
-using SharpQuake.Renderer.Textures;
-
 namespace SharpQuake.Renderer.Models
 {
+	using System;
+	using System.Collections.Generic;
+	using Textures;
+
 	public class BaseModel : IDisposable
 	{
 		public BaseDevice Device
@@ -44,7 +42,7 @@ namespace SharpQuake.Renderer.Models
 			protected set;
 		}
 
-		public static Dictionary<String, BaseModel> ModelPool
+		public static Dictionary<string, BaseModel> ModelPool
 		{
 			get;
 			protected set;
@@ -52,14 +50,14 @@ namespace SharpQuake.Renderer.Models
 
 		static BaseModel( )
 		{
-			ModelPool = new Dictionary<String, BaseModel>( );
+			BaseModel.ModelPool = new( );
 		}
 
 		public BaseModel( BaseDevice device, BaseModelDesc desc )
 		{
-			Device = device;
-			Desc = desc;
-			ModelPool.Add( Desc.Name, this );
+			this.Device = device;
+			this.Desc = desc;
+			BaseModel.ModelPool.Add(this.Desc.Name, this );
 		}
 
 		public virtual void Initialise( )
@@ -76,10 +74,10 @@ namespace SharpQuake.Renderer.Models
 		{
 		}
 
-		public static BaseModel Create( BaseDevice device, String identifier, BaseTexture texture, Type modelType, Type descType )
+		public static BaseModel Create( BaseDevice device, string identifier, BaseTexture texture, Type modelType, Type descType )
 		{
-			if ( ModelPool.ContainsKey( identifier ) )
-				return ModelPool[identifier];
+			if ( BaseModel.ModelPool.ContainsKey( identifier ) )
+				return BaseModel.ModelPool[identifier];
 
 			var desc = ( BaseAliasModelDesc ) Activator.CreateInstance( descType );
 			desc.Name = identifier;

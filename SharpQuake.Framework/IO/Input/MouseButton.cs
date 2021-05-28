@@ -32,57 +32,35 @@ namespace SharpQuake.Framework.IO.Input
 	//     Enumerates all possible mouse buttons.
 	public enum MouseButton
     {
-        //
-        // Summary:
-        //     The left mouse button.
-        Left = 0,
-        //
-        // Summary:
-        //     The middle mouse button.
-        Middle = 1,
-        //
-        // Summary:
-        //     The right mouse button.
-        Right = 2,
-        //
-        // Summary:
-        //     The first extra mouse button.
-        Button1 = 3,
-        //
-        // Summary:
-        //     The second extra mouse button.
-        Button2 = 4,
-        //
-        // Summary:
-        //     The third extra mouse button.
-        Button3 = 5,
-        //
-        // Summary:
-        //     The fourth extra mouse button.
-        Button4 = 6,
-        //
-        // Summary:
-        //     The fifth extra mouse button.
-        Button5 = 7,
-        //
-        // Summary:
-        //     The sixth extra mouse button.
-        Button6 = 8,
-        //
-        // Summary:
-        //     The seventh extra mouse button.
-        Button7 = 9,
-        //
-        // Summary:
-        //     The eigth extra mouse button.
-        Button8 = 10,
-        //
-        // Summary:
-        //     The ninth extra mouse button.
-        Button9 = 11,
-        //
-        // Summary:
-        //     Indicates the last available mouse button.
-        LastButton = 12
+	    /// <summary>The first button.</summary>
+	    Button1 = 0,
+	    /// <summary>
+	    ///     The left mouse button. This corresponds to <see cref="F:OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Button1" />.
+	    /// </summary>
+	    Left = 0,
+	    /// <summary>The second button.</summary>
+	    Button2 = 1,
+	    /// <summary>
+	    ///     The right mouse button. This corresponds to <see cref="F:OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Button2" />.
+	    /// </summary>
+	    Right = 1,
+	    /// <summary>The third button.</summary>
+	    Button3 = 2,
+	    /// <summary>
+	    ///     The middle mouse button. This corresponds to <see cref="F:OpenTK.Windowing.GraphicsLibraryFramework.MouseButton.Button3" />.
+	    /// </summary>
+	    Middle = 2,
+	    /// <summary>The fourth button.</summary>
+	    Button4 = 3,
+	    /// <summary>The fifth button.</summary>
+	    Button5 = 4,
+	    /// <summary>The sixth button.</summary>
+	    Button6 = 5,
+	    /// <summary>The seventh button.</summary>
+	    Button7 = 6,
+	    /// <summary>The eighth button.</summary>
+	    Button8 = 7,
+	    /// <summary>The highest mouse button available.</summary>
+	    Last = 7
     }
 }

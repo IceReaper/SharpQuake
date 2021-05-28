@@ -22,21 +22,20 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
 namespace SharpQuake.Framework.IO.Sound
 {
+	using System.Runtime.InteropServices;
+
 	// !!! if this is changed, it much be changed in asm_i386.h too !!!
 	[StructLayout( LayoutKind.Sequential, Pack = 1 )]
 	public struct PortableSamplePair_t
 	{
-		public Int32 left;
-		public Int32 right;
+		public int left;
+		public int right;
 
-		public override String ToString( )
+		public override string ToString( )
 		{
-			return String.Format( "{{{0}, {1}}}", left, right );
+			return string.Format( "{{{0}, {1}}}", this.left, this.right );
 		}
 	}
 

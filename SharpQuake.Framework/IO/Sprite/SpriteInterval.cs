@@ -1,13 +1,12 @@
-﻿using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework.IO.Sprite
+﻿namespace SharpQuake.Framework.IO.Sprite
 {
+	using System.Runtime.InteropServices;
+
 	[StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct dspriteinterval_t
     {
-        public Single interval;
+        public float interval;
 
-        public static Int32 SizeInBytes = Marshal.SizeOf( typeof( dspriteinterval_t ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( dspriteinterval_t ) );
     } // dspriteinterval_t;
 }

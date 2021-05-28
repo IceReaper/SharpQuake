@@ -22,47 +22,46 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework.IO.BSP
+namespace SharpQuake.Framework.IO.BSP.Q3
 {
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct Q3Face
     {
-        public Int32 textureIndex;
-        public Int32 effectIndex;
+        public int textureIndex;
+        public int effectIndex;
         public Q3FaceType type;
 
-        public Int32 firstVertex;
-        public Int32 numVertices;
+        public int firstVertex;
+        public int numVertices;
 
-        public Int32 firstElement;
-        public Int32 numElements;
+        public int firstElement;
+        public int numElements;
 
-        public Int32 lightMapIndex;
-
-        [MarshalAs( UnmanagedType.ByValArray, SizeConst = 2 )]
-        public Int32[] lightMapBase;
+        public int lightMapIndex;
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 2 )]
-        public Int32[] lightMapSize;
-
-        [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Single[] origin; // Used for lightmaps and flares
-
-        [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Single[] vec1; // lm vectors or mins
-
-        [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Single[] vec2; // lm vectors or maxs
-
-        [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Single[] normal; // for flat faces
+        public int[] lightMapBase;
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 2 )]
-        public Int32[] patchSize;
+        public int[] lightMapSize;
 
-        public static Int32 SizeInBytes = Marshal.SizeOf( typeof( Q3Face ) );
+        [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
+        public float[] origin; // Used for lightmaps and flares
+
+        [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
+        public float[] vec1; // lm vectors or mins
+
+        [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
+        public float[] vec2; // lm vectors or maxs
+
+        [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
+        public float[] normal; // for flat faces
+
+        [MarshalAs( UnmanagedType.ByValArray, SizeConst = 2 )]
+        public int[] patchSize;
+
+        public static int SizeInBytes = Marshal.SizeOf( typeof( Q3Face ) );
     }
 }

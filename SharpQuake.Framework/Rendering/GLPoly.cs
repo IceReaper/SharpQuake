@@ -22,37 +22,37 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Rendering
 {
+    using Definitions.Bsp;
+
     public class GLPoly
     {
         public GLPoly next;
         public GLPoly chain;
-        public Int32 numverts;
-        public Int32 flags;			// for SURF_UNDERWATER
+        public int numverts;
+        public int flags;			// for SURF_UNDERWATER
         /// <summary>
         /// Changed! Original Quake glpoly_t has 4 vertex inplace and others immidiately after this struct
         /// Now all vertices are in verts array of size [numverts,VERTEXSIZE]
         /// </summary>
-        public Single[][] verts; //[4][VERTEXSIZE];	// variable sized (xyz s1t1 s2t2)
+        public float[][] verts; //[4][VERTEXSIZE];	// variable sized (xyz s1t1 s2t2)
 
         public void Clear( )
         {
-            next = null;
-            chain = null;
-            numverts = 0;
-            flags = 0;
-            verts = null;
+            this.next = null;
+            this.chain = null;
+            this.numverts = 0;
+            this.flags = 0;
+            this.verts = null;
         }
 
-        public void AllocVerts( Int32 count )
+        public void AllocVerts( int count )
         {
-            numverts = count;
-            verts = new Single[count][];
+            this.numverts = count;
+            this.verts = new float[count][];
             for ( var i = 0; i < count; i++ )
-                verts[i] = new Single[ModelDef.VERTEXSIZE];
+                this.verts[i] = new float[ModelDef.VERTEXSIZE];
         }
     } //glpoly_t;
 }

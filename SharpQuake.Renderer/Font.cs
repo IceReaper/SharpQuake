@@ -22,13 +22,14 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Drawing;
-using SharpQuake.Framework;
-using SharpQuake.Renderer.Textures;
-
 namespace SharpQuake.Renderer
 {
+    using Framework;
+    using Framework.Data;
+    using System;
+    using System.Drawing;
+    using Textures;
+
     public class Font : IDisposable
     {
         public BaseDevice Device
@@ -37,7 +38,7 @@ namespace SharpQuake.Renderer
             private set;
         }
 
-        public String Name
+        public string Name
         {
             get;
             private set;
@@ -49,27 +50,27 @@ namespace SharpQuake.Renderer
             private set;
         }
 
-        public Font( BaseDevice device, String name )
+        public Font( BaseDevice device, string name )
         {
-            Device = device;
-            Name = name;
+            this.Device = device;
+            this.Name = name;
         }
 
         public virtual void Initialise( ByteArraySegment buffer )
         {
-            Texture = BaseTexture.FromBuffer( Device, Name, buffer, 128, 128, false, true, filter: "GL_NEAREST" );
+            this.Texture = BaseTexture.FromBuffer(this.Device, this.Name, buffer, 128, 128, false, true, "GL_NEAREST" );
         }
 
-        public virtual Int32 Measure( String str )
+        public virtual int Measure( string str )
         {
             return str.Length * 8;
         }
 
         // Draw_String
-        public virtual void Draw( Int32 x, Int32 y, String str, Color? color = null )
+        public virtual void Draw( int x, int y, string str, Color? color = null )
         {
             for ( var i = 0; i < str.Length; i++, x += 8 )
-                DrawCharacter( x, y, str[i], color );
+                this.DrawCharacter( x, y, str[i], color );
         }
 
         // Draw_Character
@@ -78,7 +79,7 @@ namespace SharpQuake.Renderer
         // It can be clipped to the top of the screen to allow the console to be
         // smoothly scrolled off.
         // Vertex color modification has no effect currently
-        public virtual void DrawCharacter( Int32 x, Int32 y, Int32 num, Color? colour = null )
+        public virtual void DrawCharacter( int x, int y, int num, Color? colour = null )
         {
             if ( num == 32 )
                 return;		// space
@@ -95,8 +96,9 @@ namespace SharpQuake.Renderer
             var fcol = col * 0.0625f;
             var size = 0.0625f;
 
-            Device.Graphics.DrawTexture2D( Texture,
-                   new RectangleF( fcol, frow, size, size ), new Rectangle( x, y, 8, 8 ), colour );
+            this.Device.Graphics.DrawTexture2D(
+                this.Texture,
+                   new( fcol, frow, size, size ), new Rectangle( x, y, 8, 8 ), colour );
         }
 
         public virtual void Dispose( )

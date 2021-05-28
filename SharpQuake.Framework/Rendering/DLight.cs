@@ -22,28 +22,27 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework.Mathematics;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Rendering
 {
+    using System.Numerics;
+
     public class dlight_t
     {
         public Vector3 origin;
-        public Single radius;
-        public Single die;				// stop lighting after this time
-        public Single decay;				// drop this each second
-        public Single minlight;			// don't add when contributing less
-        public Int32 key;
+        public float radius;
+        public float die;				// stop lighting after this time
+        public float decay;				// drop this each second
+        public float minlight;			// don't add when contributing less
+        public int key;
 
         public void Clear( )
         {
-            origin = Vector3.Zero;
-            radius = 0;
-            die = 0;
-            decay = 0;
-            minlight = 0;
-            key = 0;
+            this.origin = Vector3.Zero;
+            this.radius = 0;
+            this.die = 0;
+            this.decay = 0;
+            this.minlight = 0;
+            this.key = 0;
         }
     } //dlight_t;
 }

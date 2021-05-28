@@ -22,11 +22,10 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 /// 
-using System;
 
-namespace SharpQuake.Framework.IO.BSP
+namespace SharpQuake.Framework.IO.BSP.Q3
 {
-    public enum Q3Lumps : Int32
+    public enum Q3Lumps : int
     {
         Entities = 0, // entities to spawn (used by server and client)
         Textures = 1, // textures used (used by faces)

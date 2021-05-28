@@ -22,12 +22,11 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Renderer.Textures;
-using OpenTK.Graphics.OpenGL;
-
 namespace SharpQuake.Renderer.OpenGL.Textures
 {
+    using OpenTK.Graphics.OpenGL;
+    using Renderer.Textures;
+
     public class GLPixelFormat : BasePixelFormat
     {
         public PixelFormat Value
@@ -36,10 +35,10 @@ namespace SharpQuake.Renderer.OpenGL.Textures
             private set;
         }
 
-        public GLPixelFormat( String name, PixelFormat value )
+        public GLPixelFormat( string name, PixelFormat value )
             : base( name )
         {
-            Value = value;
+            this.Value = value;
         }
     }
 }

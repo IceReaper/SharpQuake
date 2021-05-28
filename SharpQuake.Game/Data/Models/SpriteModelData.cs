@@ -1,53 +1,57 @@
-﻿using System;
-using SharpQuake.Framework;
-using SharpQuake.Framework.IO.Sprite;
-using SharpQuake.Framework.World;
-using SharpQuake.Game.Rendering.Textures;
-
-namespace SharpQuake.Game.Data.Models
+﻿namespace SharpQuake.Game.Data.Models
 {
-	public class SpriteModelData : ModelData
+    using Framework;
+    using Framework.Data;
+    using Framework.Definitions.Bsp;
+    using Framework.Engine;
+    using Framework.IO.Sprite;
+    using Framework.Rendering;
+    using Framework.Rendering.Sprite;
+    using Framework.World;
+    using Rendering.Textures;
+    using System;
+
+    public class SpriteModelData : ModelData
     {        
         public SpriteModelData( ModelTexture noTexture ) : base( noTexture )
         {
 
         }
 
-        public void Load( String name, Byte[] buffer, Func<String, ByteArraySegment, Int32, Int32, Int32> onLoadSpriteTexture )
+        public void Load( string name, byte[] buffer, Func<string, ByteArraySegment, int, int, int> onLoadSpriteTexture )
         {
-            Name = name;
-            Buffer = buffer;
+            this.Name = name;
+            this.Buffer = buffer;
 
             var pin = Utilities.BytesToStructure<dsprite_t>( buffer, 0 );
 
             var version = EndianHelper.LittleLong( pin.version );
 
             if ( version != ModelDef.SPRITE_VERSION )
-                Utilities.Error( "{0} has wrong version number ({1} should be {2})",
-                    Name, version, ModelDef.SPRITE_VERSION );
+                Utilities.Error( "{0} has wrong version number ({1} should be {2})", this.Name, version, ModelDef.SPRITE_VERSION );
 
             var numframes = EndianHelper.LittleLong( pin.numframes );
 
             var psprite = new msprite_t( );
 
             // Uze: sprite models are not cached so
-            cache = new CacheUser( );
-            cache.data = psprite;
+            this.cache = new( );
+            this.cache.data = psprite;
 
             psprite.type = ( SpriteType ) EndianHelper.LittleLong( pin.type );
             psprite.maxwidth = EndianHelper.LittleLong( pin.width );
             psprite.maxheight = EndianHelper.LittleLong( pin.height );
             psprite.beamlength = EndianHelper.LittleFloat( pin.beamlength );
-            SyncType = ( SyncType ) EndianHelper.LittleLong( ( Int32 ) pin.synctype );
+            this.SyncType = ( SyncType ) EndianHelper.LittleLong( ( int ) pin.synctype );
             psprite.numframes = numframes;
 
-            var mins = BoundsMin;
-            var maxs = BoundsMax;
+            var mins = this.BoundsMin;
+            var maxs = this.BoundsMax;
             mins.X = mins.Y = -psprite.maxwidth / 2;
             maxs.X = maxs.Y = psprite.maxwidth / 2;
             mins.Z = -psprite.maxheight / 2;
             maxs.Z = psprite.maxheight / 2;
-            BoundsMin = BoundsMin;
+            this.BoundsMin = this.BoundsMin;
 
             //
             // load the frames
@@ -55,7 +59,7 @@ namespace SharpQuake.Game.Data.Models
             if ( numframes < 1 )
                 Utilities.Error( "Mod_LoadSpriteModel: Invalid # of frames: {0}\n", numframes );
 
-            FrameCount = numframes;
+            this.FrameCount = numframes;
 
             var frameOffset = dsprite_t.SizeInBytes;
 
@@ -69,23 +73,19 @@ namespace SharpQuake.Game.Data.Models
                 psprite.frames[i].type = frametype;
 
                 if ( frametype == spriteframetype_t.SPR_SINGLE )
-                {
-                    frameOffset = LoadSpriteFrame( new ByteArraySegment( buffer, frameOffset ), out psprite.frames[i].frameptr, i, onLoadSpriteTexture );
-                }
+                    frameOffset = this.LoadSpriteFrame( new( buffer, frameOffset ), out psprite.frames[i].frameptr, i, onLoadSpriteTexture );
                 else
-                {
-                    frameOffset = LoadSpriteGroup( new ByteArraySegment( buffer, frameOffset ), out psprite.frames[i].frameptr, i, onLoadSpriteTexture );
-                }
+                    frameOffset = this.LoadSpriteGroup( new( buffer, frameOffset ), out psprite.frames[i].frameptr, i, onLoadSpriteTexture );
             }
 
-            Type = ModelType.mod_sprite;
+            this.Type = ModelType.mod_sprite;
         }
 
         /// <summary>
         ///
         /// </summary>
         /// <returns>Offset of next data block</returns>
-        private Int32 LoadSpriteFrame( ByteArraySegment pin, out Object ppframe, Int32 framenum, Func<String, ByteArraySegment, Int32, Int32, Int32> onLoadSpriteTexture )
+        private int LoadSpriteFrame( ByteArraySegment pin, out object ppframe, int framenum, Func<string, ByteArraySegment, int, int, int> onLoadSpriteTexture )
         {
             var pinframe = Utilities.BytesToStructure<dspriteframe_t>( pin.Data, pin.StartIndex );
 
@@ -107,9 +107,9 @@ namespace SharpQuake.Game.Data.Models
             pspriteframe.left = orgx;// origin[0];
             pspriteframe.right = width + orgx;// origin[0];
 
-            var name = Name + "_" + framenum.ToString( );
+            var name = this.Name + "_" + framenum.ToString( );
 
-            var index = onLoadSpriteTexture( name, new ByteArraySegment( pin.Data, pin.StartIndex + dspriteframe_t.SizeInBytes ), width, height );
+            var index = onLoadSpriteTexture( name, new( pin.Data, pin.StartIndex + dspriteframe_t.SizeInBytes ), width, height );
 
             pspriteframe.gl_texturenum = index;
 
@@ -119,7 +119,7 @@ namespace SharpQuake.Game.Data.Models
         /// <summary>
         /// Mod_LoadSpriteGroup
         /// </summary>
-        private Int32 LoadSpriteGroup( ByteArraySegment pin, out Object ppframe, Int32 framenum, Func<String, ByteArraySegment, Int32, Int32, Int32> onLoadSpriteTexture )
+        private int LoadSpriteGroup( ByteArraySegment pin, out object ppframe, int framenum, Func<string, ByteArraySegment, int, int, int> onLoadSpriteTexture )
         {
             var pingroup = Utilities.BytesToStructure<dspritegroup_t>( pin.Data, pin.StartIndex );
 
@@ -128,7 +128,7 @@ namespace SharpQuake.Game.Data.Models
             pspritegroup.numframes = numframes;
             pspritegroup.frames = new mspriteframe_t[numframes];
             ppframe = pspritegroup;
-            var poutintervals = new Single[numframes];
+            var poutintervals = new float[numframes];
             pspritegroup.intervals = poutintervals;
 
             var offset = pin.StartIndex + dspritegroup_t.SizeInBytes;
@@ -142,8 +142,8 @@ namespace SharpQuake.Game.Data.Models
 
             for ( var i = 0; i < numframes; i++ )
             {
-                Object tmp;
-                offset = LoadSpriteFrame( new ByteArraySegment( pin.Data, offset ), out tmp, framenum * 100 + i, onLoadSpriteTexture );
+                object tmp;
+                offset = this.LoadSpriteFrame( new( pin.Data, offset ), out tmp, framenum * 100 + i, onLoadSpriteTexture );
                 pspritegroup.frames[i] = ( mspriteframe_t ) tmp;
             }
 
@@ -159,7 +159,7 @@ namespace SharpQuake.Game.Data.Models
         {
             base.CopyFrom( src );
 
-            Type = ModelType.mod_sprite;
+            this.Type = ModelType.mod_sprite;
         }
     }
 }

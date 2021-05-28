@@ -45,11 +45,9 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework.IO.BSP
+namespace SharpQuake.Framework.IO.BSP.Q2
 {
-    public enum Q2Contents : Int32
+    public enum Q2Contents : int
     {
         Solid = 0x00000001,
         Window = 0x00000002,

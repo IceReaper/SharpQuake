@@ -24,7 +24,7 @@
 /// 
 
 
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Rendering.Sprite
 {
     public enum spriteframetype_t
     {

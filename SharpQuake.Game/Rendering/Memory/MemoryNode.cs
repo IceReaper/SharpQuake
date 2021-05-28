@@ -22,23 +22,23 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-
 namespace SharpQuake.Game.Rendering.Memory
 {
+    using Framework;
+    using Framework.Mathematics;
+
     public class MemoryNode : MemoryNodeBase
     {
         // node specific
         public Plane plane;
         public MemoryNodeBase[] children; //[2];	
 
-        public UInt16 firstsurface;
-        public UInt16 numsurfaces;
+        public ushort firstsurface;
+        public ushort numsurfaces;
 
         public MemoryNode( )
         {
-            children = new MemoryNodeBase[2];
+            this.children = new MemoryNodeBase[2];
         }
     } //mnode_t;
 }

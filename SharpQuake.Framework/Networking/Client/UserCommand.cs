@@ -22,27 +22,26 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework.Mathematics;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Networking.Client
 {
+    using System.Numerics;
+
     public struct usercmd_t
     {
         public Vector3 viewangles;
 
         // intended velocities
-        public Single forwardmove;
+        public float forwardmove;
 
-        public Single sidemove;
-        public Single upmove;
+        public float sidemove;
+        public float upmove;
 
         public void Clear( )
         {
-            viewangles = Vector3.Zero;
-            forwardmove = 0;
-            sidemove = 0;
-            upmove = 0;
+            this.viewangles = Vector3.Zero;
+            this.forwardmove = 0;
+            this.sidemove = 0;
+            this.upmove = 0;
         }
     }
 }

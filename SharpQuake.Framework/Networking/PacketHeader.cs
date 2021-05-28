@@ -22,17 +22,16 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Networking
 {
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct PacketHeader
     {
-        public Int32 length;
-        public Int32 sequence;
+        public int length;
+        public int sequence;
 
-        public static Int32 SizeInBytes = Marshal.SizeOf( typeof( PacketHeader ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( PacketHeader ) );
     }
 }

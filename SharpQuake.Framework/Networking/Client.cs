@@ -22,20 +22,23 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework.Mathematics;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Networking
 {
+    using Client;
+    using Definitions;
+    using Engine;
+    using System;
+    using System.Numerics;
+
     public class client_t
     {
-        public Boolean active;             // false = client is free
-        public Boolean spawned;            // false = don't send datagrams
-        public Boolean dropasap;           // has been told to go to another level
-        public Boolean privileged;         // can execute any host command
-        public Boolean sendsignon;         // only valid before spawned
+        public bool active;             // false = client is free
+        public bool spawned;            // false = don't send datagrams
+        public bool dropasap;           // has been told to go to another level
+        public bool privileged;         // can execute any host command
+        public bool sendsignon;         // only valid before spawned
 
-        public Double last_message;     // reliable messages must be sent
+        public double last_message;     // reliable messages must be sent
 
         // periodically
         public qsocket_t netconnection; // communications handle
@@ -49,44 +52,44 @@ namespace SharpQuake.Framework
         //public byte[] msgbuf;//[MAX_MSGLEN];
 
         public MemoryEdict edict; // edict_t *edict	// EDICT_NUM(clientnum+1)
-        public String name;//[32];			// for printing to other people
-        public Int32 colors;
+        public string name;//[32];			// for printing to other people
+        public int colors;
 
-        public Single[] ping_times;//[NUM_PING_TIMES];
-        public Int32 num_pings;           // ping_times[num_pings%NUM_PING_TIMES]
+        public float[] ping_times;//[NUM_PING_TIMES];
+        public int num_pings;           // ping_times[num_pings%NUM_PING_TIMES]
 
         // spawn parms are carried from level to level
-        public Single[] spawn_parms;//[NUM_SPAWN_PARMS];
+        public float[] spawn_parms;//[NUM_SPAWN_PARMS];
 
         // client known data for deltas
-        public Int32 old_frags;
+        public int old_frags;
 
         public void Clear( )
         {
-            active = false;
-            spawned = false;
-            dropasap = false;
-            privileged = false;
-            sendsignon = false;
-            last_message = 0;
-            netconnection = null;
-            cmd.Clear( );
-            wishdir = Vector3.Zero;
-            message.Clear( );
-            edict = null;
-            name = null;
-            colors = 0;
-            Array.Clear( ping_times, 0, ping_times.Length );
-            num_pings = 0;
-            Array.Clear( spawn_parms, 0, spawn_parms.Length );
-            old_frags = 0;
+            this.active = false;
+            this.spawned = false;
+            this.dropasap = false;
+            this.privileged = false;
+            this.sendsignon = false;
+            this.last_message = 0;
+            this.netconnection = null;
+            this.cmd.Clear( );
+            this.wishdir = Vector3.Zero;
+            this.message.Clear( );
+            this.edict = null;
+            this.name = null;
+            this.colors = 0;
+            Array.Clear(this.ping_times, 0, this.ping_times.Length );
+            this.num_pings = 0;
+            Array.Clear(this.spawn_parms, 0, this.spawn_parms.Length );
+            this.old_frags = 0;
         }
 
         public client_t( )
         {
-            ping_times = new Single[ServerDef.NUM_PING_TIMES];
-            spawn_parms = new Single[ServerDef.NUM_SPAWN_PARMS];
-            message = new MessageWriter( QDef.MAX_MSGLEN );
+            this.ping_times = new float[ServerDef.NUM_PING_TIMES];
+            this.spawn_parms = new float[ServerDef.NUM_SPAWN_PARMS];
+            this.message = new( QDef.MAX_MSGLEN );
         }
     }// client_t;
 }

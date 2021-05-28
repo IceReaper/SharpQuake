@@ -22,17 +22,17 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Networking
 {
+    using System;
+
     public static class NetworkWrapper
     {
-        public static Func<Int32, INetLanDriver> OnGetLanDriver;
+        public static Func<int, INetLanDriver> OnGetLanDriver;
 
-        public static INetLanDriver GetLanDriver( Int32 driverIndex )
+        public static INetLanDriver GetLanDriver( int driverIndex )
         {
-            return OnGetLanDriver?.Invoke( driverIndex );
+            return NetworkWrapper.OnGetLanDriver?.Invoke( driverIndex );
         }
     }
 }

@@ -22,19 +22,18 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework.IO.BSP
+namespace SharpQuake.Framework.IO.BSP.Q2
 {
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct Q2Header
     {
-        public Int32 version;
+        public int version;
 
-        [MarshalAs( UnmanagedType.ByValArray, SizeConst = ( Int32 ) Q2Lumps.Count )]
+        [MarshalAs( UnmanagedType.ByValArray, SizeConst = ( int ) Q2Lumps.Count )]
         public BspLump[] lumps; //[HEADER_LUMPS];
 
-        public static Int32 SizeInBytes = Marshal.SizeOf( typeof( Q2Header ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( Q2Header ) );
     } // dheader_t
 }

@@ -22,38 +22,36 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Data
 {
     public class LittleEndianConverter : IByteOrderConverter
     {
-        Int16 IByteOrderConverter.BigShort( Int16 l )
+        short IByteOrderConverter.BigShort( short l )
         {
             return SwapHelper.ShortSwap( l );
         }
 
-        Int16 IByteOrderConverter.LittleShort( Int16 l )
+        short IByteOrderConverter.LittleShort( short l )
         {
             return l;
         }
 
-        Int32 IByteOrderConverter.BigLong( Int32 l )
+        int IByteOrderConverter.BigLong( int l )
         {
             return SwapHelper.LongSwap( l );
         }
 
-        Int32 IByteOrderConverter.LittleLong( Int32 l )
+        int IByteOrderConverter.LittleLong( int l )
         {
             return l;
         }
 
-        Single IByteOrderConverter.BigFloat( Single l )
+        float IByteOrderConverter.BigFloat( float l )
         {
             return SwapHelper.FloatSwap( l );
         }
 
-        Single IByteOrderConverter.LittleFloat( Single l )
+        float IByteOrderConverter.LittleFloat( float l )
         {
             return l;
         }

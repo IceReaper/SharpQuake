@@ -22,16 +22,14 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Rendering
 {
     public class VidMode
     {
-        public Int32 width;
-        public Int32 height;
-        public Int32 bpp;
-        public Single refreshRate;
-        public System.Boolean fullScreen;
+        public int width;
+        public int height;
+        public int bpp;
+        public float refreshRate;
+        public bool fullScreen;
     } // mode_t
 }

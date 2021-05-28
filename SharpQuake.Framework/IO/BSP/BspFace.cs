@@ -22,26 +22,27 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.BSP
 {
+    using Definitions.Bsp;
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct BspFace
     {
-        public System.Int16 planenum;
-        public System.Int16 side;
+        public short planenum;
+        public short side;
 
-        public System.Int32 firstedge;		// we must support > 64k edges
-        public System.Int16 numedges;
-        public System.Int16 texinfo;
+        public int firstedge;		// we must support > 64k edges
+        public short numedges;
+        public short texinfo;
 
         // lighting info
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = BspDef.MAXLIGHTMAPS )]
-        public System.Byte[] styles; //[MAXLIGHTMAPS];
+        public byte[] styles; //[MAXLIGHTMAPS];
 
-        public System.Int32 lightofs;		// start of [numstyles*surfsize] samples
+        public int lightofs;		// start of [numstyles*surfsize] samples
 
-        public static System.Int32 SizeInBytes = Marshal.SizeOf( typeof( BspFace ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( BspFace ) );
     } // dface_t
 }

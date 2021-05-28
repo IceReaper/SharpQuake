@@ -22,20 +22,19 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Renderer.Textures;
-
 namespace SharpQuake.Renderer.OpenGL.Textures
 {
+    using Renderer.Textures;
+
     public class GLTextureAtlas : BaseTextureAtlas
     {
-        public Int32 BaseTextureNumber
+        public int BaseTextureNumber
         {
             get;
             private set;
         }
 
-        public GLTextureAtlas( GLDevice device, Int32 maxTextures, Int32 width, Int32 height )
+        public GLTextureAtlas( GLDevice device, int maxTextures, int width, int height )
             : base( device, maxTextures, width, height )
         {
 

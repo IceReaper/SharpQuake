@@ -22,22 +22,21 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.Wad
 {
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi )]
     public class WadLumpInfo
     {
-        public Int32 filepos;
-        public Int32 disksize;
-        public Int32 size;                   // uncompressed
-        public Byte type;
-        public Byte compression;
-        private Byte pad1, pad2;
+        public int filepos;
+        public int disksize;
+        public int size;                   // uncompressed
+        public byte type;
+        public byte compression;
+        private byte pad1, pad2;
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 16 )]
-        public Byte[] name; //[16];				// must be null terminated
+        public byte[] name; //[16];				// must be null terminated
     } // lumpinfo_t;
 }

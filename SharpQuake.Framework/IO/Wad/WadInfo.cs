@@ -22,18 +22,17 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.Wad
 {
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Ansi )]
     public struct WadInfo
     {
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 4 )]
-        public Byte[] identification; // [4];		// should be WAD2 or 2DAW
+        public byte[] identification; // [4];		// should be WAD2 or 2DAW
 
-        public Int32 numlumps;
-        public Int32 infotableofs;
+        public int numlumps;
+        public int infotableofs;
     } // wadinfo_t
 }

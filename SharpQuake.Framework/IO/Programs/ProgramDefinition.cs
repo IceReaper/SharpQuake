@@ -22,30 +22,28 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-using string_t = System.Int32;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.Programs
 {
+    using Data;
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public class ProgramDefinition
     {
-        public UInt16 type;		// if DEF_SAVEGLOBGAL bit is set
+        public ushort type;		// if DEF_SAVEGLOBGAL bit is set
 
         // the variable needs to be saved in savegames
-        public UInt16 ofs;
+        public ushort ofs;
 
-        public string_t s_name;
+        public int s_name;
 
-        public static string_t SizeInBytes = Marshal.SizeOf( typeof( ProgramDefinition ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( ProgramDefinition ) );
 
         public void SwapBytes( )
         {
-            type = ( UInt16 ) EndianHelper.LittleShort( ( Int16 ) type );
-            ofs = ( UInt16 ) EndianHelper.LittleShort( ( Int16 ) ofs );
-            s_name = EndianHelper.LittleLong( s_name );
+            this.type = ( ushort ) EndianHelper.LittleShort( ( short )this.type );
+            this.ofs = ( ushort ) EndianHelper.LittleShort( ( short )this.ofs );
+            this.s_name = EndianHelper.LittleLong(this.s_name );
         }
     } // ddef_t;
 }

@@ -22,11 +22,10 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.Pak
 {
+    using System.Runtime.InteropServices;
+
     //
     // on disk
     //
@@ -34,8 +33,8 @@ namespace SharpQuake.Framework
     public struct PakFile
     {
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 56 )]
-        public Byte[] name; // [56];
+        public byte[] name; // [56];
 
-        public Int32 filepos, filelen;
+        public int filepos, filelen;
     } // dpackfile_t
 }

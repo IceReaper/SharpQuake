@@ -22,17 +22,16 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.BSP.Q3
 {
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct Q3BrushSide
     {
-        public Int32 planeIndex;
-        public Int32 textureIndex;
+        public int planeIndex;
+        public int textureIndex;
 
-        public static Int32 SizeInBytes = Marshal.SizeOf( typeof( Q3BrushSide ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( Q3BrushSide ) );
     }
 }

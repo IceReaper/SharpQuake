@@ -22,21 +22,21 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
 namespace SharpQuake.Framework.IO.Input
 {
-	public class MouseWheelEventArgs : EventArgs
+    using System;
+
+    public class MouseWheelEventArgs : EventArgs
     {
-        public Int32 Delta
+        public int Delta
         {
             get;
             private set;
         }
 
-        public MouseWheelEventArgs( Int32 delta )
+        public MouseWheelEventArgs( int delta )
         {
-            Delta = delta;
+            this.Delta = delta;
         }
     }
 }

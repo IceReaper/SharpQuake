@@ -22,23 +22,22 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.IO;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.Pak
 {
+    using System.IO;
+
     public class Pak
     {
-        public String filename; // [MAX_OSPATH];
+        public string filename; // [MAX_OSPATH];
         public BinaryReader stream; //int handle;
 
         //int numfiles;
         public MemoryPakFile[] files;
 
-        public Pak( String filename, BinaryReader reader, MemoryPakFile[] files )
+        public Pak( string filename, BinaryReader reader, MemoryPakFile[] files )
         {
             this.filename = filename;
-            stream = reader;
+            this.stream = reader;
             this.files = files;
         }
     } // pack_t;

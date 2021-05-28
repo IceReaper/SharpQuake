@@ -22,16 +22,16 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
 namespace SharpQuake.Framework.Definitions
 {
+	using System;
+
 	public static class WarpDef
 	{
-		public const Double TURBSCALE = ( 256.0 / ( 2 * Math.PI ) );
+		public const double TURBSCALE = 256.0 / ( 2 * Math.PI );
 
 		// turbsin
-		public static Single[] _TurbSin = new Single[]
+		public static float[] _TurbSin = new float[]
 		{
 			0f, 0.19633f, 0.392541f, 0.588517f, 0.784137f, 0.979285f, 1.17384f, 1.3677f,
 			1.56072f, 1.75281f, 1.94384f, 2.1337f, 2.32228f, 2.50945f, 2.69512f, 2.87916f,

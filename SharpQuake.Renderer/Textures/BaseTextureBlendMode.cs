@@ -22,21 +22,19 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
 namespace SharpQuake.Renderer.Textures
 {
     public class BaseTextureBlendMode
     {
-        public virtual String Name
+        public virtual string Name
         {
             get;
             protected set;
         }
 
-        public BaseTextureBlendMode( String name )
+        public BaseTextureBlendMode( string name )
         {
-            Name = name;
+            this.Name = name;
         }
     }
 }

@@ -22,19 +22,19 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.BSP
 {
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct BspPlane
     {
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public System.Single[] normal; //[3];
+        public float[] normal; //[3];
 
-        public System.Single dist;
-        public System.Int32 type;		// PLANE_X - PLANE_ANYZ ?remove? trivial to regenerate
+        public float dist;
+        public int type;		// PLANE_X - PLANE_ANYZ ?remove? trivial to regenerate
 
-        public static System.Int32 SizeInBytes = Marshal.SizeOf( typeof( BspPlane ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( BspPlane ) );
     } // dplane_t
 }

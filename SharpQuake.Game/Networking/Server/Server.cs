@@ -22,12 +22,14 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-using SharpQuake.Game.Data.Models;
-
 namespace SharpQuake.Game.Networking.Server
 {
+    using Data.Models;
+    using Framework;
+    using Framework.Definitions;
+    using Framework.Engine;
+    using System;
+
     public enum server_state_t
     {
         Loading,
@@ -40,21 +42,21 @@ namespace SharpQuake.Game.Networking.Server
 
     public class server_t
     {
-        public Boolean active;             // false if only a net client
-        public Boolean paused;
-        public Boolean loadgame;           // handle connections specially
-        public Double time;
-        public Int32 lastcheck;           // used by PF_checkclient
-        public Double lastchecktime;
-        public String name;// char		name[64];			// map name
-        public String modelname;// char		modelname[64];		// maps/<name>.bsp, for model_precache[0]
+        public bool active;             // false if only a net client
+        public bool paused;
+        public bool loadgame;           // handle connections specially
+        public double time;
+        public int lastcheck;           // used by PF_checkclient
+        public double lastchecktime;
+        public string name;// char		name[64];			// map name
+        public string modelname;// char		modelname[64];		// maps/<name>.bsp, for model_precache[0]
         public BrushModelData worldmodel;
-        public String[] model_precache; //[MAX_MODELS];	// NULL terminated
+        public string[] model_precache; //[MAX_MODELS];	// NULL terminated
         public ModelData[] models; //[MAX_MODELS];
-        public String[] sound_precache; //[MAX_SOUNDS];	// NULL terminated
-        public String[] lightstyles; // [MAX_LIGHTSTYLES];
-        public Int32 num_edicts;
-        public Int32 max_edicts;
+        public string[] sound_precache; //[MAX_SOUNDS];	// NULL terminated
+        public string[] lightstyles; // [MAX_LIGHTSTYLES];
+        public int num_edicts;
+        public int max_edicts;
         public MemoryEdict[] edicts;        // can NOT be array indexed, because
 
         // edict_t is variable sized, but can
@@ -67,38 +69,38 @@ namespace SharpQuake.Game.Networking.Server
 
         public void Clear( )
         {
-            active = false;
-            paused = false;
-            loadgame = false;
-            time = 0;
-            lastcheck = 0;
-            lastchecktime = 0;
-            name = null;
-            modelname = null;
-            worldmodel = null;
-            Array.Clear( model_precache, 0, model_precache.Length );
-            Array.Clear( models, 0, models.Length );
-            Array.Clear( sound_precache, 0, sound_precache.Length );
-            Array.Clear( lightstyles, 0, lightstyles.Length );
-            num_edicts = 0;
-            max_edicts = 0;
-            edicts = null;
-            state = 0;
-            datagram.Clear( );
-            reliable_datagram.Clear( );
-            signon.Clear( );
+            this.active = false;
+            this.paused = false;
+            this.loadgame = false;
+            this.time = 0;
+            this.lastcheck = 0;
+            this.lastchecktime = 0;
+            this.name = null;
+            this.modelname = null;
+            this.worldmodel = null;
+            Array.Clear(this.model_precache, 0, this.model_precache.Length );
+            Array.Clear(this.models, 0, this.models.Length );
+            Array.Clear(this.sound_precache, 0, this.sound_precache.Length );
+            Array.Clear(this.lightstyles, 0, this.lightstyles.Length );
+            this.num_edicts = 0;
+            this.max_edicts = 0;
+            this.edicts = null;
+            this.state = 0;
+            this.datagram.Clear( );
+            this.reliable_datagram.Clear( );
+            this.signon.Clear( );
             GC.Collect( );
         }
 
         public server_t( )
         {
-            model_precache = new String[QDef.MAX_MODELS];
-            models = new ModelData[QDef.MAX_MODELS];
-            sound_precache = new String[QDef.MAX_SOUNDS];
-            lightstyles = new String[QDef.MAX_LIGHTSTYLES];
-            datagram = new MessageWriter( QDef.MAX_DATAGRAM );
-            reliable_datagram = new MessageWriter( QDef.MAX_DATAGRAM );
-            signon = new MessageWriter( 8192 );
+            this.model_precache = new string[QDef.MAX_MODELS];
+            this.models = new ModelData[QDef.MAX_MODELS];
+            this.sound_precache = new string[QDef.MAX_SOUNDS];
+            this.lightstyles = new string[QDef.MAX_LIGHTSTYLES];
+            this.datagram = new( QDef.MAX_DATAGRAM );
+            this.reliable_datagram = new( QDef.MAX_DATAGRAM );
+            this.signon = new( 8192 );
         }
     }// server_t;
 }

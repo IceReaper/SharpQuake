@@ -22,12 +22,12 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Linq;
-
-namespace SharpQuake.Framework.Factories.IO
+namespace SharpQuake.Framework.Factories
 {
-	public class MasterFactory : BaseFactory<String, IBaseFactory>
+    using System;
+    using System.Linq;
+
+    public class MasterFactory : BaseFactory<string, IBaseFactory>
     {
         public MasterFactory( ) : base( )
         {
@@ -37,17 +37,15 @@ namespace SharpQuake.Framework.Factories.IO
         {
             var instance = Activator.CreateInstance<TFactory>( );
 
-            Add( ItemType.Name, instance );
+            this.Add(this.ItemType.Name, instance );
 
             return instance;
         }
 
         public override void Dispose( )
         {
-            foreach ( IDisposable factory in UniqueKeys ? DictionaryItems.Values : ListItems.Select( i => i.Value ) )
-            {
+            foreach ( IDisposable factory in this.UniqueKeys ? this.DictionaryItems.Values : this.ListItems.Select( i => i.Value ) )
                 factory.Dispose( );
-            }
         }
     }
 }

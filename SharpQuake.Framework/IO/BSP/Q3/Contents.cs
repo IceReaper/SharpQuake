@@ -45,11 +45,9 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework.IO.BSP
+namespace SharpQuake.Framework.IO.BSP.Q3
 {
-    public enum Q3Contents : Int64
+    public enum Q3Contents : long
     {
         Solid = 0x00000001, // solid (opaque and transparent)
         Lava = 	0x00000008, // lava

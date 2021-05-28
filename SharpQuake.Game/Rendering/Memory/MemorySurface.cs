@@ -22,25 +22,27 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-
 namespace SharpQuake.Game.Rendering.Memory
 {
+    using Framework;
+    using Framework.Definitions.Bsp;
+    using Framework.Mathematics;
+    using Framework.Rendering;
+
     public class MemorySurface
     {
-        public Int32 visframe;		// should be drawn when node is crossed
+        public int visframe;		// should be drawn when node is crossed
 
         public Plane plane;
-        public Int32 flags;
+        public int flags;
 
-        public Int32 firstedge;	// look up in model->surfedges[], negative numbers
-        public Int32 numedges;	// are backwards edges
+        public int firstedge;	// look up in model->surfedges[], negative numbers
+        public int numedges;	// are backwards edges
 
-        public Int16[] texturemins; //[2];
-        public Int16[] extents; //[2];
+        public short[] texturemins; //[2];
+        public short[] extents; //[2];
 
-        public Int32 light_s, light_t;	// gl lightmap coordinates
+        public int light_s, light_t;	// gl lightmap coordinates
 
         public GLPoly polys;			// multiple if warped
         public MemorySurface texturechain;
@@ -48,26 +50,26 @@ namespace SharpQuake.Game.Rendering.Memory
         public MemoryTextureInfo texinfo;
 
         // lighting info
-        public Int32 dlightframe;
-        public Int32 dlightbits;
+        public int dlightframe;
+        public int dlightbits;
 
-        public Int32 lightmaptexturenum;
-        public Byte[] styles; //[MAXLIGHTMAPS];
-        public Int32[] cached_light; //[MAXLIGHTMAPS];	// values currently used in lightmap
-        public Boolean cached_dlight;				// true if dynamic light in cache
+        public int lightmaptexturenum;
+        public byte[] styles; //[MAXLIGHTMAPS];
+        public int[] cached_light; //[MAXLIGHTMAPS];	// values currently used in lightmap
+        public bool cached_dlight;				// true if dynamic light in cache
         /// <summary>
         /// Former "samples" field. Use in pair with sampleofs field!!!
         /// </summary>
-        public Byte[] sample_base;		// [numstyles*surfsize]
-        public Int32 sampleofs; // added by Uze. In original Quake samples = loadmodel->lightdata + offset;
+        public byte[] sample_base;		// [numstyles*surfsize]
+        public int sampleofs; // added by Uze. In original Quake samples = loadmodel->lightdata + offset;
         // now samples = loadmodel->lightdata;
 
         public MemorySurface( )
         {
-            texturemins = new Int16[2];
-            extents = new Int16[2];
-            styles = new Byte[BspDef.MAXLIGHTMAPS];
-            cached_light = new Int32[BspDef.MAXLIGHTMAPS];
+            this.texturemins = new short[2];
+            this.extents = new short[2];
+            this.styles = new byte[BspDef.MAXLIGHTMAPS];
+            this.cached_light = new int[BspDef.MAXLIGHTMAPS];
             // samples is allocated when needed
         }
     } //msurface_t;

@@ -22,12 +22,12 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework.IO.BSP
+namespace SharpQuake.Framework.IO.BSP.Q3
 {
+    using System;
+
     [Flags]
-    public enum Q3SurfaceFlags : Int32
+    public enum Q3SurfaceFlags : int
     {
         NoDamage = 1,
         Slick = 2,

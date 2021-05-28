@@ -22,82 +22,45 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.IO;
-using SharpQuake.Framework;
-using SharpQuake.Framework.IO;
-using SharpQuake.Renderer;
+
 
 // vid.h -- video driver defs
 
-namespace SharpQuake
+namespace SharpQuake.Rendering
 {
-	/// <summary>
+    using Desktop;
+    using Engine.Host;
+    using Framework.Data;
+    using Framework.Engine;
+    using Framework.IO;
+    using Framework.Mathematics;
+    using Renderer;
+    using System;
+
+    /// <summary>
 	/// Vid_functions
 	/// </summary>
 	public class Vid
     {
-        public UInt16[] Table8to16
-        {
-            get
-            {
-                return Device.Palette.Table8to16;//_8to16table;
-            }
-        }
+        public ushort[] Table8to16 => this.Device.Palette.Table8to16; //_8to16table;
 
-        public UInt32[] Table8to24
-        {
-            get
-            {
-                return Device.Palette.Table8to24;//_8to24table;
-            }
-        }
+        public uint[] Table8to24 => this.Device.Palette.Table8to24; //_8to24table;
 
-        public Byte[] Table15to8
-        {
-            get
-            {
-                return Device.Palette.Table15to8;//_15to8table;
-            }
-        }
+        public byte[] Table15to8 => this.Device.Palette.Table15to8; //_15to8table;
 
-        public System.Boolean glZTrick
-        {
-            get
-            {
-                return Host.Cvars.glZTrick.Get<Boolean>( );
-            }
-        }
+        public bool glZTrick => this.Host.Cvars.glZTrick.Get<bool>( );
 
-        public System.Boolean WindowedMouse
-        {
-            get
-            {
-                return Host.Cvars.WindowedMouse.Get<Boolean>( );
-            }
-        }
+        public bool WindowedMouse => this.Host.Cvars.WindowedMouse.Get<bool>( );
 
-        public Boolean Wait
-        {
-            get
-            {
-                return Host.Cvars.Wait.Get<Boolean>( );
-            }
-        }
+        public bool Wait => this.Host.Cvars.Wait.Get<bool>( );
 
-        public Int32 ModeNum
-        {
-            get
-            {
-                return Device.ChosenMode;//_ModeNum;
-            }
-        }
+        public int ModeNum => this.Device.ChosenMode; //_ModeNum;
 
-        public const Int32 VID_CBITS = 6;
-        public const Int32 VID_GRADES = (1 << VID_CBITS);
-        public const Int32 VID_ROW_SIZE = 3;
-        private const Int32 WARP_WIDTH = 320;
-        private const Int32 WARP_HEIGHT = 200;        
+        public const int VID_CBITS = 6;
+        public const int VID_GRADES = 1 << Vid.VID_CBITS;
+        public const int VID_ROW_SIZE = 3;
+        private const int WARP_WIDTH = 320;
+        private const int WARP_HEIGHT = 200;        
        
         // Instances
         private Host Host
@@ -106,17 +69,11 @@ namespace SharpQuake
             set;
         }
 
-        public BaseDevice Device
-        {
-            get
-            {
-                return Host.MainWindow.Device;
-            }
-        }
+        public BaseDevice Device => this.Host.MainWindow.Device;
 
         public Vid( Host host )
         {
-            Host = host;
+            this.Host = host;
         }
 
         /// <summary>
@@ -126,85 +83,83 @@ namespace SharpQuake
         /// the video driver will need it again
         /// </summary>
         /// <param name="palette"></param>
-        public void Initialise( Byte[] palette )
+        public void Initialise( byte[] palette )
         {
-            if ( Host.Cvars.glZTrick == null )
+            if (this.Host.Cvars.glZTrick == null )
             {
-                Host.Cvars.glZTrick = Host.CVars.Add( "gl_ztrick", true );
-                Host.Cvars.Mode = Host.CVars.Add( "vid_mode", 0 );
-                Host.Cvars.DefaultMode = Host.CVars.Add( "_vid_default_mode", 0, ClientVariableFlags.Archive );
-                Host.Cvars.DefaultModeWin = Host.CVars.Add( "_vid_default_mode_win", 3, ClientVariableFlags.Archive );
-                Host.Cvars.Wait = Host.CVars.Add( "vid_wait", false );
-                Host.Cvars.NoPageFlip = Host.CVars.Add( "vid_nopageflip", 0, ClientVariableFlags.Archive );
-                Host.Cvars.WaitOverride = Host.CVars.Add( "_vid_wait_override", 0, ClientVariableFlags.Archive );
-                Host.Cvars.ConfigX = Host.CVars.Add( "vid_config_x", 800, ClientVariableFlags.Archive );
-                Host.Cvars.ConfigY = Host.CVars.Add( "vid_config_y", 600, ClientVariableFlags.Archive );
-                Host.Cvars.StretchBy2 = Host.CVars.Add( "vid_stretch_by_2", 1, ClientVariableFlags.Archive );
-                Host.Cvars.WindowedMouse = Host.CVars.Add( "_windowed_mouse", true, ClientVariableFlags.Archive );
+                this.Host.Cvars.glZTrick = this.Host.CVars.Add( "gl_ztrick", true );
+                this.Host.Cvars.Mode = this.Host.CVars.Add( "vid_mode", 0 );
+                this.Host.Cvars.DefaultMode = this.Host.CVars.Add( "_vid_default_mode", 0, ClientVariableFlags.Archive );
+                this.Host.Cvars.DefaultModeWin = this.Host.CVars.Add( "_vid_default_mode_win", 3, ClientVariableFlags.Archive );
+                this.Host.Cvars.Wait = this.Host.CVars.Add( "vid_wait", false );
+                this.Host.Cvars.NoPageFlip = this.Host.CVars.Add( "vid_nopageflip", 0, ClientVariableFlags.Archive );
+                this.Host.Cvars.WaitOverride = this.Host.CVars.Add( "_vid_wait_override", 0, ClientVariableFlags.Archive );
+                this.Host.Cvars.ConfigX = this.Host.CVars.Add( "vid_config_x", 800, ClientVariableFlags.Archive );
+                this.Host.Cvars.ConfigY = this.Host.CVars.Add( "vid_config_y", 600, ClientVariableFlags.Archive );
+                this.Host.Cvars.StretchBy2 = this.Host.CVars.Add( "vid_stretch_by_2", 1, ClientVariableFlags.Archive );
+                this.Host.Cvars.WindowedMouse = this.Host.CVars.Add( "_windowed_mouse", true, ClientVariableFlags.Archive );
             }
 
-            Host.Commands.Add( "vid_nummodes", NumModes_f );
-            Host.Commands.Add( "vid_describecurrentmode", DescribeCurrentMode_f );
-            Host.Commands.Add( "vid_describemode", DescribeMode_f );
-            Host.Commands.Add( "vid_describemodes", DescribeModes_f );
+            this.Host.Commands.Add( "vid_nummodes", this.NumModes_f );
+            this.Host.Commands.Add( "vid_describecurrentmode", this.DescribeCurrentMode_f );
+            this.Host.Commands.Add( "vid_describemode", this.DescribeMode_f );
+            this.Host.Commands.Add( "vid_describemodes", this.DescribeModes_f );
 
-            Device.Initialise( palette );
+            this.Device.Initialise( palette );
 
-            UpdateConsole( );
-            UpdateScreen( );
+            this.UpdateConsole( );
+            this.UpdateScreen( );
 
             // Moved from SetMode
 
             // so Con_Printfs don't mess us up by forcing vid and snd updates
-            var temp = Host.Screen.IsDisabledForLoading;
-            Host.Screen.IsDisabledForLoading = true;
-            Host.CDAudio.Pause( );
+            var temp = this.Host.Screen.IsDisabledForLoading;
+            this.Host.Screen.IsDisabledForLoading = true;
+            this.Host.CDAudio.Pause( );
 
-            Device.SetMode( Device.ChosenMode, palette );
+            this.Device.SetMode(this.Device.ChosenMode, palette );
 
-            var vid = Host.Screen.vid;
+            var vid = this.Host.Screen.vid;
 
-            UpdateConsole( false );
+            this.UpdateConsole( false );
 
-            vid.width = Device.Desc.Width; // vid.conwidth
-            vid.height = Device.Desc.Height;
+            vid.width = this.Device.Desc.Width; // vid.conwidth
+            vid.height = this.Device.Desc.Height;
             vid.numpages = 2;
 
-            Host.CDAudio.Resume( );
-            Host.Screen.IsDisabledForLoading = temp;
+            this.Host.CDAudio.Resume( );
+            this.Host.Screen.IsDisabledForLoading = temp;
 
-            Host.CVars.Set( "vid_mode", Device.ChosenMode );
+            this.Host.CVars.Set( "vid_mode", this.Device.ChosenMode );
 
             // fix the leftover Alt from any Alt-Tab or the like that switched us away
-            ClearAllStates( );
+            this.ClearAllStates( );
 
-            Host.Console.SafePrint( "Video mode {0} initialized.\n", Device.GetModeDescription( Device.ChosenMode ) );
+            this.Host.Console.SafePrint( "Video mode {0} initialized.\n", this.Device.GetModeDescription(this.Device.ChosenMode ) );
 
             vid.recalc_refdef = true;
 
-            if ( Device.Desc.Renderer.StartsWith( "PowerVR", StringComparison.InvariantCultureIgnoreCase ) )
-                Host.Screen.FullSbarDraw = true;
+            if (this.Device.Desc.Renderer.StartsWith( "PowerVR", StringComparison.InvariantCultureIgnoreCase ) )
+                this.Host.Screen.FullSbarDraw = true;
 
-            if ( Device.Desc.Renderer.StartsWith( "Permedia", StringComparison.InvariantCultureIgnoreCase ) )
-                Host.Screen.IsPermedia = true;
+            if (this.Device.Desc.Renderer.StartsWith( "Permedia", StringComparison.InvariantCultureIgnoreCase ) )
+                this.Host.Screen.IsPermedia = true;
 
-            CheckTextureExtensions( );
-
-            Directory.CreateDirectory( Path.Combine( FileSystem.GameDir, "glquake" ) );
+            this.CheckTextureExtensions( );
         }
 
         private void UpdateScreen()
         {
-            Host.Screen.vid.maxwarpwidth = WARP_WIDTH;
-            Host.Screen.vid.maxwarpheight = WARP_HEIGHT;
-            Host.Screen.vid.colormap = Host.ColorMap;
-            var v = BitConverter.ToInt32( Host.ColorMap, 2048 );
-            Host.Screen.vid.fullbright = 256 - EndianHelper.LittleLong( v );
+            this.Host.Screen.vid.maxwarpwidth = Vid.WARP_WIDTH;
+            this.Host.Screen.vid.maxwarpheight = Vid.WARP_HEIGHT;
+            this.Host.Screen.vid.colormap = this.Host.ColorMap;
+            var v = BitConverter.ToInt32(this.Host.ColorMap, 2048 );
+            this.Host.Screen.vid.fullbright = 256 - EndianHelper.LittleLong( v );
         }
 
-        private void UpdateConsole( System.Boolean isInitialStage = true )
+        private void UpdateConsole( bool isInitialStage = true )
         {
-            var vid = Host.Screen.vid;
+            var vid = this.Host.Screen.vid;
 
             if ( isInitialStage )
             {
@@ -233,10 +188,10 @@ namespace SharpQuake
             }
             else
             {
-                if ( vid.conheight > Device.Desc.Height )
-                    vid.conheight = Device.Desc.Height;
-                if ( vid.conwidth > Device.Desc.Width )
-                    vid.conwidth = Device.Desc.Width;
+                if ( vid.conheight > this.Device.Desc.Height )
+                    vid.conheight = this.Device.Desc.Height;
+                if ( vid.conwidth > this.Device.Desc.Width )
+                    vid.conwidth = this.Device.Desc.Width;
             }
         }
 
@@ -246,16 +201,16 @@ namespace SharpQuake
         /// </summary>
         public void Shutdown()
         {
-            Device.Dispose( );
+            this.Device.Dispose( );
             //_IsInitialized = false;
         }
 
         /// <summary>
         /// VID_GetModeDescription
         /// </summary>
-        public String GetModeDescription( Int32 mode )
+        public string GetModeDescription( int mode )
         {
-            return Device.GetModeDescription( mode );
+            return this.Device.GetModeDescription( mode );
         }
 
         /// <summary>
@@ -264,12 +219,12 @@ namespace SharpQuake
         /// <param name="msg"></param>
         private void NumModes_f( CommandMessage msg )
         {
-            var nummodes = Device.AvailableModes.Length;
+            var nummodes = this.Device.AvailableModes.Length;
 
             if( nummodes == 1 )
-                Host.Console.Print( "{0} video mode is available\n", nummodes );
+                this.Host.Console.Print( "{0} video mode is available\n", nummodes );
             else
-                Host.Console.Print( "{0} video modes are available\n", nummodes );
+                this.Host.Console.Print( "{0} video modes are available\n", nummodes );
         }
 
         /// <summary>
@@ -278,7 +233,7 @@ namespace SharpQuake
         /// <param name="msg"></param>
         private void DescribeCurrentMode_f( CommandMessage msg )
         {
-            Host.Console.Print( "{0}\n", GetModeDescription( Device.ChosenMode ) );
+            this.Host.Console.Print( "{0}\n", this.GetModeDescription(this.Device.ChosenMode ) );
         }
 
         /// <summary>
@@ -289,7 +244,7 @@ namespace SharpQuake
         {
             var modenum = MathLib.atoi( msg.Parameters[0] );
 
-            Host.Console.Print( "{0}\n", GetModeDescription( modenum ) );
+            this.Host.Console.Print( "{0}\n", this.GetModeDescription( modenum ) );
         }
 
         /// <summary>
@@ -298,10 +253,8 @@ namespace SharpQuake
         /// <param name="msg"></param>
         private void DescribeModes_f( CommandMessage msg )
         {
-            for( var i = 0; i < Device.AvailableModes.Length; i++ )
-            {
-                Host.Console.Print( "{0}:{1}\n", i, GetModeDescription( i ) );
-            }
+            for( var i = 0; i < this.Device.AvailableModes.Length; i++ )
+                this.Host.Console.Print( "{0}:{1}\n", i, this.GetModeDescription( i ) );
         }
 
         /// <summary>
@@ -311,11 +264,9 @@ namespace SharpQuake
         {
             // send an up event for each key, to make sure the server clears them all
             for( var i = 0; i < 256; i++ )
-            {
-                Host.Keyboard.Event( i, false );
-            }
+                this.Host.Keyboard.Event( i, false );
 
-            Host.Keyboard.ClearStates();
+            this.Host.Keyboard.ClearStates();
             MainWindow.Input.ClearStates();
         }
 
@@ -324,10 +275,10 @@ namespace SharpQuake
         /// </summary>
         private void CheckTextureExtensions()
         {
-            const String TEXTURE_EXT_STRING = "GL_EXT_texture_object";
+            const string TEXTURE_EXT_STRING = "GL_EXT_texture_object";
 
             // check for texture extension
-            var texture_ext = Device.Desc.Extensions.Contains( TEXTURE_EXT_STRING );
+            var texture_ext = this.Device.Desc.Extensions.Contains( TEXTURE_EXT_STRING );
         }
     }
 }

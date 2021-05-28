@@ -22,18 +22,16 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
 namespace SharpQuake.Framework.IO.Sound
 {
 	// !!! if this is changed, it much be changed in asm_i386.h too !!!
 	public class SoundEffectCache_t
 	{
-		public Int32 length;
-		public Int32 loopstart;
-		public Int32 speed;
-		public Int32 width;
-		public Int32 stereo;
-		public Byte[] data; // [1];		// variable sized
+		public int length;
+		public int loopstart;
+		public int speed;
+		public int width;
+		public int stereo;
+		public byte[] data; // [1];		// variable sized
 	} // sfxcache_t;
 }

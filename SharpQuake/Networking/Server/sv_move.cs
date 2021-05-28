@@ -22,19 +22,23 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-using SharpQuake.Framework.IO.BSP;
-using SharpQuake.Framework.Mathematics;
-using SharpQuake.Framework.World;
+
 
 // sv_move.c
 
-namespace SharpQuake
+namespace SharpQuake.Networking.Server
 {
+    using Framework.Definitions;
+    using Framework.Engine;
+    using Framework.IO.BSP.Q1;
+    using Framework.Mathematics;
+    using Framework.World;
+    using System;
+    using System.Numerics;
+
     partial class server
     {
-        private const Single DI_NODIR = -1;
+        private const float DI_NODIR = -1;
 
         /// <summary>
         /// SV_movestep
@@ -43,46 +47,45 @@ namespace SharpQuake
         /// possible, no move is done, false is returned, and
         /// pr_global_struct.trace_normal is set to the normal of the blocking wall
         /// </summary>
-        public Boolean MoveStep( MemoryEdict ent, ref Vector3f move, Boolean relink )
+        public bool MoveStep( MemoryEdict ent, ref Vector3 move, bool relink )
         {
             Trace_t trace;
 
             // try the move
             var oldorg = ent.v.origin;
-            Vector3f neworg;
+            Vector3 neworg;
             MathLib.VectorAdd( ref ent.v.origin, ref move, out neworg );
 
             // flying monsters don't step up
-            if( ( ( Int32 ) ent.v.flags & ( EdictFlags.FL_SWIM | EdictFlags.FL_FLY ) ) != 0 )
+            if( ( ( int ) ent.v.flags & ( EdictFlags.FL_SWIM | EdictFlags.FL_FLY ) ) != 0 )
             {
                 // try one move with vertical motion, then one without
                 for( var i = 0; i < 2; i++ )
                 {
                     MathLib.VectorAdd( ref ent.v.origin, ref move, out neworg );
-                    var enemy = ProgToEdict( ent.v.enemy );
-                    if( i == 0 && enemy != sv.edicts[0] )
+                    var enemy = this.ProgToEdict( ent.v.enemy );
+                    if( i == 0 && enemy != this.sv.edicts[0] )
                     {
-                        var dz = ent.v.origin.z - enemy.v.origin.z;
+                        var dz = ent.v.origin.Z - enemy.v.origin.Z;
                         if( dz > 40 )
-                            neworg.z -= 8;
+                            neworg.Z -= 8;
                         if( dz < 30 )
-                            neworg.z += 8;
+                            neworg.Z += 8;
                     }
 
-                    trace = Move( ref ent.v.origin, ref ent.v.mins, ref ent.v.maxs, ref neworg, 0, ent );
+                    trace = this.Move( ref ent.v.origin, ref ent.v.mins, ref ent.v.maxs, ref neworg, 0, ent );
                     if( trace.fraction == 1 )
                     {
-                        if( ( ( Int32 ) ent.v.flags & EdictFlags.FL_SWIM ) != 0 &&
-                            PointContents( ref trace.endpos ) == ( Int32 ) Q1Contents.Empty )
+                        if( ( ( int ) ent.v.flags & EdictFlags.FL_SWIM ) != 0 && this.PointContents( ref trace.endpos ) == ( int ) Q1Contents.Empty )
                             return false;	// swim monster left water
 
                         MathLib.Copy( ref trace.endpos, out ent.v.origin );
                         if( relink )
-                            LinkEdict( ent, true );
+                            this.LinkEdict( ent, true );
                         return true;
                     }
 
-                    if( enemy == sv.edicts[0] )
+                    if( enemy == this.sv.edicts[0] )
                         break;
                 }
 
@@ -90,31 +93,31 @@ namespace SharpQuake
             }
 
             // push down from a step height above the wished position
-            neworg.z += STEPSIZE;
+            neworg.Z += server.STEPSIZE;
             var end = neworg;
-            end.z -= STEPSIZE * 2;
+            end.Z -= server.STEPSIZE * 2;
 
-            trace = Move( ref neworg, ref ent.v.mins, ref ent.v.maxs, ref end, 0, ent );
+            trace = this.Move( ref neworg, ref ent.v.mins, ref ent.v.maxs, ref end, 0, ent );
 
             if( trace.allsolid )
                 return false;
 
             if( trace.startsolid )
             {
-                neworg.z -= STEPSIZE;
-                trace = Move( ref neworg, ref ent.v.mins, ref ent.v.maxs, ref end, 0, ent );
+                neworg.Z -= server.STEPSIZE;
+                trace = this.Move( ref neworg, ref ent.v.mins, ref ent.v.maxs, ref end, 0, ent );
                 if( trace.allsolid || trace.startsolid )
                     return false;
             }
             if( trace.fraction == 1 )
             {
                 // if monster had the ground pulled out, go ahead and fall
-                if( ( ( Int32 ) ent.v.flags & EdictFlags.FL_PARTIALGROUND ) != 0 )
+                if( ( ( int ) ent.v.flags & EdictFlags.FL_PARTIALGROUND ) != 0 )
                 {
                     MathLib.VectorAdd( ref ent.v.origin, ref move, out ent.v.origin );
                     if( relink )
-                        LinkEdict( ent, true );
-                    ent.v.flags = ( Int32 ) ent.v.flags & ~EdictFlags.FL_ONGROUND;
+                        this.LinkEdict( ent, true );
+                    ent.v.flags = ( int ) ent.v.flags & ~EdictFlags.FL_ONGROUND;
                     return true;
                 }
 
@@ -124,38 +127,37 @@ namespace SharpQuake
             // check point traces down for dangling corners
             MathLib.Copy( ref trace.endpos, out ent.v.origin );
 
-            if( !CheckBottom( ent ) )
+            if( !this.CheckBottom( ent ) )
             {
-                if( ( ( Int32 ) ent.v.flags & EdictFlags.FL_PARTIALGROUND ) != 0 )
+                if( ( ( int ) ent.v.flags & EdictFlags.FL_PARTIALGROUND ) != 0 )
                 {
                     // entity had floor mostly pulled out from underneath it
                     // and is trying to correct
                     if( relink )
-                        LinkEdict( ent, true );
+                        this.LinkEdict( ent, true );
                     return true;
                 }
                 ent.v.origin = oldorg;
                 return false;
             }
 
-            if( ( ( Int32 ) ent.v.flags & EdictFlags.FL_PARTIALGROUND ) != 0 )
-            {
-                ent.v.flags = ( Int32 ) ent.v.flags & ~EdictFlags.FL_PARTIALGROUND;
-            }
-            ent.v.groundentity = EdictToProg( trace.ent );
+            if( ( ( int ) ent.v.flags & EdictFlags.FL_PARTIALGROUND ) != 0 )
+                ent.v.flags = ( int ) ent.v.flags & ~EdictFlags.FL_PARTIALGROUND;
+
+            ent.v.groundentity = this.EdictToProg( trace.ent );
 
             // the move is ok
             if( relink )
-                LinkEdict( ent, true );
+                this.LinkEdict( ent, true );
             return true;
         }
 
         /// <summary>
         /// SV_CheckBottom
         /// </summary>
-        public Boolean CheckBottom( MemoryEdict ent )
+        public bool CheckBottom( MemoryEdict ent )
         {
-            Vector3f mins, maxs;
+            Vector3 mins, maxs;
             MathLib.VectorAdd( ref ent.v.origin, ref ent.v.mins, out mins );
             MathLib.VectorAdd( ref ent.v.origin, ref ent.v.maxs, out maxs );
 
@@ -163,13 +165,13 @@ namespace SharpQuake
             // with the tougher checks
             // the corners must be within 16 of the midpoint
             Vector3 start;
-            start.Z = mins.z - 1;
+            start.Z = mins.Z - 1;
             for( var x = 0; x <= 1; x++ )
                 for( var y = 0; y <= 1; y++ )
                 {
-                    start.X = ( x != 0 ? maxs.x : mins.x );
-                    start.Y = ( y != 0 ? maxs.y : mins.y );
-                    if( PointContents( ref start ) != ( Int32 ) Q1Contents.Solid )
+                    start.X = x != 0 ? maxs.X : mins.X;
+                    start.Y = y != 0 ? maxs.Y : mins.Y;
+                    if(this.PointContents( ref start ) != ( int ) Q1Contents.Solid )
                         goto RealCheck;
                 }
 
@@ -180,14 +182,14 @@ RealCheck:
 //
 // check it for real...
 //
-            start.Z = mins.z;
+            start.Z = mins.Z;
 
             // the midpoint must be within 16 of the bottom
-            start.X = ( mins.x + maxs.x ) * 0.5f;
-            start.Y = ( mins.y + maxs.y ) * 0.5f;
+            start.X = ( mins.X + maxs.X ) * 0.5f;
+            start.Y = ( mins.Y + maxs.Y ) * 0.5f;
             var stop = start;
-            stop.Z -= 2 * STEPSIZE;
-            var trace = Move( ref start, ref Utilities.ZeroVector, ref Utilities.ZeroVector, ref stop, 1, ent );
+            stop.Z -= 2 * server.STEPSIZE;
+            var trace = this.Move( ref start, ref Utilities.ZeroVector, ref Utilities.ZeroVector, ref stop, 1, ent );
 
             if( trace.fraction == 1.0 )
                 return false;
@@ -199,14 +201,14 @@ RealCheck:
             for( var x = 0; x <= 1; x++ )
                 for( var y = 0; y <= 1; y++ )
                 {
-                    start.X = stop.X = ( x != 0 ? maxs.x : mins.x );
-                    start.Y = stop.Y = ( y != 0 ? maxs.y : mins.y );
+                    start.X = stop.X = x != 0 ? maxs.X : mins.X;
+                    start.Y = stop.Y = y != 0 ? maxs.Y : mins.Y;
 
-                    trace = Move( ref start, ref Utilities.ZeroVector, ref Utilities.ZeroVector, ref stop, 1, ent );
+                    trace = this.Move( ref start, ref Utilities.ZeroVector, ref Utilities.ZeroVector, ref stop, 1, ent );
 
                     if( trace.fraction != 1.0 && trace.endpos.Z > bottom )
                         bottom = trace.endpos.Z;
-                    if( trace.fraction == 1.0 || mid - trace.endpos.Z > STEPSIZE )
+                    if( trace.fraction == 1.0 || mid - trace.endpos.Z > server.STEPSIZE )
                         return false;
                 }
 
@@ -218,44 +220,42 @@ RealCheck:
         /// </summary>
         public void MoveToGoal()
         {
-            var ent = ProgToEdict( Host.Programs.GlobalStruct.self );
-            var goal = ProgToEdict( ent.v.goalentity );
-            var dist = Host.ProgramsBuiltIn.GetFloat( ProgramOperatorDef.OFS_PARM0 );
+            var ent = this.ProgToEdict(this.Host.Programs.GlobalStruct.self );
+            var goal = this.ProgToEdict( ent.v.goalentity );
+            var dist = this.Host.ProgramsBuiltIn.GetFloat( ProgramOperatorDef.OFS_PARM0 );
 
-            if( ( ( Int32 ) ent.v.flags & ( EdictFlags.FL_ONGROUND | EdictFlags.FL_FLY | EdictFlags.FL_SWIM ) ) == 0 )
+            if( ( ( int ) ent.v.flags & ( EdictFlags.FL_ONGROUND | EdictFlags.FL_FLY | EdictFlags.FL_SWIM ) ) == 0 )
             {
-                Host.ProgramsBuiltIn.ReturnFloat( 0 );
+                this.Host.ProgramsBuiltIn.ReturnFloat( 0 );
                 return;
             }
 
             // if the next step hits the enemy, return immediately
-            if( ProgToEdict( ent.v.enemy ) != sv.edicts[0] && CloseEnough( ent, goal, dist ) )
+            if(this.ProgToEdict( ent.v.enemy ) != this.sv.edicts[0] && this.CloseEnough( ent, goal, dist ) )
                 return;
 
             // bump around...
-            if( ( MathLib.Random() & 3 ) == 1 || !StepDirection( ent, ent.v.ideal_yaw, dist ) )
-            {
-                NewChaseDir( ent, goal, dist );
-            }
+            if( ( MathLib.Random() & 3 ) == 1 || !this.StepDirection( ent, ent.v.ideal_yaw, dist ) )
+                this.NewChaseDir( ent, goal, dist );
         }
 
         /// <summary>
         /// SV_CloseEnough
         /// </summary>
-        private Boolean CloseEnough( MemoryEdict ent, MemoryEdict goal, Single dist )
+        private bool CloseEnough( MemoryEdict ent, MemoryEdict goal, float dist )
         {
-            if( goal.v.absmin.x > ent.v.absmax.x + dist )
+            if( goal.v.absmin.X > ent.v.absmax.X + dist )
                 return false;
-            if( goal.v.absmin.y > ent.v.absmax.y + dist )
+            if( goal.v.absmin.Y > ent.v.absmax.Y + dist )
                 return false;
-            if( goal.v.absmin.z > ent.v.absmax.z + dist )
+            if( goal.v.absmin.Z > ent.v.absmax.Z + dist )
                 return false;
 
-            if( goal.v.absmax.x < ent.v.absmin.x - dist )
+            if( goal.v.absmax.X < ent.v.absmin.X - dist )
                 return false;
-            if( goal.v.absmax.y < ent.v.absmin.y - dist )
+            if( goal.v.absmax.Y < ent.v.absmin.Y - dist )
                 return false;
-            if( goal.v.absmax.z < ent.v.absmin.z - dist )
+            if( goal.v.absmax.Z < ent.v.absmin.Z - dist )
                 return false;
 
             return true;
@@ -265,30 +265,32 @@ RealCheck:
         /// SV_StepDirection
         /// Turns to the movement direction, and walks the current distance if facing it.
         /// </summary>
-        private Boolean StepDirection( MemoryEdict ent, Single yaw, Single dist )
+        private bool StepDirection( MemoryEdict ent, float yaw, float dist )
         {
             ent.v.ideal_yaw = yaw;
-            Host.ProgramsBuiltIn.PF_changeyaw();
+            this.Host.ProgramsBuiltIn.PF_changeyaw();
 
-            yaw = ( Single ) ( yaw * Math.PI * 2.0 / 360 );
-            Vector3f move;
-            move.x = ( Single ) Math.Cos( yaw ) * dist;
-            move.y = ( Single ) Math.Sin( yaw ) * dist;
-            move.z = 0;
+            yaw = ( float ) ( yaw * Math.PI * 2.0 / 360 );
+            Vector3 move;
+            move.X = ( float ) Math.Cos( yaw ) * dist;
+            move.Y = ( float ) Math.Sin( yaw ) * dist;
+            move.Z = 0;
 
             var oldorigin = ent.v.origin;
-            if( MoveStep( ent, ref move, false ) )
+            if(this.MoveStep( ent, ref move, false ) )
             {
-                var delta = ent.v.angles.y - ent.v.ideal_yaw;
+                var delta = ent.v.angles.Y - ent.v.ideal_yaw;
                 if( delta > 45 && delta < 315 )
                 {
                     // not turned far enough, so don't take the step
                     ent.v.origin = oldorigin;
                 }
-                LinkEdict( ent, true );
+
+                this.LinkEdict( ent, true );
                 return true;
             }
-            LinkEdict( ent, true );
+
+            this.LinkEdict( ent, true );
 
             return false;
         }
@@ -296,73 +298,77 @@ RealCheck:
         /// <summary>
         /// SV_NewChaseDir
         /// </summary>
-        private void NewChaseDir( MemoryEdict actor, MemoryEdict enemy, Single dist )
+        private void NewChaseDir( MemoryEdict actor, MemoryEdict enemy, float dist )
         {
-            var olddir = MathLib.AngleMod( ( Int32 ) ( actor.v.ideal_yaw / 45 ) * 45 );
+            var olddir = MathLib.AngleMod( ( int ) ( actor.v.ideal_yaw / 45 ) * 45 );
             var turnaround = MathLib.AngleMod( olddir - 180 );
 
-            var deltax = enemy.v.origin.x - actor.v.origin.x;
-            var deltay = enemy.v.origin.y - actor.v.origin.y;
-            Vector3f d;
+            var deltax = enemy.v.origin.X - actor.v.origin.X;
+            var deltay = enemy.v.origin.Y - actor.v.origin.Y;
+            Vector3 d;
             if( deltax > 10 )
-                d.y = 0;
+                d.Y = 0;
             else if( deltax < -10 )
-                d.y = 180;
+                d.Y = 180;
             else
-                d.y = DI_NODIR;
+                d.Y = server.DI_NODIR;
             if( deltay < -10 )
-                d.z = 270;
+                d.Z = 270;
             else if( deltay > 10 )
-                d.z = 90;
+                d.Z = 90;
             else
-                d.z = DI_NODIR;
+                d.Z = server.DI_NODIR;
 
             // try direct route
-            Single tdir;
-            if( d.y != DI_NODIR && d.z != DI_NODIR )
+            float tdir;
+            if( d.Y != server.DI_NODIR && d.Z != server.DI_NODIR )
             {
-                if( d.y == 0 )
-                    tdir = ( d.z == 90 ? 45 : 315 );
+                if( d.Y == 0 )
+                    tdir = d.Z == 90 ? 45 : 315;
                 else
-                    tdir = ( d.z == 90 ? 135 : 215 );
+                    tdir = d.Z == 90 ? 135 : 215;
 
-                if( tdir != turnaround && StepDirection( actor, tdir, dist ) )
+                if( tdir != turnaround && this.StepDirection( actor, tdir, dist ) )
                     return;
             }
 
             // try other directions
-            if( ( ( MathLib.Random() & 3 ) & 1 ) != 0 || Math.Abs( deltay ) > Math.Abs( deltax ) )
+            if( ( MathLib.Random() & 3 & 1 ) != 0 || Math.Abs( deltay ) > Math.Abs( deltax ) )
             {
-                tdir = d.y;
-                d.y = d.z;
-                d.z = tdir;
+                tdir = d.Y;
+                d.Y = d.Z;
+                d.Z = tdir;
             }
 
-            if( d.y != DI_NODIR && d.y != turnaround && StepDirection( actor, d.y, dist ) )
+            if( d.Y != server.DI_NODIR && d.Y != turnaround && this.StepDirection( actor, d.Y, dist ) )
                 return;
 
-            if( d.z != DI_NODIR && d.z != turnaround && StepDirection( actor, d.z, dist ) )
+            if( d.Z != server.DI_NODIR && d.Z != turnaround && this.StepDirection( actor, d.Z, dist ) )
                 return;
 
             // there is no direct path to the player, so pick another direction
 
-            if( olddir != DI_NODIR && StepDirection( actor, olddir, dist ) )
+            if( olddir != server.DI_NODIR && this.StepDirection( actor, olddir, dist ) )
                 return;
 
             if( ( MathLib.Random() & 1 ) != 0 ) 	//randomly determine direction of search
             {
                 for( tdir = 0; tdir <= 315; tdir += 45 )
-                    if( tdir != turnaround && StepDirection( actor, tdir, dist ) )
+                {
+                    if( tdir != turnaround && this.StepDirection( actor, tdir, dist ) )
                         return;
+                }
             }
             else
             {
                 for( tdir = 315; tdir >= 0; tdir -= 45 )
-                    if( tdir != turnaround && StepDirection( actor, tdir, dist ) )
+                {
+                    if( tdir != turnaround && this.StepDirection( actor, tdir, dist ) )
                         return;
+                }
             }
 
-            if( turnaround != DI_NODIR && StepDirection( actor, turnaround, dist ) )
+            if( turnaround != server.DI_NODIR && this.StepDirection( actor, turnaround, dist ) )
                 return;
 
             actor.v.ideal_yaw = olddir;		// can't move
@@ -370,8 +376,8 @@ RealCheck:
             // if a bridge was pulled out from underneath a monster, it may not have
             // a valid standing position at all
 
-            if( !CheckBottom( actor ) )
-                FixCheckBottom( actor );
+            if( !this.CheckBottom( actor ) )
+                this.FixCheckBottom( actor );
         }
 
         /// <summary>
@@ -379,7 +385,7 @@ RealCheck:
         /// </summary>
         private void FixCheckBottom( MemoryEdict ent )
         {
-            ent.v.flags = ( Int32 ) ent.v.flags | EdictFlags.FL_PARTIALGROUND;
+            ent.v.flags = ( int ) ent.v.flags | EdictFlags.FL_PARTIALGROUND;
         }
     }
 }

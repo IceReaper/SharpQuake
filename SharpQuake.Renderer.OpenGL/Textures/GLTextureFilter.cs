@@ -22,12 +22,11 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Renderer.Textures;
-using OpenTK.Graphics.OpenGL;
-
 namespace SharpQuake.Renderer.OpenGL.Textures
 {
+    using OpenTK.Graphics.OpenGL;
+    using Renderer.Textures;
+
     public class GLTextureFilter : BaseTextureFilter
     {
         public TextureMinFilter Minimise
@@ -42,11 +41,11 @@ namespace SharpQuake.Renderer.OpenGL.Textures
             private set;
         }
 
-        public GLTextureFilter( String name, TextureMinFilter minFilter, TextureMagFilter magFilter )
+        public GLTextureFilter( string name, TextureMinFilter minFilter, TextureMagFilter magFilter )
             : base( name )
         {
-            Minimise = minFilter;
-            Maximise = magFilter;
+            this.Minimise = minFilter;
+            this.Maximise = magFilter;
         }
     }
 }

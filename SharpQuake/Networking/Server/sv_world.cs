@@ -22,13 +22,7 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-using SharpQuake.Framework.IO.BSP;
-using SharpQuake.Framework.Mathematics;
-using SharpQuake.Framework.World;
-using SharpQuake.Game.Data.Models;
-using SharpQuake.Game.Rendering.Memory;
+
 
 // world.c -- world query functions
 
@@ -36,28 +30,41 @@ using SharpQuake.Game.Rendering.Memory;
 //
 // line of sight checks trace->crosscontent, but bullets don't
 
-namespace SharpQuake
+namespace SharpQuake.Networking.Server
 {
+	using Framework.Definitions;
+	using Framework.Engine;
+	using Framework.IO.BSP;
+	using Framework.IO.BSP.Q1;
+	using Framework.Mathematics;
+	using Framework.Networking.Server;
+	using Framework.World;
+	using Game.Data.Models;
+	using Game.Rendering.Memory;
+	using System;
+	using System.Numerics;
+	using Plane = Framework.Mathematics.Plane;
+
 	partial class server
 	{
 		// 1/32 epsilon to keep floating point happy
-		private const Single DIST_EPSILON = 0.03125f;
+		private const float DIST_EPSILON = 0.03125f;
 
-		private const Int32 MOVE_NORMAL = 0;
-		private const Int32 MOVE_NOMONSTERS = 1;
-		private const Int32 MOVE_MISSILE = 2;
+		private const int MOVE_NORMAL = 0;
+		private const int MOVE_NOMONSTERS = 1;
+		private const int MOVE_MISSILE = 2;
 
-		private const Int32 AREA_DEPTH = 4;
+		private const int AREA_DEPTH = 4;
 
-		private const Int32 AREA_NODES = 32;
+		private const int AREA_NODES = 32;
 
-		private areanode_t[] _AreaNodes = new areanode_t[AREA_NODES];
+		private areanode_t[] _AreaNodes = new areanode_t[server.AREA_NODES];
 
 		// sv_areanodes
-		private Int32 _NumAreaNodes;
+		private int _NumAreaNodes;
 
 		// sv_numareanodes
-		private BspHull _BoxHull = new BspHull();
+		private BspHull _BoxHull = new();
 
 		// box_hull
 		private BspClipNode[] _BoxClipNodes = new BspClipNode[6];
@@ -70,13 +77,14 @@ namespace SharpQuake
 		/// </summary>
 		public void ClearWorld( )
 		{
-			InitBoxHull();
+			this.InitBoxHull();
 
-			foreach ( var node in _AreaNodes )
+			foreach ( var node in this._AreaNodes )
 				node.Clear();
-			_NumAreaNodes = 0;
 
-			CreateAreaNode( 0, sv.worldmodel.BoundsMin, sv.worldmodel.BoundsMax );
+			this._NumAreaNodes = 0;
+
+			this.CreateAreaNode( 0, this.sv.worldmodel.BoundsMin, this.sv.worldmodel.BoundsMax );
 		}
 
 		/// <summary>
@@ -102,12 +110,12 @@ namespace SharpQuake
 		/// sets ent->v.absmin and ent->v.absmax
 		/// if touchtriggers, calls prog functions for the intersected triggers
 		/// </summary>
-		public void LinkEdict( MemoryEdict ent, Boolean touch_triggers )
+		public void LinkEdict( MemoryEdict ent, bool touch_triggers )
 		{
 			if ( ent.area.Prev != null )
-				UnlinkEdict( ent ); // unlink from old position
+				this.UnlinkEdict( ent ); // unlink from old position
 
-			if ( ent == sv.edicts[0] )
+			if ( ent == this.sv.edicts[0] )
 				return;     // don't add the world
 
 			if ( ent.free )
@@ -121,34 +129,34 @@ namespace SharpQuake
 			// to make items easier to pick up and allow them to be grabbed off
 			// of shelves, the abs sizes are expanded
 			//
-			if ( ( ( Int32 ) ent.v.flags & EdictFlags.FL_ITEM ) != 0 )
+			if ( ( ( int ) ent.v.flags & EdictFlags.FL_ITEM ) != 0 )
 			{
-				ent.v.absmin.x -= 15;
-				ent.v.absmin.y -= 15;
-				ent.v.absmax.x += 15;
-				ent.v.absmax.y += 15;
+				ent.v.absmin.X -= 15;
+				ent.v.absmin.Y -= 15;
+				ent.v.absmax.X += 15;
+				ent.v.absmax.Y += 15;
 			}
 			else
 			{   // because movement is clipped an epsilon away from an actual edge,
 				// we must fully check even when bounding boxes don't quite touch
-				ent.v.absmin.x -= 1;
-				ent.v.absmin.y -= 1;
-				ent.v.absmin.z -= 1;
-				ent.v.absmax.x += 1;
-				ent.v.absmax.y += 1;
-				ent.v.absmax.z += 1;
+				ent.v.absmin.X -= 1;
+				ent.v.absmin.Y -= 1;
+				ent.v.absmin.Z -= 1;
+				ent.v.absmax.X += 1;
+				ent.v.absmax.Y += 1;
+				ent.v.absmax.Z += 1;
 			}
 
 			// link to PVS leafs
 			ent.num_leafs = 0;
 			if ( ent.v.modelindex != 0 )
-				FindTouchedLeafs( ent, sv.worldmodel.Nodes[0] );
+				this.FindTouchedLeafs( ent, this.sv.worldmodel.Nodes[0] );
 
 			if ( ent.v.solid == Solids.SOLID_NOT )
 				return;
 
 			// find the first node that the ent's box crosses
-			var node = _AreaNodes[0];
+			var node = this._AreaNodes[0];
 			while ( true )
 			{
 				if ( node.axis == -1 )
@@ -170,17 +178,17 @@ namespace SharpQuake
 
 			// if touch_triggers, touch all entities at this node and decend for more
 			if ( touch_triggers )
-				TouchLinks( ent, _AreaNodes[0] );
+				this.TouchLinks( ent, this._AreaNodes[0] );
 		}
 
 		/// <summary>
 		/// SV_PointContents
 		/// </summary>
-		public Int32 PointContents( ref Vector3 p )
+		public int PointContents( ref Vector3 p )
 		{
-			var cont = HullPointContents( sv.worldmodel.Hulls[0], 0, ref p );
-			if ( cont <= ( Int32 ) Q1Contents.Current0 && cont >= ( Int32 ) Q1Contents.CurrentDown )
-				cont = ( Int32 ) Q1Contents.Water;
+			var cont = this.HullPointContents(this.sv.worldmodel.Hulls[0], 0, ref p );
+			if ( cont <= ( int ) Q1Contents.Current0 && cont >= ( int ) Q1Contents.CurrentDown )
+				cont = ( int ) Q1Contents.Water;
 			return cont;
 		}
 
@@ -193,12 +201,12 @@ namespace SharpQuake
 		/// shouldn't be considered solid objects
 		/// passedict is explicitly excluded from clipping checks (normally NULL)
 		/// </summary>
-		public Trace_t Move( ref Vector3 start, ref Vector3 mins, ref Vector3 maxs, ref Vector3 end, Int32 type, MemoryEdict passedict )
+		public Trace_t Move( ref Vector3 start, ref Vector3 mins, ref Vector3 maxs, ref Vector3 end, int type, MemoryEdict passedict )
 		{
 			var clip = new moveclip_t();
 
 			// clip to world
-			clip.trace = ClipMoveToEntity( sv.edicts[0], ref start, ref mins, ref maxs, ref end );
+			clip.trace = this.ClipMoveToEntity(this.sv.edicts[0], ref start, ref mins, ref maxs, ref end );
 
 			clip.start = start;
 			clip.end = end;
@@ -207,7 +215,7 @@ namespace SharpQuake
 			clip.type = type;
 			clip.passedict = passedict;
 
-			if ( type == MOVE_MISSILE )
+			if ( type == server.MOVE_MISSILE )
 			{
 				clip.mins2 = Vector3.One * -15;
 				clip.maxs2 = Vector3.One * 15;
@@ -219,10 +227,10 @@ namespace SharpQuake
 			}
 
 			// create the bounding box of the entire move
-			MoveBounds( ref start, ref clip.mins2, ref clip.maxs2, ref end, out clip.boxmins, out clip.boxmaxs );
+			this.MoveBounds( ref start, ref clip.mins2, ref clip.maxs2, ref end, out clip.boxmins, out clip.boxmaxs );
 
 			// clip to entities
-			ClipToLinks( _AreaNodes[0], clip );
+			this.ClipToLinks(this._AreaNodes[0], clip );
 
 			return clip.trace;
 		}
@@ -230,15 +238,15 @@ namespace SharpQuake
 		/// <summary>
 		/// SV_RecursiveHullCheck
 		/// </summary>
-		public Boolean RecursiveHullCheck( BspHull hull, Int32 num, Single p1f, Single p2f, ref Vector3 p1, ref Vector3 p2, Trace_t trace )
+		public bool RecursiveHullCheck( BspHull hull, int num, float p1f, float p2f, ref Vector3 p1, ref Vector3 p2, Trace_t trace )
 		{
 			// check for empty
 			if ( num < 0 )
 			{
-				if ( num != ( Int32 ) Q1Contents.Solid )
+				if ( num != ( int ) Q1Contents.Solid )
 				{
 					trace.allsolid = false;
-					if ( num == ( Int32 ) Q1Contents.Empty )
+					if ( num == ( int ) Q1Contents.Empty )
 						trace.inopen = true;
 					else
 						trace.inwater = true;
@@ -256,7 +264,7 @@ namespace SharpQuake
 			//
 			var node_children = hull.clipnodes[num].children;
 			var plane = hull.planes[hull.clipnodes[num].planenum];
-			Single t1, t2;
+			float t1, t2;
 
 			if ( plane.type < 3 )
 			{
@@ -270,16 +278,16 @@ namespace SharpQuake
 			}
 
 			if ( t1 >= 0 && t2 >= 0 )
-				return RecursiveHullCheck( hull, node_children[0], p1f, p2f, ref p1, ref p2, trace );
+				return this.RecursiveHullCheck( hull, node_children[0], p1f, p2f, ref p1, ref p2, trace );
 			if ( t1 < 0 && t2 < 0 )
-				return RecursiveHullCheck( hull, node_children[1], p1f, p2f, ref p1, ref p2, trace );
+				return this.RecursiveHullCheck( hull, node_children[1], p1f, p2f, ref p1, ref p2, trace );
 
 			// put the crosspoint DIST_EPSILON pixels on the near side
-			Single frac;
+			float frac;
 			if ( t1 < 0 )
-				frac = ( t1 + DIST_EPSILON ) / ( t1 - t2 );
+				frac = ( t1 + server.DIST_EPSILON ) / ( t1 - t2 );
 			else
-				frac = ( t1 - DIST_EPSILON ) / ( t1 - t2 );
+				frac = ( t1 - server.DIST_EPSILON ) / ( t1 - t2 );
 			if ( frac < 0 )
 				frac = 0;
 			if ( frac > 1 )
@@ -288,15 +296,15 @@ namespace SharpQuake
 			var midf = p1f + ( p2f - p1f ) * frac;
 			var mid = p1 + ( p2 - p1 ) * frac;
 
-			var side = ( t1 < 0 ) ? 1 : 0;
+			var side = t1 < 0 ? 1 : 0;
 
 			// move up to the node
-			if ( !RecursiveHullCheck( hull, node_children[side], p1f, midf, ref p1, ref mid, trace ) )
+			if ( !this.RecursiveHullCheck( hull, node_children[side], p1f, midf, ref p1, ref mid, trace ) )
 				return false;
 
-			if ( HullPointContents( hull, node_children[side ^ 1], ref mid ) != ( Int32 ) Q1Contents.Solid )
+			if (this.HullPointContents( hull, node_children[side ^ 1], ref mid ) != ( int ) Q1Contents.Solid )
 				// go past the node
-				return RecursiveHullCheck( hull, node_children[side ^ 1], midf, p2f, ref mid, ref p2, trace );
+				return this.RecursiveHullCheck( hull, node_children[side ^ 1], midf, p2f, ref mid, ref p2, trace );
 
 			if ( trace.allsolid )
 				return false;       // never got out of the solid area
@@ -315,7 +323,7 @@ namespace SharpQuake
 				trace.plane.dist = -plane.dist;
 			}
 
-			while ( HullPointContents( hull, hull.firstclipnode, ref mid ) == ( Int32 ) Q1Contents.Solid )
+			while (this.HullPointContents( hull, hull.firstclipnode, ref mid ) == ( int ) Q1Contents.Solid )
 			{
 				// shouldn't really happen, but does occasionally
 				frac -= 0.1f;
@@ -323,7 +331,7 @@ namespace SharpQuake
 				{
 					trace.fraction = midf;
 					trace.endpos = mid;
-					Host.Console.DPrint( "backup past 0\n" );
+					this.Host.Console.DPrint( "backup past 0\n" );
 					return false;
 				}
 				midf = p1f + ( p2f - p1f ) * frac;
@@ -339,15 +347,15 @@ namespace SharpQuake
 		/// <summary>
 		/// SV_CreateAreaNode
 		/// </summary>
-		private areanode_t CreateAreaNode( Int32 depth, Vector3 mins, Vector3 maxs )
+		private areanode_t CreateAreaNode( int depth, Vector3 mins, Vector3 maxs )
 		{
-			var anode = _AreaNodes[_NumAreaNodes];
-			_NumAreaNodes++;
+			var anode = this._AreaNodes[this._NumAreaNodes];
+			this._NumAreaNodes++;
 
 			anode.trigger_edicts.Clear();
 			anode.solid_edicts.Clear();
 
-			if ( depth == AREA_DEPTH )
+			if ( depth == server.AREA_DEPTH )
 			{
 				anode.axis = -1;
 				anode.children[0] = anode.children[1] = null;
@@ -373,8 +381,8 @@ namespace SharpQuake
 				maxs1.Y = mins2.Y = anode.dist;
 			}
 
-			anode.children[0] = CreateAreaNode( depth + 1, mins2, maxs2 );
-			anode.children[1] = CreateAreaNode( depth + 1, mins1, maxs1 );
+			anode.children[0] = this.CreateAreaNode( depth + 1, mins2, maxs2 );
+			anode.children[1] = this.CreateAreaNode( depth + 1, mins1, maxs1 );
 
 			return anode;
 		}
@@ -385,10 +393,10 @@ namespace SharpQuake
 		/// </summary>
 		private MemoryEdict TestEntityPosition( MemoryEdict ent )
 		{
-			var trace = Move( ref ent.v.origin, ref ent.v.mins, ref ent.v.maxs, ref ent.v.origin, 0, ent );
+			var trace = this.Move( ref ent.v.origin, ref ent.v.mins, ref ent.v.maxs, ref ent.v.origin, 0, ent );
 
 			if ( trace.startsolid )
-				return sv.edicts[0];
+				return this.sv.edicts[0];
 
 			return null;
 		}
@@ -400,36 +408,36 @@ namespace SharpQuake
 		/// </summary>
 		private void InitBoxHull( )
 		{
-			_BoxHull.clipnodes = _BoxClipNodes;
-			_BoxHull.planes = _BoxPlanes;
-			_BoxHull.firstclipnode = 0;
-			_BoxHull.lastclipnode = 5;
+			this._BoxHull.clipnodes = this._BoxClipNodes;
+			this._BoxHull.planes = this._BoxPlanes;
+			this._BoxHull.firstclipnode = 0;
+			this._BoxHull.lastclipnode = 5;
 
 			for ( var i = 0; i < 6; i++ )
 			{
-				_BoxClipNodes[i].planenum = i;
+				this._BoxClipNodes[i].planenum = i;
 
 				var side = i & 1;
 
-				_BoxClipNodes[i].children[side] = ( Int32 ) Q1Contents.Empty;
+				this._BoxClipNodes[i].children[side] = ( int ) Q1Contents.Empty;
 				if ( i != 5 )
-					_BoxClipNodes[i].children[side ^ 1] = ( Int16 ) ( i + 1 );
+					this._BoxClipNodes[i].children[side ^ 1] = ( short ) ( i + 1 );
 				else
-					_BoxClipNodes[i].children[side ^ 1] = ( Int32 ) Q1Contents.Solid;
+					this._BoxClipNodes[i].children[side ^ 1] = ( int ) Q1Contents.Solid;
 
-				_BoxPlanes[i].type = ( Byte ) ( i >> 1 );
+				this._BoxPlanes[i].type = ( byte ) ( i >> 1 );
 				switch ( i >> 1 )
 				{
 					case 0:
-						_BoxPlanes[i].normal.X = 1;
+						this._BoxPlanes[i].normal.X = 1;
 						break;
 
 					case 1:
-						_BoxPlanes[i].normal.Y = 1;
+						this._BoxPlanes[i].normal.Y = 1;
 						break;
 
 					case 2:
-						_BoxPlanes[i].normal.Z = 1;
+						this._BoxPlanes[i].normal.Z = 1;
 						break;
 				}
 				//_BoxPlanes[i].normal[i>>1] = 1;
@@ -442,14 +450,14 @@ namespace SharpQuake
 		// BSP trees instead of being compared directly.
 		private BspHull HullForBox( ref Vector3 mins, ref Vector3 maxs )
 		{
-			_BoxPlanes[0].dist = maxs.X;
-			_BoxPlanes[1].dist = mins.X;
-			_BoxPlanes[2].dist = maxs.Y;
-			_BoxPlanes[3].dist = mins.Y;
-			_BoxPlanes[4].dist = maxs.Z;
-			_BoxPlanes[5].dist = mins.Z;
+			this._BoxPlanes[0].dist = maxs.X;
+			this._BoxPlanes[1].dist = mins.X;
+			this._BoxPlanes[2].dist = maxs.Y;
+			this._BoxPlanes[3].dist = mins.Y;
+			this._BoxPlanes[4].dist = maxs.Z;
+			this._BoxPlanes[5].dist = mins.Z;
 
-			return _BoxHull;
+			return this._BoxHull;
 		}
 
 		/// <summary>
@@ -468,7 +476,7 @@ namespace SharpQuake
 				if ( ent.v.movetype != Movetypes.MOVETYPE_PUSH )
 					Utilities.Error( "SOLID_BSP without MOVETYPE_PUSH" );
 
-				var model = ( BrushModelData ) sv.models[( Int32 ) ent.v.modelindex];
+				var model = ( BrushModelData )this.sv.models[( int ) ent.v.modelindex];
 
 				if ( model == null || model.Type != ModelType.mod_brush )
 					Utilities.Error( "MOVETYPE_PUSH with a non bsp model" );
@@ -490,7 +498,7 @@ namespace SharpQuake
 				// create a temp hull from bounding box sizes
 				var hullmins = Utilities.ToVector( ref ent.v.mins ) - maxs;
 				var hullmaxs = Utilities.ToVector( ref ent.v.maxs ) - mins;
-				hull = HullForBox( ref hullmins, ref hullmaxs );
+				hull = this.HullForBox( ref hullmins, ref hullmaxs );
 
 				offset = Utilities.ToVector( ref ent.v.origin );
 			}
@@ -503,7 +511,7 @@ namespace SharpQuake
 		/// </summary>
 		private void FindTouchedLeafs( MemoryEdict ent, MemoryNodeBase node )
 		{
-			if ( node.contents == ( Int32 ) Q1Contents.Solid )
+			if ( node.contents == ( int ) Q1Contents.Solid )
 				return;
 
 			// add an efrag if the node is a leaf
@@ -514,9 +522,9 @@ namespace SharpQuake
 					return;
 
 				var leaf = ( MemoryLeaf ) node;
-				var leafnum = Array.IndexOf( sv.worldmodel.Leaves, leaf ) - 1;
+				var leafnum = Array.IndexOf(this.sv.worldmodel.Leaves, leaf ) - 1;
 
-				ent.leafnums[ent.num_leafs] = ( Int16 ) leafnum;
+				ent.leafnums[ent.num_leafs] = ( short ) leafnum;
 				ent.num_leafs++;
 				return;
 			}
@@ -528,10 +536,10 @@ namespace SharpQuake
 
 			// recurse down the contacted sides
 			if ( ( sides & 1 ) != 0 )
-				FindTouchedLeafs( ent, n.children[0] );
+				this.FindTouchedLeafs( ent, n.children[0] );
 
 			if ( ( sides & 2 ) != 0 )
-				FindTouchedLeafs( ent, n.children[1] );
+				this.FindTouchedLeafs( ent, n.children[1] );
 		}
 
 		/// <summary>
@@ -549,21 +557,21 @@ namespace SharpQuake
 					continue;
 				if ( touch.v.touch == 0 || touch.v.solid != Solids.SOLID_TRIGGER )
 					continue;
-				if ( ent.v.absmin.x > touch.v.absmax.x || ent.v.absmin.y > touch.v.absmax.y ||
-					ent.v.absmin.z > touch.v.absmax.z || ent.v.absmax.x < touch.v.absmin.x ||
-					ent.v.absmax.y < touch.v.absmin.y || ent.v.absmax.z < touch.v.absmin.z )
+				if ( ent.v.absmin.X > touch.v.absmax.X || ent.v.absmin.Y > touch.v.absmax.Y ||
+					ent.v.absmin.Z > touch.v.absmax.Z || ent.v.absmax.X < touch.v.absmin.X ||
+					ent.v.absmax.Y < touch.v.absmin.Y || ent.v.absmax.Z < touch.v.absmin.Z )
 					continue;
 
-				var old_self = Host.Programs.GlobalStruct.self;
-				var old_other = Host.Programs.GlobalStruct.other;
+				var old_self = this.Host.Programs.GlobalStruct.self;
+				var old_other = this.Host.Programs.GlobalStruct.other;
 
-				Host.Programs.GlobalStruct.self = EdictToProg( touch );
-				Host.Programs.GlobalStruct.other = EdictToProg( ent );
-				Host.Programs.GlobalStruct.time = ( Single ) sv.time;
-				Host.Programs.Execute( touch.v.touch );
+				this.Host.Programs.GlobalStruct.self = this.EdictToProg( touch );
+				this.Host.Programs.GlobalStruct.other = this.EdictToProg( ent );
+				this.Host.Programs.GlobalStruct.time = ( float )this.sv.time;
+				this.Host.Programs.Execute( touch.v.touch );
 
-				Host.Programs.GlobalStruct.self = old_self;
-				Host.Programs.GlobalStruct.other = old_other;
+				this.Host.Programs.GlobalStruct.self = old_self;
+				this.Host.Programs.GlobalStruct.other = old_other;
 			}
 
 			// recurse down both sides
@@ -571,9 +579,9 @@ namespace SharpQuake
 				return;
 
 			if ( MathLib.Comp( ref ent.v.absmax, node.axis ) > node.dist )
-				TouchLinks( ent, node.children[0] );
+				this.TouchLinks( ent, node.children[0] );
 			if ( MathLib.Comp( ref ent.v.absmin, node.axis ) < node.dist )
-				TouchLinks( ent, node.children[1] );
+				this.TouchLinks( ent, node.children[1] );
 		}
 
 		/// <summary>
@@ -591,13 +599,13 @@ namespace SharpQuake
 
 			// get the clipping hull
 			Vector3 offset;
-			var hull = HullForEntity( ent, ref mins, ref maxs, out offset );
+			var hull = this.HullForEntity( ent, ref mins, ref maxs, out offset );
 
 			var start_l = start - offset;
 			var end_l = end - offset;
 
 			// trace a line through the apropriate clipping hull
-			RecursiveHullCheck( hull, hull.firstclipnode, 0, 1, ref start_l, ref end_l, trace );
+			this.RecursiveHullCheck( hull, hull.firstclipnode, 0, 1, ref start_l, ref end_l, trace );
 
 			// fix trace up by the offset
 			if ( trace.fraction != 1 )
@@ -615,8 +623,8 @@ namespace SharpQuake
 		/// </summary>
 		private void MoveBounds( ref Vector3 start, ref Vector3 mins, ref Vector3 maxs, ref Vector3 end, out Vector3 boxmins, out Vector3 boxmaxs )
 		{
-			boxmins = Vector3.ComponentMin( start, end ) + mins - Vector3.One;
-			boxmaxs = Vector3.ComponentMax( start, end ) + maxs + Vector3.One;
+			boxmins = Vector3.Min( start, end ) + mins - Vector3.One;
+			boxmaxs = Vector3.Max( start, end ) + maxs + Vector3.One;
 		}
 
 		/// <summary>
@@ -640,15 +648,15 @@ namespace SharpQuake
 				if ( touch.v.solid == Solids.SOLID_TRIGGER )
 					Utilities.Error( "Trigger in clipping list" );
 
-				if ( clip.type == MOVE_NOMONSTERS && touch.v.solid != Solids.SOLID_BSP )
+				if ( clip.type == server.MOVE_NOMONSTERS && touch.v.solid != Solids.SOLID_BSP )
 					continue;
 
-				if ( clip.boxmins.X > touch.v.absmax.x || clip.boxmins.Y > touch.v.absmax.y ||
-					clip.boxmins.Z > touch.v.absmax.z || clip.boxmaxs.X < touch.v.absmin.x ||
-					clip.boxmaxs.Y < touch.v.absmin.y || clip.boxmaxs.Z < touch.v.absmin.z )
+				if ( clip.boxmins.X > touch.v.absmax.X || clip.boxmins.Y > touch.v.absmax.Y ||
+					clip.boxmins.Z > touch.v.absmax.Z || clip.boxmaxs.X < touch.v.absmin.X ||
+					clip.boxmaxs.Y < touch.v.absmin.Y || clip.boxmaxs.Z < touch.v.absmin.Z )
 					continue;
 
-				if ( clip.passedict != null && clip.passedict.v.size.x != 0 && touch.v.size.x == 0 )
+				if ( clip.passedict != null && clip.passedict.v.size.X != 0 && touch.v.size.X == 0 )
 					continue;   // points never interact
 
 				// might intersect, so do an exact clip
@@ -656,16 +664,16 @@ namespace SharpQuake
 					return;
 				if ( clip.passedict != null )
 				{
-					if ( ProgToEdict( touch.v.owner ) == clip.passedict )
+					if (this.ProgToEdict( touch.v.owner ) == clip.passedict )
 						continue;   // don't clip against own missiles
-					if ( ProgToEdict( clip.passedict.v.owner ) == touch )
+					if (this.ProgToEdict( clip.passedict.v.owner ) == touch )
 						continue;   // don't clip against owner
 				}
 
-				if ( ( ( Int32 ) touch.v.flags & EdictFlags.FL_MONSTER ) != 0 )
-					trace = ClipMoveToEntity( touch, ref clip.start, ref clip.mins2, ref clip.maxs2, ref clip.end );
+				if ( ( ( int ) touch.v.flags & EdictFlags.FL_MONSTER ) != 0 )
+					trace = this.ClipMoveToEntity( touch, ref clip.start, ref clip.mins2, ref clip.maxs2, ref clip.end );
 				else
-					trace = ClipMoveToEntity( touch, ref clip.start, ref clip.mins, ref clip.maxs, ref clip.end );
+					trace = this.ClipMoveToEntity( touch, ref clip.start, ref clip.mins, ref clip.maxs, ref clip.end );
 
 				if ( trace.allsolid || trace.startsolid || trace.fraction < clip.trace.fraction )
 				{
@@ -687,15 +695,15 @@ namespace SharpQuake
 				return;
 
 			if ( MathLib.Comp( ref clip.boxmaxs, node.axis ) > node.dist )
-				ClipToLinks( node.children[0], clip );
+				this.ClipToLinks( node.children[0], clip );
 			if ( MathLib.Comp( ref clip.boxmins, node.axis ) < node.dist )
-				ClipToLinks( node.children[1], clip );
+				this.ClipToLinks( node.children[1], clip );
 		}
 
 		/// <summary>
 		/// SV_HullPointContents
 		/// </summary>
-		private Int32 HullPointContents( BspHull hull, Int32 num, ref Vector3 p )
+		private int HullPointContents( BspHull hull, int num, ref Vector3 p )
 		{
 			while ( num >= 0 )
 			{
@@ -704,7 +712,7 @@ namespace SharpQuake
 
 				var node_children = hull.clipnodes[num].children;
 				var plane = hull.planes[hull.clipnodes[num].planenum];
-				Single d;
+				float d;
 				if ( plane.type < 3 )
 					d = MathLib.Comp( ref p, plane.type ) - plane.dist;
 				else
@@ -725,7 +733,7 @@ namespace SharpQuake
 			public Vector3 mins2, maxs2;    // size when clipping against mosnters
 			public Vector3 start, end;
 			public Trace_t trace;
-			public Int32 type;
+			public int type;
 			public MemoryEdict passedict;
 		} //moveclip_t;
 	}

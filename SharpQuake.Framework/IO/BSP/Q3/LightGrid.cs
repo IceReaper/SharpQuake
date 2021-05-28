@@ -22,23 +22,22 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework.IO.BSP
+namespace SharpQuake.Framework.IO.BSP.Q3
 {
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct Q3LightGrid
     {
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Byte[] ambientRgb;
+        public byte[] ambientRgb;
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Byte[] diffuseRgb;
+        public byte[] diffuseRgb;
 
-        public Byte diffusePitch;
-        public Byte diffuseYaw;
+        public byte diffusePitch;
+        public byte diffuseYaw;
 
-        public static Int32 SizeInBytes = Marshal.SizeOf( typeof( Q3LightGrid ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( Q3LightGrid ) );
     }
 }

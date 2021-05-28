@@ -22,85 +22,83 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
 namespace SharpQuake.Renderer.Textures
 {
     public class BaseTextureDesc
     {
-        public virtual String Name
+        public virtual string Name
         {
             get;
             set;
         }
 
-        public virtual String Owner
+        public virtual string Owner
         {
             get;
             set;
         }
 
-        public virtual String Filter
+        public virtual string Filter
         {
             get;
             set;
         }
 
-        public virtual String BlendMode
+        public virtual string BlendMode
         {
             get;
             set;
         }
 
-        public virtual Int32 Width
+        public virtual int Width
         {
             get;
             set;
         }
 
-        public virtual Int32 Height
+        public virtual int Height
         {
             get;
             set;
         }
 
-        public virtual Int32 ScaledWidth
+        public virtual int ScaledWidth
         {
             get;
             set;
         }
 
-        public virtual Int32 ScaledHeight
+        public virtual int ScaledHeight
         {
             get;
             set;
         }
 
-        public virtual Boolean HasMipMap
+        public virtual bool HasMipMap
         {
             get;
             set;
         }
 
-        public virtual Boolean HasAlpha
+        public virtual bool HasAlpha
         {
             get;
             set;
         }
 
-        public virtual Boolean IsLightMap
+        public virtual bool IsLightMap
         {
             get;
             set;
         }
 
-        public virtual String LightMapFormat
+        public virtual string LightMapFormat
         {
             get;
             set;
         }
 
-        public virtual Int32 LightMapBytes
+        public virtual int LightMapBytes
         {
             get;
             set;

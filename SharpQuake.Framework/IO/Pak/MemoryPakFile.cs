@@ -22,9 +22,7 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.Pak
 {
     //
     // in memory
@@ -32,12 +30,12 @@ namespace SharpQuake.Framework
 
     public class MemoryPakFile
     {
-        public String name; // [MAX_QPATH];
-        public Int32 filepos, filelen;
+        public string name; // [MAX_QPATH];
+        public int filepos, filelen;
 
-        public override String ToString( )
+        public override string ToString( )
         {
-            return String.Format( "{0}, at {1}, {2} bytes}", name, filepos, filelen );
+            return string.Format( "{0}, at {1}, {2} bytes}", this.name, this.filepos, this.filelen );
         }
     } // packfile_t;
 }

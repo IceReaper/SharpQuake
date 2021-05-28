@@ -22,18 +22,18 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.BSP
 {
+    using System.Runtime.InteropServices;
+
     // note that edge 0 is never used, because negative edge nums are used for
     // counterclockwise use of the edge in a face
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct BspEdge
     {
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 2 )]
-        public System.UInt16[] v; //[2];		// vertex numbers
+        public ushort[] v; //[2];		// vertex numbers
 
-        public static System.Int32 SizeInBytes = Marshal.SizeOf( typeof( BspEdge ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( BspEdge ) );
     } // dedge_t
 }

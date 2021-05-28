@@ -22,13 +22,11 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Definitions
 {
     public static class HostDef
     {
-        public const Int32 VCR_SIGNATURE = 0x56435231;
-        public const Int32 SAVEGAME_VERSION = 5;
+        public const int VCR_SIGNATURE = 0x56435231;
+        public const int SAVEGAME_VERSION = 5;
     }
 }

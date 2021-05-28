@@ -22,25 +22,24 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework.Mathematics;
-
 namespace SharpQuake.Framework.Rendering.Particles
 {
+	using System.Numerics;
+
 	// !!! if this is changed, it must be changed in d_ifacea.h too !!!
 	public class Particle
 	{
 		// driver-usable fields
 		public Vector3 org; // vec3_t
 
-		public Single color;
+		public float color;
 
 		// drivers never touch the following fields
 		public Particle next;
 
 		public Vector3 vel; // vec3_t
-		public Single ramp;
-		public Single die;
+		public float ramp;
+		public float die;
 		public ParticleType type;
 	} // particle_t;
 }

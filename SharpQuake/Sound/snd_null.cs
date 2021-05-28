@@ -1,5 +1,5 @@
 
-using SharpQuake.Framework.IO.Sound;
+
 /// <copyright>
 ///
 /// SharpQuakeEvolved changes by optimus-code, 2019
@@ -23,19 +23,16 @@ using SharpQuake.Framework.IO.Sound;
 /// along with this program; if not, write to the Free Software
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
-namespace SharpQuake
+namespace SharpQuake.Sound
 {
+    using Engine.Host;
+    using Framework.IO.Sound;
+
     internal class NullSoundController : ISoundController
     {
         #region ISoundController Members
 
-        public System.Boolean IsInitialised
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsInitialised => false;
 
         public Host Host
         {
@@ -45,11 +42,11 @@ namespace SharpQuake
 
         public void Initialise( object host )
         {
-            Host = ( Host ) host;
+            this.Host = ( Host ) host;
 
-            Host.Sound.shm.channels = 2;
-            Host.Sound.shm.samplebits = 16;
-            Host.Sound.shm.speed = 11025;
+            this.Host.Sound.shm.channels = 2;
+            this.Host.Sound.shm.samplebits = 16;
+            this.Host.Sound.shm.speed = 11025;
         }
 
         public void Shutdown()
@@ -60,16 +57,16 @@ namespace SharpQuake
         {
         }
 
-        public System.Byte[] LockBuffer()
+        public byte[] LockBuffer()
         {
-            return Host.Sound.shm.buffer;
+            return this.Host.Sound.shm.buffer;
         }
 
-        public void UnlockBuffer( System.Int32 bytes )
+        public void UnlockBuffer( int bytes )
         {
         }
 
-        public System.Int32 GetPosition()
+        public int GetPosition()
         {
             return 0;
         }

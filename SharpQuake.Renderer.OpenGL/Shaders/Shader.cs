@@ -24,14 +24,13 @@
 
 // From https://github.com/opentk/LearnOpenTK
 
-using System;
-using System.Collections.Generic;
-using OpenTK;
-using OpenTK.Graphics.OpenGL;
-
-namespace SharpQuake.Renderer.OpenGL
+namespace SharpQuake.Renderer.OpenGL.Shaders
 {
-	// A simple class meant to help create shaders.
+    using OpenTK.Graphics.OpenGL;
+    using OpenTK.Mathematics;
+    using System.Collections.Generic;
+
+    // A simple class meant to help create shaders.
 	public class Shader
     {
         public readonly int Handle;
@@ -62,31 +61,31 @@ namespace SharpQuake.Renderer.OpenGL
             GL.ShaderSource( vertexShader, shaderSource );
 
             // And then compile
-            CompileShader( vertexShader );
+            Shader.CompileShader( vertexShader );
 
 
             // We do the same for the fragment shader
             shaderSource = fragShaderSource;//LoadSource( fragShaderSource );
             var fragmentShader = GL.CreateShader( ShaderType.FragmentShader );
             GL.ShaderSource( fragmentShader, shaderSource );
-            CompileShader( fragmentShader );
+            Shader.CompileShader( fragmentShader );
 
 
             // These two shaders must then be merged into a shader program, which can then be used by OpenGL.
             // To do this, create a program...
-            Handle = GL.CreateProgram( );
+            this.Handle = GL.CreateProgram( );
 
             // Attach both shaders...
-            GL.AttachShader( Handle, vertexShader );
-            GL.AttachShader( Handle, fragmentShader );
+            GL.AttachShader(this.Handle, vertexShader );
+            GL.AttachShader(this.Handle, fragmentShader );
 
             // And then link them together.
-            LinkProgram( Handle );
+            Shader.LinkProgram(this.Handle );
 
             // When the shader program is linked, it no longer needs the individual shaders attacked to it; the compiled code is copied into the shader program.
             // Detach them, and then delete them.
-            GL.DetachShader( Handle, vertexShader );
-            GL.DetachShader( Handle, fragmentShader );
+            GL.DetachShader(this.Handle, vertexShader );
+            GL.DetachShader(this.Handle, fragmentShader );
             GL.DeleteShader( fragmentShader );
             GL.DeleteShader( vertexShader );
 
@@ -95,22 +94,22 @@ namespace SharpQuake.Renderer.OpenGL
             // later.
 
             // First, we have to get the number of active uniforms in the shader.
-            GL.GetProgram( Handle, GetProgramParameterName.ActiveUniforms, out var numberOfUniforms );
+            GL.GetProgram(this.Handle, GetProgramParameterName.ActiveUniforms, out var numberOfUniforms );
 
             // Next, allocate the dictionary to hold the locations.
-            _uniformLocations = new Dictionary<string, int>( );
+            this._uniformLocations = new( );
 
             // Loop over all the uniforms,
             for ( var i = 0; i < numberOfUniforms; i++ )
             {
                 // get the name of this uniform,
-                var key = GL.GetActiveUniform( Handle, i, out _, out _ );
+                var key = GL.GetActiveUniform(this.Handle, i, out _, out _ );
 
                 // get the location,
-                var location = GL.GetUniformLocation( Handle, key );
+                var location = GL.GetUniformLocation(this.Handle, key );
 
                 // and then add it to the dictionary.
-                _uniformLocations.Add( key, location );
+                this._uniformLocations.Add( key, location );
             }
         }
 
@@ -125,7 +124,7 @@ namespace SharpQuake.Renderer.OpenGL
             if ( code != ( int ) All.True )
             {
                 // We can use `GL.GetShaderInfoLog(shader)` to get information about the error.
-                throw new Exception( $"Error occurred whilst compiling Shader({shader})" );
+                throw new( $"Error occurred whilst compiling Shader({shader})" );
             }
         }
 
@@ -139,7 +138,7 @@ namespace SharpQuake.Renderer.OpenGL
             if ( code != ( int ) All.True )
             {
                 // We can use `GL.GetProgramInfoLog(program)` to get information about the error.
-                throw new Exception( $"Error occurred whilst linking Program({program})" );
+                throw new( $"Error occurred whilst linking Program({program})" );
             }
         }
 
@@ -147,7 +146,7 @@ namespace SharpQuake.Renderer.OpenGL
         // A wrapper function that enables the shader program.
         public void Use( )
         {
-            GL.UseProgram( Handle );
+            GL.UseProgram(this.Handle );
         }
 
 
@@ -155,7 +154,7 @@ namespace SharpQuake.Renderer.OpenGL
         // you can omit the layout(location=X) lines in the vertex shader, and use this in VertexAttribPointer instead of the hardcoded values.
         public int GetAttribLocation( string attribName )
         {
-            return GL.GetAttribLocation( Handle, attribName );
+            return GL.GetAttribLocation(this.Handle, attribName );
         }
 
         // Uniform setters
@@ -174,8 +173,8 @@ namespace SharpQuake.Renderer.OpenGL
         /// <param name="data">The data to set</param>
         public void SetInt( string name, int data )
         {
-            GL.UseProgram( Handle );
-            GL.Uniform1( _uniformLocations[name], data );
+            GL.UseProgram(this.Handle );
+            GL.Uniform1(this._uniformLocations[name], data );
         }
 
         /// <summary>
@@ -185,8 +184,8 @@ namespace SharpQuake.Renderer.OpenGL
         /// <param name="data">The data to set</param>
         public void SetFloat( string name, float data )
         {
-            GL.UseProgram( Handle );
-            GL.Uniform1( _uniformLocations[name], data );
+            GL.UseProgram(this.Handle );
+            GL.Uniform1(this._uniformLocations[name], data );
         }
 
         /// <summary>
@@ -201,8 +200,8 @@ namespace SharpQuake.Renderer.OpenGL
         /// </remarks>
         public void SetMatrix4( string name, Matrix4 data )
         {
-            GL.UseProgram( Handle );
-            GL.UniformMatrix4( _uniformLocations[name], true, ref data );
+            GL.UseProgram(this.Handle );
+            GL.UniformMatrix4(this._uniformLocations[name], true, ref data );
         }
 
         /// <summary>
@@ -212,8 +211,8 @@ namespace SharpQuake.Renderer.OpenGL
         /// <param name="data">The data to set</param>
         public void SetVector3( string name, Vector3 data )
         {
-            GL.UseProgram( Handle );
-            GL.Uniform3( _uniformLocations[name], data );
+            GL.UseProgram(this.Handle );
+            GL.Uniform3(this._uniformLocations[name], data );
         }
     }
 }

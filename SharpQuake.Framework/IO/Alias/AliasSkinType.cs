@@ -1,9 +1,8 @@
-﻿using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework.IO.Alias
+﻿namespace SharpQuake.Framework.IO.Alias
 {
-	public enum aliasskintype_t
+    using System.Runtime.InteropServices;
+
+    public enum aliasskintype_t
     {
         ALIAS_SKIN_SINGLE = 0,
         ALIAS_SKIN_GROUP
@@ -14,6 +13,6 @@ namespace SharpQuake.Framework.IO.Alias
     {
         public aliasskintype_t type;
 
-        public static Int32 SizeInBytes = Marshal.SizeOf( typeof( daliasskintype_t ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( daliasskintype_t ) );
     } //daliasskintype_t;
 }

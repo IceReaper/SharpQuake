@@ -22,19 +22,22 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-using SharpQuake.Framework.IO.BSP;
-using SharpQuake.Framework.Mathematics;
-using SharpQuake.Game.Data.Models;
-using SharpQuake.Game.Rendering.Memory;
-using SharpQuake.Game.World;
+
 
 // gl_refrag.c
 
-namespace SharpQuake
+namespace SharpQuake.Rendering
 {
-	partial class render
+    using Framework.Definitions;
+    using Framework.Engine;
+    using Framework.IO.BSP.Q1;
+    using Framework.Mathematics;
+    using Game.Data.Models;
+    using Game.Rendering.Memory;
+    using Game.World;
+    using System.Numerics;
+
+    partial class render
     {
         private Entity _AddEnt; // r_addent
         private MemoryNode _EfragTopNode; // r_pefragtopnode
@@ -46,7 +49,7 @@ namespace SharpQuake
         /// and may be a reference to entity_t, in wich case assign *lastlink to ((entity_t)_LastObj).efrag
         /// or to efrag_t in wich case assign *lastlink value to ((efrag_t)_LastObj).entnext
         /// </summary>
-        private System.Object _LastObj; // see comments
+        private object _LastObj; // see comments
 
         /// <summary>
         /// R_AddEfrags
@@ -56,16 +59,16 @@ namespace SharpQuake
             if( ent.model == null )
                 return;
 
-            _AddEnt = ent;
-            _LastObj = ent; //  lastlink = &ent->efrag;
-            _EfragTopNode = null;
+            this._AddEnt = ent;
+            this._LastObj = ent; //  lastlink = &ent->efrag;
+            this._EfragTopNode = null;
 
             var entmodel = ent.model;
-            _EMins = ent.origin + entmodel.BoundsMin;
-            _EMaxs = ent.origin + entmodel.BoundsMax;
+            this._EMins = ent.origin + entmodel.BoundsMin;
+            this._EMaxs = ent.origin + entmodel.BoundsMax;
 
-            SplitEntityOnNode( Host.Client.cl.worldmodel.Nodes[0] );
-            ent.topnode = _EfragTopNode;
+            this.SplitEntityOnNode(this.Host.Client.cl.worldmodel.Nodes[0] );
+            ent.topnode = this._EfragTopNode;
         }
 
         /// <summary>
@@ -73,39 +76,37 @@ namespace SharpQuake
         /// </summary>
         private void SplitEntityOnNode( MemoryNodeBase node )
         {
-            if( node.contents == ( Int32 ) Q1Contents.Solid )
+            if( node.contents == ( int ) Q1Contents.Solid )
                 return;
 
             // add an efrag if the node is a leaf
             if( node.contents < 0 )
             {
-                if( _EfragTopNode == null )
-                    _EfragTopNode = node as MemoryNode;
+                if(this._EfragTopNode == null )
+                    this._EfragTopNode = node as MemoryNode;
 
-                var leaf = (MemoryLeaf)( System.Object ) node;
+                var leaf = (MemoryLeaf)( object ) node;
 
                 // grab an efrag off the free list
-                var ef = Host.Client.cl.free_efrags;
+                var ef = this.Host.Client.cl.free_efrags;
                 if( ef == null )
                 {
-                    Host.Console.Print( "Too many efrags!\n" );
+                    this.Host.Console.Print( "Too many efrags!\n" );
                     return;	// no free fragments...
                 }
-                Host.Client.cl.free_efrags = Host.Client.cl.free_efrags.entnext;
 
-                ef.entity = _AddEnt;
+                this.Host.Client.cl.free_efrags = this.Host.Client.cl.free_efrags.entnext;
+
+                ef.entity = this._AddEnt;
 
                 // add the entity link
                 // *lastlink = ef;
-                if( _LastObj is Entity )
-                {
-                    ( (Entity)_LastObj ).efrag = ef;
-                }
+                if(this._LastObj is Entity )
+                    ( (Entity)this._LastObj ).efrag = ef;
                 else
-                {
-                    ( (EFrag)_LastObj ).entnext = ef;
-                }
-                _LastObj = ef; // lastlink = &ef->entnext;
+                    ( (EFrag)this._LastObj ).entnext = ef;
+
+                this._LastObj = ef; // lastlink = &ef->entnext;
                 ef.entnext = null;
 
                 // set the leaf links
@@ -122,22 +123,22 @@ namespace SharpQuake
                 return;
 
             var splitplane = n.plane;
-            var sides = MathLib.BoxOnPlaneSide( ref _EMins, ref _EMaxs, splitplane );
+            var sides = MathLib.BoxOnPlaneSide( ref this._EMins, ref this._EMaxs, splitplane );
 
             if( sides == 3 )
             {
                 // split on this plane
                 // if this is the first splitter of this bmodel, remember it
-                if( _EfragTopNode == null )
-                    _EfragTopNode = n;
+                if(this._EfragTopNode == null )
+                    this._EfragTopNode = n;
             }
 
             // recurse down the contacted sides
             if( ( sides & 1 ) != 0 )
-                SplitEntityOnNode( n.children[0] );
+                this.SplitEntityOnNode( n.children[0] );
 
             if( ( sides & 2 ) != 0 )
-                SplitEntityOnNode( n.children[1] );
+                this.SplitEntityOnNode( n.children[1] );
         }
 
         /// <summary>
@@ -156,12 +157,12 @@ namespace SharpQuake
                     case ModelType.mod_alias:
                     case ModelType.mod_brush:
                     case ModelType.mod_sprite:
-                        if( ( pent.visframe != _FrameCount ) && ( Host.Client.NumVisEdicts < ClientDef.MAX_VISEDICTS ) )
+                        if( pent.visframe != this._FrameCount && this.Host.Client.NumVisEdicts < ClientDef.MAX_VISEDICTS )
                         {
-                            Host.Client.VisEdicts[Host.Client.NumVisEdicts++] = pent;
+                            this.Host.Client.VisEdicts[this.Host.Client.NumVisEdicts++] = pent;
 
                             // mark that we've recorded this entity for this frame
-                            pent.visframe = _FrameCount;
+                            pent.visframe = this._FrameCount;
                         }
 
                         ef = ef.leafnext;

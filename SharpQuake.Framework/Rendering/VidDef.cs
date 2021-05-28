@@ -22,23 +22,21 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Rendering
 {
     public class VidDef
     {
-        public Byte[] colormap;		// 256 * VID_GRADES size
-        public Int32 fullbright;		// index of first fullbright color
-        public Int32 rowbytes; // unsigned	// may be > width if displayed in a window
-        public Int32 width; // unsigned
-        public Int32 height; // unsigned
-        public Single aspect;		// width / height -- < 0 is taller than wide
-        public Int32 numpages;
-        public System.Boolean recalc_refdef;	// if true, recalc vid-based stuff
-        public Int32 conwidth; // unsigned
-        public Int32 conheight; // unsigned
-        public Int32 maxwarpwidth;
-        public Int32 maxwarpheight;
+        public byte[] colormap;		// 256 * VID_GRADES size
+        public int fullbright;		// index of first fullbright color
+        public int rowbytes; // unsigned	// may be > width if displayed in a window
+        public int width; // unsigned
+        public int height; // unsigned
+        public float aspect;		// width / height -- < 0 is taller than wide
+        public int numpages;
+        public bool recalc_refdef;	// if true, recalc vid-based stuff
+        public int conwidth; // unsigned
+        public int conheight; // unsigned
+        public int maxwarpwidth;
+        public int maxwarpheight;
     } // viddef_t;
 }

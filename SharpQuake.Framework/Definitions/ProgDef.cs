@@ -22,11 +22,7 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-using string_t = System.Int32;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Definitions
 {
     public delegate void builtin_t( );
 
@@ -35,14 +31,14 @@ namespace SharpQuake.Framework
     /// </summary>
     public static partial class ProgramDef
     {
-        public const string_t DEF_SAVEGLOBAL = ( 1 << 15 );
-        public const string_t MAX_PARMS = 8;
-        public const string_t MAX_ENT_LEAFS = 16;
+        public const int DEF_SAVEGLOBAL = 1 << 15;
+        public const int MAX_PARMS = 8;
+        public const int MAX_ENT_LEAFS = 16;
 
-        public const string_t PROG_VERSION = 6;
-        public const string_t PROGHEADER_CRC = 5927;
+        public const int PROG_VERSION = 6;
+        public const int PROGHEADER_CRC = 5927;
 
         // Used to link the framework and game dynamic value
-        public static Int32 EdictSize;
+        public static int EdictSize;
     }
 }

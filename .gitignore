@@ -1,5 +1,4 @@
-SharpQuake.csproj.user
-packages/
+/.idea/
+
 obj/
-\.vs/
 bin/

@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SharpQuake.Framework;
-using SharpQuake.Framework.Mathematics;
-using SharpQuake.Renderer.Textures;
-
-namespace SharpQuake.Renderer.Models
+﻿namespace SharpQuake.Renderer.Models
 {
+	using Framework;
+	using Framework.Engine;
+	using Framework.Rendering.Alias;
+	using System;
+	using System.Numerics;
+	using Textures;
+
 	public class BaseAliasModel : BaseModel
 	{
 		public BaseAliasModelDesc AliasDesc
@@ -20,13 +18,13 @@ namespace SharpQuake.Renderer.Models
 		public BaseAliasModel( BaseDevice device, BaseAliasModelDesc desc )
 			: base( device, desc )
 		{
-			AliasDesc = desc;
+			this.AliasDesc = desc;
 		}
 
 		/// <summary>
 		/// R_DrawAliasModel
 		/// </summary>
-		public virtual void DrawAliasModel( Single shadeLight, Vector3 shadeVector, Single[] shadeDots, Single lightSpotZ, aliashdr_t paliashdr, Double realTime, Double time, ref Int32 poseNum, ref Int32 poseNum2, ref Single frameStartTime, ref Single frameInterval, ref Vector3 origin1, ref Vector3 origin2, ref Single translateStartTime, ref Vector3 angles1, ref Vector3 angles2, ref Single rotateStartTime, Boolean shadows = true, Boolean smoothModels = true, Boolean affineModels = false, Boolean noColours = false, Boolean isEyes = false, Boolean useInterpolation = true )
+		public virtual void DrawAliasModel( float shadeLight, Vector3 shadeVector, float[] shadeDots, float lightSpotZ, aliashdr_t paliashdr, double realTime, double time, ref int poseNum, ref int poseNum2, ref float frameStartTime, ref float frameInterval, ref Vector3 origin1, ref Vector3 origin2, ref float translateStartTime, ref Vector3 angles1, ref Vector3 angles2, ref float rotateStartTime, bool shadows = true, bool smoothModels = true, bool affineModels = false, bool noColours = false, bool isEyes = false, bool useInterpolation = true )
 		{
 			throw new NotImplementedException( );
 		}
@@ -34,12 +32,12 @@ namespace SharpQuake.Renderer.Models
 		/// <summary>
 		/// GL_DrawAliasShadow
 		/// </summary>
-		protected virtual void DrawAliasShadow( aliashdr_t paliashdr, Int32 posenum, Single lightSpotZ, Vector3 shadeVector )
+		protected virtual void DrawAliasShadow( aliashdr_t paliashdr, int posenum, float lightSpotZ, Vector3 shadeVector )
 		{
 			throw new NotImplementedException( );
 		}
 
-		protected virtual void DrawAliasBlendedFrame( Single shadeLight, Single[] shadeDots, aliashdr_t paliashdr, Int32 posenum, Int32 posenum2, Single blend )
+		protected virtual void DrawAliasBlendedFrame( float shadeLight, float[] shadeDots, aliashdr_t paliashdr, int posenum, int posenum2, float blend )
 		{
 			throw new NotImplementedException( );
 		}
@@ -50,9 +48,9 @@ namespace SharpQuake.Renderer.Models
 		fenix@io.com: model animation interpolation
 		=================
 		*/
-		protected virtual void SetupAliasBlendedFrame( Single shadeLight, Int32 frame, Double realTime, Double time, aliashdr_t paliashdr, Single[] shadeDots, ref Int32 poseNum, ref Int32 poseNum2, ref Single frameStartTime, ref Single frameInterval )
+		protected virtual void SetupAliasBlendedFrame( float shadeLight, int frame, double realTime, double time, aliashdr_t paliashdr, float[] shadeDots, ref int poseNum, ref int poseNum2, ref float frameStartTime, ref float frameInterval )
 		{
-			if ( ( frame >= paliashdr.numframes ) || ( frame < 0 ) )
+			if ( frame >= paliashdr.numframes || frame < 0 )
 			{
 				ConsoleWrapper.Print( "R_AliasSetupFrame: no such frame {0}\n", frame );
 				frame = 0;
@@ -64,7 +62,7 @@ namespace SharpQuake.Renderer.Models
 			if ( numposes > 1 )
 			{
 				var interval = paliashdr.frames[frame].interval;
-				pose += ( Int32 ) ( time / interval ) % numposes;
+				pose += ( int ) ( time / interval ) % numposes;
 				frameInterval = interval;
 			}
 			else
@@ -84,29 +82,27 @@ namespace SharpQuake.Renderer.Models
 
 			if ( poseNum2 != pose )
 			{
-				frameStartTime = ( Single ) realTime;
+				frameStartTime = ( float ) realTime;
 				poseNum = poseNum2;
 				poseNum2 = pose;
 				blend = 0;
 			}
 			else
-			{
-				blend = ( Single ) ( ( realTime - frameStartTime ) / frameInterval );
-			}
+				blend = ( float ) ( ( realTime - frameStartTime ) / frameInterval );
 
 			// wierd things start happening if blend passes 1
 			if ( /*cl.paused || */ blend > 1 )
 				blend = 1;
 
-			DrawAliasBlendedFrame( shadeLight, shadeDots, paliashdr, poseNum, poseNum2, blend );
+			this.DrawAliasBlendedFrame( shadeLight, shadeDots, paliashdr, poseNum, poseNum2, blend );
 		}
 
 		/// <summary>
 		/// R_SetupAliasFrame
 		/// </summary>
-		protected virtual void SetupAliasFrame( Single shadeLight, Int32 frame, Double time, aliashdr_t paliashdr, Single[] shadeDots )
+		protected virtual void SetupAliasFrame( float shadeLight, int frame, double time, aliashdr_t paliashdr, float[] shadeDots )
 		{
-			if ( ( frame >= paliashdr.numframes ) || ( frame < 0 ) )
+			if ( frame >= paliashdr.numframes || frame < 0 )
 			{
 				ConsoleWrapper.Print( "R_AliasSetupFrame: no such frame {0}\n", frame );
 				frame = 0;
@@ -118,23 +114,23 @@ namespace SharpQuake.Renderer.Models
 			if ( numposes > 1 )
 			{
 				var interval = paliashdr.frames[frame].interval;
-				pose += ( Int32 ) ( time / interval ) % numposes;
+				pose += ( int ) ( time / interval ) % numposes;
 			}
 
-			DrawAliasFrame( shadeLight, shadeDots, paliashdr, pose );
+			this.DrawAliasFrame( shadeLight, shadeDots, paliashdr, pose );
 		}
 
 		/// <summary>
 		/// GL_DrawAliasFrame
 		/// </summary>
-		protected virtual void DrawAliasFrame( Single shadeLight, Single[] shadeDots, aliashdr_t paliashdr, Int32 posenum )
+		protected virtual void DrawAliasFrame( float shadeLight, float[] shadeDots, aliashdr_t paliashdr, int posenum )
 		{
 			throw new NotImplementedException( );
 		}
 
-		public static BaseAliasModel Create( BaseDevice device, String identifier, BaseTexture texture )
+		public static BaseAliasModel Create( BaseDevice device, string identifier, BaseTexture texture )
 		{
-			return ( BaseAliasModel ) Create( device, identifier, texture, device.AliasModelType, device.AliasModelDescType );
+			return ( BaseAliasModel ) BaseModel.Create( device, identifier, texture, device.AliasModelType, device.AliasModelDescType );
 		}
 	}
 }

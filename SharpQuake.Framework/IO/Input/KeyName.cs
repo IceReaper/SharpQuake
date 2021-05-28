@@ -22,16 +22,14 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
 namespace SharpQuake.Framework.IO.Input
 {
     public struct KeyName
     {
-        public String name;
-        public Int32 keynum;
+        public string name;
+        public int keynum;
 
-        public KeyName( String name, Int32 keynum )
+        public KeyName( string name, int keynum )
         {
             this.name = name;
             this.keynum = keynum;

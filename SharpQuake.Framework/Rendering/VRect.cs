@@ -22,12 +22,10 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Rendering
 {
     public struct VRect
     {
-        public Int32 x, y, width, height;
+        public int x, y, width, height;
     } // vrect_t
 }

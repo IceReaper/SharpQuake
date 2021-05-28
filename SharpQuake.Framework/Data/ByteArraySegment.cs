@@ -22,63 +22,42 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Data
 {
+    using System;
+
     public class ByteArraySegment
     {
-        public Byte[] Data
-        {
-            get
-            {
-                return _Segment.Array;
-            }
-        }
+        public byte[] Data => this._Segment.Array;
 
-        public Int32 StartIndex
-        {
-            get
-            {
-                return _Segment.Offset;
-            }
-        }
+        public int StartIndex => this._Segment.Offset;
 
-        public Int32 Length
-        {
-            get
-            {
-                return _Segment.Count;
-            }
-        }
+        public int Length => this._Segment.Count;
 
-        private ArraySegment<Byte> _Segment;
+        private ArraySegment<byte> _Segment;
 
-        public ByteArraySegment( Byte[] array )
+        public ByteArraySegment( byte[] array )
             : this( array, 0, -1 )
         {
         }
 
-        public ByteArraySegment( Byte[] array, Int32 startIndex )
+        public ByteArraySegment( byte[] array, int startIndex )
             : this( array, startIndex, -1 )
         {
         }
 
-        public ByteArraySegment( Byte[] array, Int32 startIndex, Int32 length )
+        public ByteArraySegment( byte[] array, int startIndex, int length )
         {
             if ( array == null )
-            {
                 throw new ArgumentNullException( "array" );
-            }
+
             if ( length == -1 )
-            {
                 length = array.Length - startIndex;
-            }
+
             if ( length <= 0 )
-            {
                 throw new ArgumentException( "Invalid length!" );
-            }
-            _Segment = new ArraySegment<Byte>( array, startIndex, length );
+
+            this._Segment = new( array, startIndex, length );
         }
     }
 }

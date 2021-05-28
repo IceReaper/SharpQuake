@@ -22,28 +22,26 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
 namespace SharpQuake.Framework.IO.Sound
 {
 	public interface ISoundController
 	{
-		Boolean IsInitialised
+		bool IsInitialised
 		{
 			get;
 		}
 
-		void Initialise( Object host );
+		void Initialise( object host );
 
 		void Shutdown( );
 
 		void ClearBuffer( );
 
-		Byte[] LockBuffer( );
+		byte[] LockBuffer( );
 
-		void UnlockBuffer( Int32 count );
+		void UnlockBuffer( int count );
 
-		Int32 GetPosition( );
+		int GetPosition( );
 
 		//void Submit();
 	}

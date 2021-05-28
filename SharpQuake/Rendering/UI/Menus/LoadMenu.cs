@@ -22,76 +22,76 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.IO;
-using System.Text;
-using SharpQuake.Framework;
-using SharpQuake.Framework.IO;
-
-namespace SharpQuake.Rendering.UI
+namespace SharpQuake.Rendering.UI.Menus
 {
+    using Engine.Host;
+    using Framework.Definitions;
+    using Framework.IO;
+    using System.IO;
+    using System.Text;
+
     public class LoadMenu : MenuBase
     {
-        public const Int32 MAX_SAVEGAMES = 12;
-        protected String[] _FileNames; //[MAX_SAVEGAMES]; // filenames
-        protected Boolean[] _Loadable; //[MAX_SAVEGAMES]; // loadable
+        public const int MAX_SAVEGAMES = 12;
+        protected string[] _FileNames; //[MAX_SAVEGAMES]; // filenames
+        protected bool[] _Loadable; //[MAX_SAVEGAMES]; // loadable
 
         public override void Show( Host host )
         {
             base.Show( host );
-            ScanSaves( );
+            this.ScanSaves( );
         }
 
-        public override void KeyEvent( Int32 key )
+        public override void KeyEvent( int key )
         {
             switch ( key )
             {
                 case KeysDef.K_ESCAPE:
-                    SinglePlayerMenu.Show( Host );
+                    MenuBase.SinglePlayerMenuInstance.Show(this.Host );
                     break;
 
                 case KeysDef.K_ENTER:
-                    Host.Sound.LocalSound( "misc/menu2.wav" );
-                    if ( !_Loadable[_Cursor] )
+                    this.Host.Sound.LocalSound( "misc/menu2.wav" );
+                    if ( !this._Loadable[this._Cursor] )
                         return;
-                    CurrentMenu.Hide( );
+                    MenuBase.CurrentMenu.Hide( );
 
                     // Host_Loadgame_f can't bring up the loading plaque because too much
                     // stack space has been used, so do it now
-                    Host.Screen.BeginLoadingPlaque( );
+                    this.Host.Screen.BeginLoadingPlaque( );
 
                     // issue the load command
-                    Host.Commands.Buffer.Append( String.Format( "load s{0}\n", _Cursor ) );
+                    this.Host.Commands.Buffer.Append( string.Format( "load s{0}\n", this._Cursor ) );
                     return;
 
                 case KeysDef.K_UPARROW:
                 case KeysDef.K_LEFTARROW:
-                    Host.Sound.LocalSound( "misc/menu1.wav" );
-                    _Cursor--;
-                    if ( _Cursor < 0 )
-                        _Cursor = MAX_SAVEGAMES - 1;
+                    this.Host.Sound.LocalSound( "misc/menu1.wav" );
+                    this._Cursor--;
+                    if (this._Cursor < 0 )
+                        this._Cursor = LoadMenu.MAX_SAVEGAMES - 1;
                     break;
 
                 case KeysDef.K_DOWNARROW:
                 case KeysDef.K_RIGHTARROW:
-                    Host.Sound.LocalSound( "misc/menu1.wav" );
-                    _Cursor++;
-                    if ( _Cursor >= MAX_SAVEGAMES )
-                        _Cursor = 0;
+                    this.Host.Sound.LocalSound( "misc/menu1.wav" );
+                    this._Cursor++;
+                    if (this._Cursor >= LoadMenu.MAX_SAVEGAMES )
+                        this._Cursor = 0;
                     break;
             }
         }
 
         public override void Draw( )
         {
-            var p = Host.DrawingContext.CachePic( "gfx/p_load.lmp", "GL_NEAREST" );
-            Host.Menu.DrawPic( ( 320 - p.Width ) / 2, 4, p );
+            var p = this.Host.DrawingContext.CachePic( "gfx/p_load.lmp", "GL_NEAREST" );
+            this.Host.Menu.DrawPic( ( 320 - p.Width ) / 2, 4, p );
 
-            for ( var i = 0; i < MAX_SAVEGAMES; i++ )
-                Host.Menu.Print( 16, 32 + 8 * i, _FileNames[i] );
+            for ( var i = 0; i < LoadMenu.MAX_SAVEGAMES; i++ )
+                this.Host.Menu.Print( 16, 32 + 8 * i, this._FileNames[i] );
 
             // line cursor
-            Host.Menu.DrawCharacter( 8, 32 + _Cursor * 8, 12 + ( ( Int32 ) ( Host.RealTime * 4 ) & 1 ) );
+            this.Host.Menu.DrawCharacter( 8, 32 + this._Cursor * 8, 12 + ( ( int ) (this.Host.RealTime * 4 ) & 1 ) );
         }
 
         /// <summary>
@@ -99,11 +99,11 @@ namespace SharpQuake.Rendering.UI
         /// </summary>
         protected void ScanSaves( )
         {
-            for ( var i = 0; i < MAX_SAVEGAMES; i++ )
+            for ( var i = 0; i < LoadMenu.MAX_SAVEGAMES; i++ )
             {
-                _FileNames[i] = "--- UNUSED SLOT ---";
-                _Loadable[i] = false;
-                var name = String.Format( "{0}/s{1}.sav", FileSystem.GameDir, i );
+                this._FileNames[i] = "--- UNUSED SLOT ---";
+                this._Loadable[i] = false;
+                var name = string.Format( "{0}/s{1}.sav", FileSystem.GameDir, i );
                 var fs = FileSystem.OpenRead( name );
                 if ( fs == null )
                     continue;
@@ -117,10 +117,10 @@ namespace SharpQuake.Rendering.UI
                     if ( info == null )
                         continue;
                     info = info.TrimEnd( '\0', '_' ).Replace( '_', ' ' );
-                    if ( !String.IsNullOrEmpty( info ) )
+                    if ( !string.IsNullOrEmpty( info ) )
                     {
-                        _FileNames[i] = info;
-                        _Loadable[i] = true;
+                        this._FileNames[i] = info;
+                        this._Loadable[i] = true;
                     }
                 }
             }
@@ -128,8 +128,8 @@ namespace SharpQuake.Rendering.UI
 
         public LoadMenu( )
         {
-            _FileNames = new String[MAX_SAVEGAMES];
-            _Loadable = new Boolean[MAX_SAVEGAMES];
+            this._FileNames = new string[LoadMenu.MAX_SAVEGAMES];
+            this._Loadable = new bool[LoadMenu.MAX_SAVEGAMES];
         }
     }
 }

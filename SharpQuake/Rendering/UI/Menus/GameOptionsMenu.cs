@@ -22,261 +22,270 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-
-namespace SharpQuake.Rendering.UI
+namespace SharpQuake.Rendering.UI.Menus
 {
+    using Desktop;
+    using Engine.Host;
+    using Framework.Definitions;
+    using Framework.Engine;
+
     /// <summary>
     /// M_Menu_GameOptions_functions
     /// </summary>
     public class GameOptionsMenu : MenuBase
     {
-        private const Int32 NUM_GAMEOPTIONS = 9;
+        private const int NUM_GAMEOPTIONS = 9;
 
         private static readonly level_t[] Levels = new level_t[]
         {
-            new level_t("start", "Entrance"),	// 0
+            new("start", "Entrance"),	// 0
 
-	        new level_t("e1m1", "Slipgate Complex"),				// 1
-	        new level_t("e1m2", "Castle of the Damned"),
-            new level_t("e1m3", "The Necropolis"),
-            new level_t("e1m4", "The Grisly Grotto"),
-            new level_t("e1m5", "Gloom Keep"),
-            new level_t("e1m6", "The Door To Chthon"),
-            new level_t("e1m7", "The House of Chthon"),
-            new level_t("e1m8", "Ziggurat Vertigo"),
+	        new("e1m1", "Slipgate Complex"),				// 1
+	        new("e1m2", "Castle of the Damned"),
+            new("e1m3", "The Necropolis"),
+            new("e1m4", "The Grisly Grotto"),
+            new("e1m5", "Gloom Keep"),
+            new("e1m6", "The Door To Chthon"),
+            new("e1m7", "The House of Chthon"),
+            new("e1m8", "Ziggurat Vertigo"),
 
-            new level_t("e2m1", "The Installation"),				// 9
-	        new level_t("e2m2", "Ogre Citadel"),
-            new level_t("e2m3", "Crypt of Decay"),
-            new level_t("e2m4", "The Ebon Fortress"),
-            new level_t("e2m5", "The Wizard's Manse"),
-            new level_t("e2m6", "The Dismal Oubliette"),
-            new level_t("e2m7", "Underearth"),
+            new("e2m1", "The Installation"),				// 9
+	        new("e2m2", "Ogre Citadel"),
+            new("e2m3", "Crypt of Decay"),
+            new("e2m4", "The Ebon Fortress"),
+            new("e2m5", "The Wizard's Manse"),
+            new("e2m6", "The Dismal Oubliette"),
+            new("e2m7", "Underearth"),
 
-            new level_t("e3m1", "Termination Central"),			// 16
-	        new level_t("e3m2", "The Vaults of Zin"),
-            new level_t("e3m3", "The Tomb of Terror"),
-            new level_t("e3m4", "Satan's Dark Delight"),
-            new level_t("e3m5", "Wind Tunnels"),
-            new level_t("e3m6", "Chambers of Torment"),
-            new level_t("e3m7", "The Haunted Halls"),
+            new("e3m1", "Termination Central"),			// 16
+	        new("e3m2", "The Vaults of Zin"),
+            new("e3m3", "The Tomb of Terror"),
+            new("e3m4", "Satan's Dark Delight"),
+            new("e3m5", "Wind Tunnels"),
+            new("e3m6", "Chambers of Torment"),
+            new("e3m7", "The Haunted Halls"),
 
-            new level_t("e4m1", "The Sewage System"),				// 23
-	        new level_t("e4m2", "The Tower of Despair"),
-            new level_t("e4m3", "The Elder God Shrine"),
-            new level_t("e4m4", "The Palace of Hate"),
-            new level_t("e4m5", "Hell's Atrium"),
-            new level_t("e4m6", "The Pain Maze"),
-            new level_t("e4m7", "Azure Agony"),
-            new level_t("e4m8", "The Nameless City"),
+            new("e4m1", "The Sewage System"),				// 23
+	        new("e4m2", "The Tower of Despair"),
+            new("e4m3", "The Elder God Shrine"),
+            new("e4m4", "The Palace of Hate"),
+            new("e4m5", "Hell's Atrium"),
+            new("e4m6", "The Pain Maze"),
+            new("e4m7", "Azure Agony"),
+            new("e4m8", "The Nameless City"),
 
-            new level_t("end", "Shub-Niggurath's Pit"),			// 31
+            new("end", "Shub-Niggurath's Pit"),			// 31
 
-	        new level_t("dm1", "Place of Two Deaths"),				// 32
-	        new level_t("dm2", "Claustrophobopolis"),
-            new level_t("dm3", "The Abandoned Base"),
-            new level_t("dm4", "The Bad Place"),
-            new level_t("dm5", "The Cistern"),
-            new level_t("dm6", "The Dark Zone")
+	        new("dm1", "Place of Two Deaths"),				// 32
+	        new("dm2", "Claustrophobopolis"),
+            new("dm3", "The Abandoned Base"),
+            new("dm4", "The Bad Place"),
+            new("dm5", "The Cistern"),
+            new("dm6", "The Dark Zone")
         };
 
         //MED 01/06/97 added hipnotic levels
         private static readonly level_t[] HipnoticLevels = new level_t[]
         {
-           new level_t("start", "Command HQ"),  // 0
+           new("start", "Command HQ"),  // 0
 
-           new level_t("hip1m1", "The Pumping Station"),          // 1
-           new level_t("hip1m2", "Storage Facility"),
-           new level_t("hip1m3", "The Lost Mine"),
-           new level_t("hip1m4", "Research Facility"),
-           new level_t("hip1m5", "Military Complex"),
+           new("hip1m1", "The Pumping Station"),          // 1
+           new("hip1m2", "Storage Facility"),
+           new("hip1m3", "The Lost Mine"),
+           new("hip1m4", "Research Facility"),
+           new("hip1m5", "Military Complex"),
 
-           new level_t("hip2m1", "Ancient Realms"),          // 6
-           new level_t("hip2m2", "The Black Cathedral"),
-           new level_t("hip2m3", "The Catacombs"),
-           new level_t("hip2m4", "The Crypt"),
-           new level_t("hip2m5", "Mortum's Keep"),
-           new level_t("hip2m6", "The Gremlin's Domain"),
+           new("hip2m1", "Ancient Realms"),          // 6
+           new("hip2m2", "The Black Cathedral"),
+           new("hip2m3", "The Catacombs"),
+           new("hip2m4", "The Crypt"),
+           new("hip2m5", "Mortum's Keep"),
+           new("hip2m6", "The Gremlin's Domain"),
 
-           new level_t("hip3m1", "Tur Torment"),       // 12
-           new level_t("hip3m2", "Pandemonium"),
-           new level_t("hip3m3", "Limbo"),
-           new level_t("hip3m4", "The Gauntlet"),
+           new("hip3m1", "Tur Torment"),       // 12
+           new("hip3m2", "Pandemonium"),
+           new("hip3m3", "Limbo"),
+           new("hip3m4", "The Gauntlet"),
 
-           new level_t("hipend", "Armagon's Lair"),       // 16
+           new("hipend", "Armagon's Lair"),       // 16
 
-           new level_t("hipdm1", "The Edge of Oblivion")           // 17
+           new("hipdm1", "The Edge of Oblivion")           // 17
         };
 
         //PGM 01/07/97 added rogue levels
         //PGM 03/02/97 added dmatch level
         private static readonly level_t[] RogueLevels = new level_t[]
         {
-            new level_t("start", "Split Decision"),
-            new level_t("r1m1", "Deviant's Domain"),
-            new level_t("r1m2", "Dread Portal"),
-            new level_t("r1m3", "Judgement Call"),
-            new level_t("r1m4", "Cave of Death"),
-            new level_t("r1m5", "Towers of Wrath"),
-            new level_t("r1m6", "Temple of Pain"),
-            new level_t("r1m7", "Tomb of the Overlord"),
-            new level_t("r2m1", "Tempus Fugit"),
-            new level_t("r2m2", "Elemental Fury I"),
-            new level_t("r2m3", "Elemental Fury II"),
-            new level_t("r2m4", "Curse of Osiris"),
-            new level_t("r2m5", "Wizard's Keep"),
-            new level_t("r2m6", "Blood Sacrifice"),
-            new level_t("r2m7", "Last Bastion"),
-            new level_t("r2m8", "Source of Evil"),
-            new level_t("ctf1", "Division of Change")
+            new("start", "Split Decision"),
+            new("r1m1", "Deviant's Domain"),
+            new("r1m2", "Dread Portal"),
+            new("r1m3", "Judgement Call"),
+            new("r1m4", "Cave of Death"),
+            new("r1m5", "Towers of Wrath"),
+            new("r1m6", "Temple of Pain"),
+            new("r1m7", "Tomb of the Overlord"),
+            new("r2m1", "Tempus Fugit"),
+            new("r2m2", "Elemental Fury I"),
+            new("r2m3", "Elemental Fury II"),
+            new("r2m4", "Curse of Osiris"),
+            new("r2m5", "Wizard's Keep"),
+            new("r2m6", "Blood Sacrifice"),
+            new("r2m7", "Last Bastion"),
+            new("r2m8", "Source of Evil"),
+            new("ctf1", "Division of Change")
         };
 
         private static readonly episode_t[] Episodes = new episode_t[]
         {
-            new episode_t("Welcome to Quake", 0, 1),
-            new episode_t("Doomed Dimension", 1, 8),
-            new episode_t("Realm of Black Magic", 9, 7),
-            new episode_t("Netherworld", 16, 7),
-            new episode_t("The Elder World", 23, 8),
-            new episode_t("Final Level", 31, 1),
-            new episode_t("Deathmatch Arena", 32, 6)
+            new("Welcome to Quake", 0, 1),
+            new("Doomed Dimension", 1, 8),
+            new("Realm of Black Magic", 9, 7),
+            new("Netherworld", 16, 7),
+            new("The Elder World", 23, 8),
+            new("Final Level", 31, 1),
+            new("Deathmatch Arena", 32, 6)
         };
 
         //MED 01/06/97  added hipnotic episodes
         private static readonly episode_t[] HipnoticEpisodes = new episode_t[]
         {
-           new episode_t("Scourge of Armagon", 0, 1),
-           new episode_t("Fortress of the Dead", 1, 5),
-           new episode_t("Dominion of Darkness", 6, 6),
-           new episode_t("The Rift", 12, 4),
-           new episode_t("Final Level", 16, 1),
-           new episode_t("Deathmatch Arena", 17, 1)
+           new("Scourge of Armagon", 0, 1),
+           new("Fortress of the Dead", 1, 5),
+           new("Dominion of Darkness", 6, 6),
+           new("The Rift", 12, 4),
+           new("Final Level", 16, 1),
+           new("Deathmatch Arena", 17, 1)
         };
 
         //PGM 01/07/97 added rogue episodes
         //PGM 03/02/97 added dmatch episode
         private static readonly episode_t[] RogueEpisodes = new episode_t[]
         {
-            new episode_t("Introduction", 0, 1),
-            new episode_t("Hell's Fortress", 1, 7),
-            new episode_t("Corridors of Time", 8, 8),
-            new episode_t("Deathmatch Arena", 16, 1)
+            new("Introduction", 0, 1),
+            new("Hell's Fortress", 1, 7),
+            new("Corridors of Time", 8, 8),
+            new("Deathmatch Arena", 16, 1)
         };
 
-        private static readonly Int32[] _CursorTable = new Int32[]
+        private static readonly int[] _CursorTable = new int[]
         {
             40, 56, 64, 72, 80, 88, 96, 112, 120
         };
 
-        private Int32 _StartEpisode;
+        private int _StartEpisode;
 
-        private Int32 _StartLevel;
+        private int _StartLevel;
 
-        private Int32 _MaxPlayers;
+        private int _MaxPlayers;
 
-        private Boolean _ServerInfoMessage;
+        private bool _ServerInfoMessage;
 
-        private Double _ServerInfoMessageTime;
+        private double _ServerInfoMessageTime;
 
 
         public override void Show( Host host )
         {
             base.Show( host );
 
-            if ( _MaxPlayers == 0 )
-                _MaxPlayers = Host.Server.svs.maxclients;
-            if ( _MaxPlayers < 2 )
-                _MaxPlayers = Host.Server.svs.maxclientslimit;
+            if (this._MaxPlayers == 0 )
+                this._MaxPlayers = this.Host.Server.svs.maxclients;
+            if (this._MaxPlayers < 2 )
+                this._MaxPlayers = this.Host.Server.svs.maxclientslimit;
         }
 
-        public override void KeyEvent( Int32 key )
+        public override void KeyEvent( int key )
         {
             switch ( key )
             {
                 case KeysDef.K_ESCAPE:
-                    LanConfigMenu.Show( Host );
+                    MenuBase.LanConfigMenuInstance.Show(this.Host );
                     break;
 
                 case KeysDef.K_UPARROW:
-                    Host.Sound.LocalSound( "misc/menu1.wav" );
-                    _Cursor--;
-                    if ( _Cursor < 0 )
-                        _Cursor = NUM_GAMEOPTIONS - 1;
+                    this.Host.Sound.LocalSound( "misc/menu1.wav" );
+                    this._Cursor--;
+                    if (this._Cursor < 0 )
+                        this._Cursor = GameOptionsMenu.NUM_GAMEOPTIONS - 1;
                     break;
 
                 case KeysDef.K_DOWNARROW:
-                    Host.Sound.LocalSound( "misc/menu1.wav" );
-                    _Cursor++;
-                    if ( _Cursor >= NUM_GAMEOPTIONS )
-                        _Cursor = 0;
+                    this.Host.Sound.LocalSound( "misc/menu1.wav" );
+                    this._Cursor++;
+                    if (this._Cursor >= GameOptionsMenu.NUM_GAMEOPTIONS )
+                        this._Cursor = 0;
                     break;
 
                 case KeysDef.K_LEFTARROW:
-                    if ( _Cursor == 0 )
+                    if (this._Cursor == 0 )
                         break;
-                    Host.Sound.LocalSound( "misc/menu3.wav" );
-                    Change( -1 );
+
+                    this.Host.Sound.LocalSound( "misc/menu3.wav" );
+                    this.Change( -1 );
                     break;
 
                 case KeysDef.K_RIGHTARROW:
-                    if ( _Cursor == 0 )
+                    if (this._Cursor == 0 )
                         break;
-                    Host.Sound.LocalSound( "misc/menu3.wav" );
-                    Change( 1 );
+
+                    this.Host.Sound.LocalSound( "misc/menu3.wav" );
+                    this.Change( 1 );
                     break;
 
                 case KeysDef.K_ENTER:
-                    Host.Sound.LocalSound( "misc/menu2.wav" );
-                    if ( _Cursor == 0 )
+                    this.Host.Sound.LocalSound( "misc/menu2.wav" );
+                    if (this._Cursor == 0 )
                     {
-                        if ( Host.Server.IsActive )
-                            Host.Commands.Buffer.Append( "disconnect\n" );
-                        Host.Commands.Buffer.Append( "listen 0\n" );	// so host_netport will be re-examined
-                        Host.Commands.Buffer.Append( String.Format( "maxplayers {0}\n", _MaxPlayers ) );
-                        Host.Screen.BeginLoadingPlaque( );
+                        if (this.Host.Server.IsActive )
+                            this.Host.Commands.Buffer.Append( "disconnect\n" );
+
+                        this.Host.Commands.Buffer.Append( "listen 0\n" );	// so host_netport will be re-examined
+                        this.Host.Commands.Buffer.Append( string.Format( "maxplayers {0}\n", this._MaxPlayers ) );
+                        this.Host.Screen.BeginLoadingPlaque( );
 
                         if ( MainWindow.Common.GameKind == GameKind.Hipnotic )
-                            Host.Commands.Buffer.Append( String.Format( "map {0}\n",
-                                HipnoticLevels[HipnoticEpisodes[_StartEpisode].firstLevel + _StartLevel].name ) );
+                        {
+                            this.Host.Commands.Buffer.Append( string.Format( "map {0}\n",
+                                GameOptionsMenu.HipnoticLevels[GameOptionsMenu.HipnoticEpisodes[this._StartEpisode].firstLevel + this._StartLevel].name ) );
+                        }
                         else if ( MainWindow.Common.GameKind == GameKind.Rogue )
-                            Host.Commands.Buffer.Append( String.Format( "map {0}\n",
-                                RogueLevels[RogueEpisodes[_StartEpisode].firstLevel + _StartLevel].name ) );
+                        {
+                            this.Host.Commands.Buffer.Append( string.Format( "map {0}\n",
+                                GameOptionsMenu.RogueLevels[GameOptionsMenu.RogueEpisodes[this._StartEpisode].firstLevel + this._StartLevel].name ) );
+                        }
                         else
-                            Host.Commands.Buffer.Append( String.Format( "map {0}\n", Levels[Episodes[_StartEpisode].firstLevel + _StartLevel].name ) );
+                            this.Host.Commands.Buffer.Append( string.Format( "map {0}\n", GameOptionsMenu.Levels[GameOptionsMenu.Episodes[this._StartEpisode].firstLevel + this._StartLevel].name ) );
 
                         return;
                     }
 
-                    Change( 1 );
+                    this.Change( 1 );
                     break;
             }
         }
 
         public override void Draw( )
         {
-            Host.Menu.DrawTransPic( 16, 4, Host.DrawingContext.CachePic( "gfx/qplaque.lmp", "GL_NEAREST" ) );
-            var p = Host.DrawingContext.CachePic( "gfx/p_multi.lmp", "GL_NEAREST" );
-            Host.Menu.DrawPic( ( 320 - p.Width ) / 2, 4, p );
+            this.Host.Menu.DrawTransPic( 16, 4, this.Host.DrawingContext.CachePic( "gfx/qplaque.lmp", "GL_NEAREST" ) );
+            var p = this.Host.DrawingContext.CachePic( "gfx/p_multi.lmp", "GL_NEAREST" );
+            this.Host.Menu.DrawPic( ( 320 - p.Width ) / 2, 4, p );
 
-            Host.Menu.DrawTextBox( 152, 32, 10, 1 );
-            Host.Menu.Print( 160, 40, "begin game" );
+            this.Host.Menu.DrawTextBox( 152, 32, 10, 1 );
+            this.Host.Menu.Print( 160, 40, "begin game" );
 
-            Host.Menu.Print( 0, 56, "      Max players" );
-            Host.Menu.Print( 160, 56, _MaxPlayers.ToString( ) );
+            this.Host.Menu.Print( 0, 56, "      Max players" );
+            this.Host.Menu.Print( 160, 56, this._MaxPlayers.ToString( ) );
 
-            Host.Menu.Print( 0, 64, "        Game Type" );
-            if ( Host.Cvars.Coop.Get<Boolean>( ) )
-                Host.Menu.Print( 160, 64, "Cooperative" );
+            this.Host.Menu.Print( 0, 64, "        Game Type" );
+            if (this.Host.Cvars.Coop.Get<bool>( ) )
+                this.Host.Menu.Print( 160, 64, "Cooperative" );
             else
-                Host.Menu.Print( 160, 64, "Deathmatch" );
+                this.Host.Menu.Print( 160, 64, "Deathmatch" );
 
-            Host.Menu.Print( 0, 72, "        Teamplay" );
+            this.Host.Menu.Print( 0, 72, "        Teamplay" );
             if ( MainWindow.Common.GameKind == GameKind.Rogue )
             {
-                String msg;
-                switch ( Host.Cvars.TeamPlay.Get<Int32>( ) )
+                string msg;
+                switch (this.Host.Cvars.TeamPlay.Get<int>( ) )
                 {
                     case 1:
                         msg = "No Friendly Fire";
@@ -306,12 +315,13 @@ namespace SharpQuake.Rendering.UI
                         msg = "Off";
                         break;
                 }
-                Host.Menu.Print( 160, 72, msg );
+
+                this.Host.Menu.Print( 160, 72, msg );
             }
             else
             {
-                String msg;
-                switch ( Host.Cvars.TeamPlay.Get<Int32>( ) )
+                string msg;
+                switch (this.Host.Cvars.TeamPlay.Get<int>( ) )
                 {
                     case 1:
                         msg = "No Friendly Fire";
@@ -325,103 +335,102 @@ namespace SharpQuake.Rendering.UI
                         msg = "Off";
                         break;
                 }
-                Host.Menu.Print( 160, 72, msg );
+
+                this.Host.Menu.Print( 160, 72, msg );
             }
 
-            Host.Menu.Print( 0, 80, "            Skill" );
-            if ( Host.Cvars.Skill.Get<Int32>( ) == 0 )
-                Host.Menu.Print( 160, 80, "Easy difficulty" );
-            else if ( Host.Cvars.Skill.Get<Int32>( ) == 1 )
-                Host.Menu.Print( 160, 80, "Normal difficulty" );
-            else if ( Host.Cvars.Skill.Get<Int32>( ) == 2 )
-                Host.Menu.Print( 160, 80, "Hard difficulty" );
+            this.Host.Menu.Print( 0, 80, "            Skill" );
+            if (this.Host.Cvars.Skill.Get<int>( ) == 0 )
+                this.Host.Menu.Print( 160, 80, "Easy difficulty" );
+            else if (this.Host.Cvars.Skill.Get<int>( ) == 1 )
+                this.Host.Menu.Print( 160, 80, "Normal difficulty" );
+            else if (this.Host.Cvars.Skill.Get<int>( ) == 2 )
+                this.Host.Menu.Print( 160, 80, "Hard difficulty" );
             else
-                Host.Menu.Print( 160, 80, "Nightmare difficulty" );
+                this.Host.Menu.Print( 160, 80, "Nightmare difficulty" );
 
-            Host.Menu.Print( 0, 88, "       Frag Limit" );
-            if ( Host.Cvars.FragLimit.Get<Int32>( ) == 0 )
-                Host.Menu.Print( 160, 88, "none" );
+            this.Host.Menu.Print( 0, 88, "       Frag Limit" );
+            if (this.Host.Cvars.FragLimit.Get<int>( ) == 0 )
+                this.Host.Menu.Print( 160, 88, "none" );
             else
-                Host.Menu.Print( 160, 88, String.Format( "{0} frags", Host.Cvars.FragLimit.Get<Int32>( ) ) );
+                this.Host.Menu.Print( 160, 88, string.Format( "{0} frags", this.Host.Cvars.FragLimit.Get<int>( ) ) );
 
-            Host.Menu.Print( 0, 96, "       Time Limit" );
-            if ( Host.Cvars.TimeLimit.Get<Int32>( ) == 0 )
-                Host.Menu.Print( 160, 96, "none" );
+            this.Host.Menu.Print( 0, 96, "       Time Limit" );
+            if (this.Host.Cvars.TimeLimit.Get<int>( ) == 0 )
+                this.Host.Menu.Print( 160, 96, "none" );
             else
-                Host.Menu.Print( 160, 96, String.Format( "{0} minutes", Host.Cvars.TimeLimit.Get<Int32>( ) ) );
+                this.Host.Menu.Print( 160, 96, string.Format( "{0} minutes", this.Host.Cvars.TimeLimit.Get<int>( ) ) );
 
-            Host.Menu.Print( 0, 112, "         Episode" );
+            this.Host.Menu.Print( 0, 112, "         Episode" );
             //MED 01/06/97 added hipnotic episodes
             if ( MainWindow.Common.GameKind == GameKind.Hipnotic )
-                Host.Menu.Print( 160, 112, HipnoticEpisodes[_StartEpisode].description );
+                this.Host.Menu.Print( 160, 112, GameOptionsMenu.HipnoticEpisodes[this._StartEpisode].description );
             //PGM 01/07/97 added rogue episodes
             else if ( MainWindow.Common.GameKind == GameKind.Rogue )
-                Host.Menu.Print( 160, 112, RogueEpisodes[_StartEpisode].description );
+                this.Host.Menu.Print( 160, 112, GameOptionsMenu.RogueEpisodes[this._StartEpisode].description );
             else
-                Host.Menu.Print( 160, 112, Episodes[_StartEpisode].description );
+                this.Host.Menu.Print( 160, 112, GameOptionsMenu.Episodes[this._StartEpisode].description );
 
-            Host.Menu.Print( 0, 120, "           Level" );
+            this.Host.Menu.Print( 0, 120, "           Level" );
             //MED 01/06/97 added hipnotic episodes
             if ( MainWindow.Common.GameKind == GameKind.Hipnotic )
             {
-                Host.Menu.Print( 160, 120, HipnoticLevels[HipnoticEpisodes[_StartEpisode].firstLevel + _StartLevel].description );
-                Host.Menu.Print( 160, 128, HipnoticLevels[HipnoticEpisodes[_StartEpisode].firstLevel + _StartLevel].name );
+                this.Host.Menu.Print( 160, 120, GameOptionsMenu.HipnoticLevels[GameOptionsMenu.HipnoticEpisodes[this._StartEpisode].firstLevel + this._StartLevel].description );
+                this.Host.Menu.Print( 160, 128, GameOptionsMenu.HipnoticLevels[GameOptionsMenu.HipnoticEpisodes[this._StartEpisode].firstLevel + this._StartLevel].name );
             }
             //PGM 01/07/97 added rogue episodes
             else if ( MainWindow.Common.GameKind == GameKind.Rogue )
             {
-                Host.Menu.Print( 160, 120, RogueLevels[RogueEpisodes[_StartEpisode].firstLevel + _StartLevel].description );
-                Host.Menu.Print( 160, 128, RogueLevels[RogueEpisodes[_StartEpisode].firstLevel + _StartLevel].name );
+                this.Host.Menu.Print( 160, 120, GameOptionsMenu.RogueLevels[GameOptionsMenu.RogueEpisodes[this._StartEpisode].firstLevel + this._StartLevel].description );
+                this.Host.Menu.Print( 160, 128, GameOptionsMenu.RogueLevels[GameOptionsMenu.RogueEpisodes[this._StartEpisode].firstLevel + this._StartLevel].name );
             }
             else
             {
-                Host.Menu.Print( 160, 120, Levels[Episodes[_StartEpisode].firstLevel + _StartLevel].description );
-                Host.Menu.Print( 160, 128, Levels[Episodes[_StartEpisode].firstLevel + _StartLevel].name );
+                this.Host.Menu.Print( 160, 120, GameOptionsMenu.Levels[GameOptionsMenu.Episodes[this._StartEpisode].firstLevel + this._StartLevel].description );
+                this.Host.Menu.Print( 160, 128, GameOptionsMenu.Levels[GameOptionsMenu.Episodes[this._StartEpisode].firstLevel + this._StartLevel].name );
             }
 
             // line cursor
-            Host.Menu.DrawCharacter( 144, _CursorTable[_Cursor], 12 + ( ( Int32 ) ( Host.RealTime * 4 ) & 1 ) );
+            this.Host.Menu.DrawCharacter( 144, GameOptionsMenu._CursorTable[this._Cursor], 12 + ( ( int ) (this.Host.RealTime * 4 ) & 1 ) );
 
-            if ( _ServerInfoMessage )
+            if (this._ServerInfoMessage )
             {
-                if ( ( Host.RealTime - _ServerInfoMessageTime ) < 5.0 )
+                if ( this.Host.RealTime - this._ServerInfoMessageTime < 5.0 )
                 {
                     var x = ( 320 - 26 * 8 ) / 2;
-                    Host.Menu.DrawTextBox( x, 138, 24, 4 );
+                    this.Host.Menu.DrawTextBox( x, 138, 24, 4 );
                     x += 8;
-                    Host.Menu.Print( x, 146, "  More than 4 players   " );
-                    Host.Menu.Print( x, 154, " requires using command " );
-                    Host.Menu.Print( x, 162, "line parameters; please " );
-                    Host.Menu.Print( x, 170, "   see techinfo.txt.    " );
+                    this.Host.Menu.Print( x, 146, "  More than 4 players   " );
+                    this.Host.Menu.Print( x, 154, " requires using command " );
+                    this.Host.Menu.Print( x, 162, "line parameters; please " );
+                    this.Host.Menu.Print( x, 170, "   see techinfo.txt.    " );
                 }
                 else
-                {
-                    _ServerInfoMessage = false;
-                }
+                    this._ServerInfoMessage = false;
             }
         }
 
         private class level_t
         {
-            public String name;
-            public String description;
+            public string name;
+            public string description;
 
-            public level_t( String name, String desc )
+            public level_t( string name, string desc )
             {
                 this.name = name;
-                description = desc;
+                this.description = desc;
             }
         } //level_t;
 
         private class episode_t
         {
-            public String description;
-            public Int32 firstLevel;
-            public Int32 levels;
+            public string description;
+            public int firstLevel;
+            public int levels;
 
-            public episode_t( String desc, Int32 firstLevel, Int32 levels )
+            public episode_t( string desc, int firstLevel, int levels )
             {
-                description = desc;
+                this.description = desc;
                 this.firstLevel = firstLevel;
                 this.levels = levels;
             }
@@ -430,26 +439,26 @@ namespace SharpQuake.Rendering.UI
         /// <summary>
         /// M_NetStart_Change
         /// </summary>
-        private void Change( Int32 dir )
+        private void Change( int dir )
         {
-            Int32 count;
+            int count;
 
-            switch ( _Cursor )
+            switch (this._Cursor )
             {
                 case 1:
-                    _MaxPlayers += dir;
-                    if ( _MaxPlayers > Host.Server.svs.maxclientslimit )
+                    this._MaxPlayers += dir;
+                    if (this._MaxPlayers > this.Host.Server.svs.maxclientslimit )
                     {
-                        _MaxPlayers = Host.Server.svs.maxclientslimit;
-                        _ServerInfoMessage = true;
-                        _ServerInfoMessageTime = Host.RealTime;
+                        this._MaxPlayers = this.Host.Server.svs.maxclientslimit;
+                        this._ServerInfoMessage = true;
+                        this._ServerInfoMessageTime = this.Host.RealTime;
                     }
-                    if ( _MaxPlayers < 2 )
-                        _MaxPlayers = 2;
+                    if (this._MaxPlayers < 2 )
+                        this._MaxPlayers = 2;
                     break;
 
                 case 2:
-                    Host.CVars.Set( "coop", Host.Cvars.Coop.Get<Boolean>( ) );
+                    this.Host.CVars.Set( "coop", this.Host.Cvars.Coop.Get<bool>( ) );
                     break;
 
                 case 3:
@@ -458,44 +467,47 @@ namespace SharpQuake.Rendering.UI
                     else
                         count = 2;
 
-                    var tp = Host.Cvars.TeamPlay.Get<Int32>( ) + dir;
+                    var tp = this.Host.Cvars.TeamPlay.Get<int>( ) + dir;
                     if ( tp > count )
                         tp = 0;
                     else if ( tp < 0 )
                         tp = count;
 
-                    Host.CVars.Set( "teamplay", tp );
+                    this.Host.CVars.Set( "teamplay", tp );
                     break;
 
                 case 4:
-                    var skill = Host.Cvars.Skill.Get<Int32>( ) + dir;
+                    var skill = this.Host.Cvars.Skill.Get<int>( ) + dir;
                     if ( skill > 3 )
                         skill = 0;
                     if ( skill < 0 )
                         skill = 3;
-                    Host.CVars.Set( "skill", skill );
+
+                    this.Host.CVars.Set( "skill", skill );
                     break;
 
                 case 5:
-                    var fraglimit = Host.Cvars.FragLimit.Get<Int32>( ) + dir * 10;
+                    var fraglimit = this.Host.Cvars.FragLimit.Get<int>( ) + dir * 10;
                     if ( fraglimit > 100 )
                         fraglimit = 0;
                     if ( fraglimit < 0 )
                         fraglimit = 100;
-                    Host.CVars.Set( "fraglimit", fraglimit );
+
+                    this.Host.CVars.Set( "fraglimit", fraglimit );
                     break;
 
                 case 6:
-                    var timelimit = Host.Cvars.TimeLimit.Get<Int32>( ) + dir * 5;
+                    var timelimit = this.Host.Cvars.TimeLimit.Get<int>( ) + dir * 5;
                     if ( timelimit > 60 )
                         timelimit = 0;
                     if ( timelimit < 0 )
                         timelimit = 60;
-                    Host.CVars.Set( "timelimit", timelimit );
+
+                    this.Host.CVars.Set( "timelimit", timelimit );
                     break;
 
                 case 7:
-                    _StartEpisode += dir;
+                    this._StartEpisode += dir;
                     //MED 01/06/97 added hipnotic count
                     if ( MainWindow.Common.GameKind == GameKind.Hipnotic )
                         count = 6;
@@ -508,31 +520,31 @@ namespace SharpQuake.Rendering.UI
                     else
                         count = 2;
 
-                    if ( _StartEpisode < 0 )
-                        _StartEpisode = count - 1;
+                    if (this._StartEpisode < 0 )
+                        this._StartEpisode = count - 1;
 
-                    if ( _StartEpisode >= count )
-                        _StartEpisode = 0;
+                    if (this._StartEpisode >= count )
+                        this._StartEpisode = 0;
 
-                    _StartLevel = 0;
+                    this._StartLevel = 0;
                     break;
 
                 case 8:
-                    _StartLevel += dir;
+                    this._StartLevel += dir;
                     //MED 01/06/97 added hipnotic episodes
                     if ( MainWindow.Common.GameKind == GameKind.Hipnotic )
-                        count = HipnoticEpisodes[_StartEpisode].levels;
+                        count = GameOptionsMenu.HipnoticEpisodes[this._StartEpisode].levels;
                     //PGM 01/06/97 added hipnotic episodes
                     else if ( MainWindow.Common.GameKind == GameKind.Rogue )
-                        count = RogueEpisodes[_StartEpisode].levels;
+                        count = GameOptionsMenu.RogueEpisodes[this._StartEpisode].levels;
                     else
-                        count = Episodes[_StartEpisode].levels;
+                        count = GameOptionsMenu.Episodes[this._StartEpisode].levels;
 
-                    if ( _StartLevel < 0 )
-                        _StartLevel = count - 1;
+                    if (this._StartLevel < 0 )
+                        this._StartLevel = count - 1;
 
-                    if ( _StartLevel >= count )
-                        _StartLevel = 0;
+                    if (this._StartLevel >= count )
+                        this._StartLevel = 0;
                     break;
             }
         }

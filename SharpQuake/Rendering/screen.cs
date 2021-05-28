@@ -22,139 +22,111 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-using SharpQuake.Framework.IO;
-using SharpQuake.Framework.IO.Input;
-using SharpQuake.Renderer;
-using SharpQuake.Renderer.Textures;
+
 
 // screen.h
 // gl_screen.c
 
-namespace SharpQuake
+namespace SharpQuake.Rendering
 {
+    using Desktop;
+    using Engine.Host;
+    using Framework.Definitions;
+    using Framework.Engine;
+    using Framework.IO;
+    using Framework.IO.Input;
+    using Framework.Rendering;
+    using Networking.Client;
+    using Renderer;
+    using Renderer.Textures;
+    using System;
+    using System.Drawing;
+
     /// <summary>
     /// SCR_functions
     /// </summary>
     public partial class Scr
     {
-        public VidDef vid
+        public VidDef vid => this._VidDef;
+
+        public ClientVariable ViewSize => this.Host.Cvars.ViewSize;
+
+        public float ConCurrent => this._ConCurrent;
+
+        public bool CopyEverithing
         {
-            get
-            {
-                return _VidDef;
-            }
+            get => this._CopyEverything;
+            set => this._CopyEverything = value;
         }
 
-        public ClientVariable ViewSize
+        public bool IsDisabledForLoading;
+        public bool BlockDrawing
         {
-            get
-            {
-                return Host.Cvars.ViewSize;
-            }
+            get => this.Host.Video.Device.BlockDrawing;
+            set => this.Host.Video.Device.BlockDrawing = value;
         }
 
-        public Single ConCurrent
+        public bool SkipUpdate
         {
-            get
-            {
-                return _ConCurrent;
-            }
-        }
-
-        public Boolean CopyEverithing
-        {
-            get
-            {
-                return _CopyEverything;
-            }
-            set
-            {
-                _CopyEverything = value;
-            }
-        }
-
-        public Boolean IsDisabledForLoading;
-        public Boolean BlockDrawing
-        {
-            get
-            {
-                return Host.Video.Device.BlockDrawing;
-            }
-            set
-            {
-                Host.Video.Device.BlockDrawing = value;
-            }
-        }
-
-        public Boolean SkipUpdate
-        {
-            get
-            {
-                return Host.Video.Device.SkipUpdate;
-            }
-            set
-            {
-                Host.Video.Device.SkipUpdate = value;
-            }
+            get => this.Host.Video.Device.SkipUpdate;
+            set => this.Host.Video.Device.SkipUpdate = value;
         }
 
         // scr_skipupdate
-        public Boolean FullSbarDraw;
+        public bool FullSbarDraw;
 
         // fullsbardraw = false
-        public Boolean IsPermedia;
+        public bool IsPermedia;
 
         // only the refresh window will be updated unless these variables are flagged
-        public Boolean CopyTop;
+        public bool CopyTop;
 
-        public Int32 ClearNotify;
-        public Int32 glX;
-        public Int32 glY;
-        public Int32 glWidth;
-        public Int32 glHeight;
-        public Single CenterTimeOff;
-        public Int32 FullUpdate;
-        private VidDef _VidDef = new VidDef( );	// viddef_t vid (global video state)
+        public int ClearNotify;
+        public int glX;
+        public int glY;
+        public int glWidth;
+        public int glHeight;
+        public float CenterTimeOff;
+        public int FullUpdate;
+        private VidDef _VidDef = new( );	// viddef_t vid (global video state)
         private VRect _VRect; // scr_vrect
 
         // scr_disabled_for_loading
-        private Boolean _DrawLoading; // scr_drawloading
+        private bool _DrawLoading; // scr_drawloading
 
-        private Double _DisabledTime; // float scr_disabled_time
+        private double _DisabledTime; // float scr_disabled_time
 
         // qboolean block_drawing
-        private Boolean _DrawDialog; // scr_drawdialog
+        private bool _DrawDialog; // scr_drawdialog
 
         // isPermedia
-        private Boolean _IsInitialized;
+        private bool _IsInitialized;
 
-        private Boolean _InUpdate;
+        private bool _InUpdate;
         private BasePicture Ram;
         private BasePicture Net;
         private BasePicture Turtle;
-        private Int32 _TurtleCount; // count from SCR_DrawTurtle()
-        private Boolean _CopyEverything;
+        private int _TurtleCount; // count from SCR_DrawTurtle()
+        private bool _CopyEverything;
 
-        private Single _ConCurrent; // scr_con_current
-        private Single _ConLines;		// lines of console to display
-        private Int32 _ClearConsole; // clearconsole
+        private float _ConCurrent; // scr_con_current
+        private float _ConLines;		// lines of console to display
+        private int _ClearConsole; // clearconsole
                                      // clearnotify
 
-        private Single _OldScreenSize; // float oldscreensize
-        private Single _OldFov; // float oldfov
-        private Int32 _CenterLines; // scr_center_lines
-        private Int32 _EraseLines; // scr_erase_lines
+        private float _OldScreenSize; // float oldscreensize
+        private float _OldFov; // float oldfov
+        private int _CenterLines; // scr_center_lines
+        private int _EraseLines; // scr_erase_lines
 
         //int _EraseCenter; // scr_erase_center
-        private Single _CenterTimeStart; // scr_centertime_start	// for slow victory printing
+        private float _CenterTimeStart; // scr_centertime_start	// for slow victory printing
 
         // scr_centertime_off
-        private String _CenterString; // char	scr_centerstring[1024]
+        private string _CenterString; // char	scr_centerstring[1024]
         
-        private String _NotifyString; // scr_notifystring
-        private Boolean _IsMouseWindowed; // windowed_mouse (don't confuse with _windowed_mouse cvar)
+        private string _NotifyString; // scr_notifystring
+        private bool _IsMouseWindowed; // windowed_mouse (don't confuse with _windowed_mouse cvar)
                                                  // scr_fullupdate    set to 0 to force full redraw
                                                  // CHANGE
         private Host Host
@@ -165,40 +137,40 @@ namespace SharpQuake
 
         public Scr( Host host )
         {
-            Host = host;
+            this.Host = host;
         }
 
         // SCR_Init
         public void Initialise( )
         {
-            if ( Host.Cvars.ViewSize == null )
+            if (this.Host.Cvars.ViewSize == null )
             {
-                Host.Cvars.ViewSize = Host.CVars.Add( "viewsize", 100f, ClientVariableFlags.Archive );
-                Host.Cvars.Fov = Host.CVars.Add( "fov", 90f );	// 10 - 170
-                Host.Cvars.ConSpeed = Host.CVars.Add( "scr_conspeed", 3000 );
-                Host.Cvars.CenterTime = Host.CVars.Add( "scr_centertime", 2 );
-                Host.Cvars.ShowRam = Host.CVars.Add( "showram", true );
-                Host.Cvars.ShowTurtle = Host.CVars.Add( "showturtle", false );
-                Host.Cvars.ShowPause = Host.CVars.Add( "showpause", true );
-                Host.Cvars.PrintSpeed = Host.CVars.Add( "scr_printspeed", 8 );
-                Host.Cvars.glTripleBuffer = Host.CVars.Add( "gl_triplebuffer", 1, ClientVariableFlags.Archive );
+                this.Host.Cvars.ViewSize = this.Host.CVars.Add( "viewsize", 100f, ClientVariableFlags.Archive );
+                this.Host.Cvars.Fov = this.Host.CVars.Add( "fov", 90f );	// 10 - 170
+                this.Host.Cvars.ConSpeed = this.Host.CVars.Add( "scr_conspeed", 3000 );
+                this.Host.Cvars.CenterTime = this.Host.CVars.Add( "scr_centertime", 2 );
+                this.Host.Cvars.ShowRam = this.Host.CVars.Add( "showram", true );
+                this.Host.Cvars.ShowTurtle = this.Host.CVars.Add( "showturtle", false );
+                this.Host.Cvars.ShowPause = this.Host.CVars.Add( "showpause", true );
+                this.Host.Cvars.PrintSpeed = this.Host.CVars.Add( "scr_printspeed", 8 );
+                this.Host.Cvars.glTripleBuffer = this.Host.CVars.Add( "gl_triplebuffer", 1, ClientVariableFlags.Archive );
             }
 
             //
             // register our commands
             //
-            Host.Commands.Add( "screenshot", ScreenShot_f );
-            Host.Commands.Add( "sizeup", SizeUp_f );
-            Host.Commands.Add( "sizedown", SizeDown_f );
+            this.Host.Commands.Add( "screenshot", this.ScreenShot_f );
+            this.Host.Commands.Add( "sizeup", this.SizeUp_f );
+            this.Host.Commands.Add( "sizedown", this.SizeDown_f );
 
-            Ram = BasePicture.FromWad( Host.Video.Device, Host.GfxWad, "ram", "GL_LINEAR" );
-            Net = BasePicture.FromWad( Host.Video.Device, Host.GfxWad, "net", "GL_LINEAR" );
-            Turtle = BasePicture.FromWad( Host.Video.Device, Host.GfxWad, "turtle", "GL_LINEAR" );
+            this.Ram = BasePicture.FromWad(this.Host.Video.Device, this.Host.GfxWad, "ram", "GL_LINEAR" );
+            this.Net = BasePicture.FromWad(this.Host.Video.Device, this.Host.GfxWad, "net", "GL_LINEAR" );
+            this.Turtle = BasePicture.FromWad(this.Host.Video.Device, this.Host.GfxWad, "turtle", "GL_LINEAR" );
 
             if ( CommandLine.HasParam( "-fullsbar" ) )
-                FullSbarDraw = true;
+                this.FullSbarDraw = true;
 
-            _IsInitialized = true;
+            this._IsInitialized = true;
         }
 
         // void SCR_UpdateScreen (void);
@@ -209,129 +181,128 @@ namespace SharpQuake
         // needs almost the entire 256k of stack space!
         public void UpdateScreen( )
         {
-            if ( BlockDrawing || !_IsInitialized || _InUpdate )
+            if (this.BlockDrawing || !this._IsInitialized || this._InUpdate )
                 return;
 
-            _InUpdate = true;
+            this._InUpdate = true;
             try
             {
                 if ( MainWindow.Instance != null && !MainWindow.Instance.IsDisposing )
                 {
-                    if ( ( MainWindow.Instance.VSync == VSyncMode.One ) != Host.Video.Wait )
-                        MainWindow.Instance.VSync = ( Host.Video.Wait ? VSyncMode.One : VSyncMode.None );
+                    if ( MainWindow.Instance.VSync == VSyncMode.One != this.Host.Video.Wait )
+                        MainWindow.Instance.VSync = this.Host.Video.Wait ? VSyncMode.One : VSyncMode.None;
                 }
 
-                _VidDef.numpages = 2 + ( Int32 ) Host.Cvars.glTripleBuffer.Get<Int32>( );
+                this._VidDef.numpages = 2 + ( int )this.Host.Cvars.glTripleBuffer.Get<int>( );
 
-                CopyTop = false;
-                _CopyEverything = false;
+                this.CopyTop = false;
+                this._CopyEverything = false;
 
-                if ( IsDisabledForLoading )
+                if (this.IsDisabledForLoading )
                 {
-                    if ( ( Host.RealTime - _DisabledTime ) > 60 )
+                    if ( this.Host.RealTime - this._DisabledTime > 60 )
                     {
-                        IsDisabledForLoading = false;
-                        Host.Console.Print( "Load failed.\n" );
+                        this.IsDisabledForLoading = false;
+                        this.Host.Console.Print( "Load failed.\n" );
                     }
                     else
                         return;
                 }
 
-                if ( !Host.Console.IsInitialized )
+                if ( !this.Host.Console.IsInitialized )
                     return;	// not initialized yet
 
-                BeginRendering( );
+                this.BeginRendering( );
 
                 //
                 // determine size of refresh window
                 //
-                if ( _OldFov != Host.Cvars.Fov.Get<Single>( ) )
+                if (this._OldFov != this.Host.Cvars.Fov.Get<float>( ) )
                 {
-                    _OldFov = Host.Cvars.Fov.Get<Single>( );
-                    _VidDef.recalc_refdef = true;
+                    this._OldFov = this.Host.Cvars.Fov.Get<float>( );
+                    this._VidDef.recalc_refdef = true;
                 }
 
-                if ( _OldScreenSize != Host.Cvars.ViewSize.Get<Single>( ) )
+                if (this._OldScreenSize != this.Host.Cvars.ViewSize.Get<float>( ) )
                 {
-                    _OldScreenSize = Host.Cvars.ViewSize.Get<Single>( );
-                    _VidDef.recalc_refdef = true;
+                    this._OldScreenSize = this.Host.Cvars.ViewSize.Get<float>( );
+                    this._VidDef.recalc_refdef = true;
                 }
 
-                if ( _VidDef.recalc_refdef )
-                    CalcRefdef( );
+                if (this._VidDef.recalc_refdef )
+                    this.CalcRefdef( );
 
                 //
                 // do 3D refresh drawing, and then update the screen
                 //
-                SetUpToDrawConsole( );
+                this.SetUpToDrawConsole( );
 
-                Host.View.RenderView( );
+                this.Host.View.RenderView( );
 
-                Host.Video.Device.Begin2DScene( );
+                this.Host.Video.Device.Begin2DScene( );
                 //Set2D();
 
                 //
                 // draw any areas not covered by the refresh
                 //
-                Host.Screen.TileClear( );
+                this.Host.Screen.TileClear( );
 
-                if ( _DrawDialog )
+                if (this._DrawDialog )
                 {
-                    Host.Hud.Draw( );
-                    Host.DrawingContext.FadeScreen( );
-                    DrawNotifyString( );
-                    _CopyEverything = true;
+                    this.Host.Hud.Draw( );
+                    this.Host.DrawingContext.FadeScreen( );
+                    this.DrawNotifyString( );
+                    this._CopyEverything = true;
                 }
-                else if ( _DrawLoading )
+                else if (this._DrawLoading )
                 {
-                    DrawLoading( );
-                    Host.Hud.Draw( );
+                    this.DrawLoading( );
+                    this.Host.Hud.Draw( );
                 }
-                else if ( Host.Client.cl.intermission == 1 && Host.Keyboard.Destination == KeyDestination.key_game )
+                else if (this.Host.Client.cl.intermission == 1 && this.Host.Keyboard.Destination == KeyDestination.key_game )
+                    this.Host.Hud.IntermissionOverlay( );
+                else if (this.Host.Client.cl.intermission == 2 && this.Host.Keyboard.Destination == KeyDestination.key_game )
                 {
-                    Host.Hud.IntermissionOverlay( );
-                }
-                else if ( Host.Client.cl.intermission == 2 && Host.Keyboard.Destination == KeyDestination.key_game )
-                {
-                    Host.Hud.FinaleOverlay( );
-                    CheckDrawCenterString( );
+                    this.Host.Hud.FinaleOverlay( );
+                    this.CheckDrawCenterString( );
                 }
                 else
                 {
-                    if ( Host.View.Crosshair > 0 )
-                        Host.DrawingContext.DrawCharacter( _VRect.x + _VRect.width / 2, _VRect.y + _VRect.height / 2, '+' );
+                    if (this.Host.View.Crosshair > 0 )
+                        this.Host.DrawingContext.DrawCharacter(this._VRect.x + this._VRect.width / 2, this._VRect.y + this._VRect.height / 2, '+' );
 
-                    DrawRam( );
-                    DrawNet( );
-                    DrawTurtle( );
-                    DrawPause( );
-                    CheckDrawCenterString( );
-                    Host.Hud.Draw( );
-                    DrawConsole( );
-                    Host.Menu.Draw( );
+                    this.DrawRam( );
+                    this.DrawNet( );
+                    this.DrawTurtle( );
+                    this.DrawPause( );
+                    this.CheckDrawCenterString( );
+                    this.Host.Hud.Draw( );
+                    this.DrawConsole( );
+                    this.Host.Menu.Draw( );
                 }
 
-                if ( Host.ShowFPS )
+                if (this.Host.ShowFPS )
                 {
-                    if ( DateTime.Now.Subtract( Host.LastFPSUpdate ).TotalSeconds >= 1 )
+                    if ( DateTime.Now.Subtract(this.Host.LastFPSUpdate ).TotalSeconds >= 1 )
                     {
-                        Host.FPS = Host.FPSCounter;
-                        Host.FPSCounter = 0;
-                        Host.LastFPSUpdate = DateTime.Now;
+                        this.Host.FPS = this.Host.FPSCounter;
+                        this.Host.FPSCounter = 0;
+                        this.Host.LastFPSUpdate = DateTime.Now;
                     }
 
-                    Host.FPSCounter++;
+                    this.Host.FPSCounter++;
 
-                    Host.DrawingContext.DrawString( Host.Screen.vid.width - 16 - 10, 10, $"{Host.FPS}", System.Drawing.Color.Yellow );
+                    this.Host.DrawingContext.DrawString(this.Host.Screen.vid.width - 16 - 10, 10, $"{this.Host.FPS}", Color.Yellow );
                 }
-                Host.Video.Device.End2DScene( );
 
-                Host.View.UpdatePalette( );
-                EndRendering( );
+                this.Host.Video.Device.End2DScene( );
+
+                this.Host.View.UpdatePalette( );
+                this.EndRendering( );
             }
             finally
             {
-                _InUpdate = false;
+                this._InUpdate = false;
             }
         }
 
@@ -347,57 +318,56 @@ namespace SharpQuake
             if ( form == null )
                 return;
 
-            Host.Video?.Device?.EndScene( );
+            this.Host.Video?.Device?.EndScene( );
 
             //if( !SkipUpdate || BlockDrawing )
             //    form.SwapBuffers();
 
             // handle the mouse state
-            if ( !Host.Video.WindowedMouse )
+            if ( !this.Host.Video.WindowedMouse )
             {
-                if ( _IsMouseWindowed )
+                if (this._IsMouseWindowed )
                 {
                     MainWindow.Input.DeactivateMouse( );
                     MainWindow.Input.ShowMouse( );
-                    _IsMouseWindowed = false;
+                    this._IsMouseWindowed = false;
                 }
             }
             else
             {
-                _IsMouseWindowed = true;
-                if ( Host.Keyboard.Destination == KeyDestination.key_game && !MainWindow.Input.IsMouseActive &&
-                    Host.Client.cls.state != cactive_t.ca_disconnected )// && ActiveApp)
+                this._IsMouseWindowed = true;
+                if (this.Host.Keyboard.Destination == KeyDestination.key_game && !MainWindow.Input.IsMouseActive && this.Host.Client.cls.state != cactive_t.ca_disconnected )// && ActiveApp)
                 {
                     MainWindow.Input.ActivateMouse( );
                     MainWindow.Input.HideMouse( );
                 }
-                else if ( MainWindow.Input.IsMouseActive && Host.Keyboard.Destination != KeyDestination.key_game )
+                else if ( MainWindow.Input.IsMouseActive && this.Host.Keyboard.Destination != KeyDestination.key_game )
                 {
                     MainWindow.Input.DeactivateMouse( );
                     MainWindow.Input.ShowMouse( );
                 }
             }
 
-            if ( FullSbarDraw )
-                Host.Hud.Changed( );
+            if (this.FullSbarDraw )
+                this.Host.Hud.Changed( );
         }
 
         // SCR_CenterPrint
         //
         // Called for important messages that should stay in the center of the screen
         // for a few moments
-        public void CenterPrint( String str )
+        public void CenterPrint( string str )
         {
-            _CenterString = str;
-            CenterTimeOff = Host.Cvars.CenterTime.Get<Int32>( );
-            _CenterTimeStart = ( Single ) Host.Client.cl.time;
+            this._CenterString = str;
+            this.CenterTimeOff = this.Host.Cvars.CenterTime.Get<int>( );
+            this._CenterTimeStart = ( float )this.Host.Client.cl.time;
 
             // count the number of lines for centering
-            _CenterLines = 1;
-            foreach ( var c in _CenterString )
+            this._CenterLines = 1;
+            foreach ( var c in this._CenterString )
             {
                 if ( c == '\n' )
-                    _CenterLines++;
+                    this._CenterLines++;
             }
         }
 
@@ -406,9 +376,9 @@ namespace SharpQuake
         /// </summary>
         public void EndLoadingPlaque( )
         {
-            Host.Screen.IsDisabledForLoading = false;
-            Host.Screen.FullUpdate = 0;
-            Host.Console.ClearNotify( );
+            this.Host.Screen.IsDisabledForLoading = false;
+            this.Host.Screen.FullUpdate = 0;
+            this.Host.Console.ClearNotify( );
         }
 
         /// <summary>
@@ -416,58 +386,58 @@ namespace SharpQuake
         /// </summary>
         public void BeginLoadingPlaque( )
         {
-            Host.Sound.StopAllSounds( true );
+            this.Host.Sound.StopAllSounds( true );
 
-            if ( Host.Client.cls.state != cactive_t.ca_connected )
+            if (this.Host.Client.cls.state != cactive_t.ca_connected )
                 return;
-            if ( Host.Client.cls.signon != ClientDef.SIGNONS )
+            if (this.Host.Client.cls.signon != ClientDef.SIGNONS )
                 return;
 
             // redraw with no console and the loading plaque
-            Host.Console.ClearNotify( );
-            CenterTimeOff = 0;
-            _ConCurrent = 0;
+            this.Host.Console.ClearNotify( );
+            this.CenterTimeOff = 0;
+            this._ConCurrent = 0;
 
-            _DrawLoading = true;
-            Host.Screen.FullUpdate = 0;
-            Host.Hud.Changed( );
-            UpdateScreen( );
-            _DrawLoading = false;
+            this._DrawLoading = true;
+            this.Host.Screen.FullUpdate = 0;
+            this.Host.Hud.Changed( );
+            this.UpdateScreen( );
+            this._DrawLoading = false;
 
-            Host.Screen.IsDisabledForLoading = true;
-            _DisabledTime = Host.RealTime;
-            Host.Screen.FullUpdate = 0;
+            this.Host.Screen.IsDisabledForLoading = true;
+            this._DisabledTime = this.Host.RealTime;
+            this.Host.Screen.FullUpdate = 0;
         }
 
         /// <summary>
         /// SCR_ModalMessage
         /// Displays a text string in the center of the screen and waits for a Y or N keypress.
         /// </summary>
-        public Boolean ModalMessage( String text )
+        public bool ModalMessage( string text )
         {
-            if ( Host.Client.cls.state == cactive_t.ca_dedicated )
+            if (this.Host.Client.cls.state == cactive_t.ca_dedicated )
                 return true;
 
-            _NotifyString = text;
+            this._NotifyString = text;
 
             // draw a fresh screen
-            Host.Screen.FullUpdate = 0;
-            _DrawDialog = true;
-            UpdateScreen( );
-            _DrawDialog = false;
+            this.Host.Screen.FullUpdate = 0;
+            this._DrawDialog = true;
+            this.UpdateScreen( );
+            this._DrawDialog = false;
 
-            Host.Sound.ClearBuffer( );		// so dma doesn't loop current sound
+            this.Host.Sound.ClearBuffer( );		// so dma doesn't loop current sound
 
             do
             {
-                Host.Keyboard.KeyCount = -1;        // wait for a key down and up
-				Host.MainWindow.SendKeyEvents( );
-            } while ( Host.Keyboard.LastPress != 'y' && Host.Keyboard.LastPress != 'n' && Host.Keyboard.LastPress != KeysDef.K_ESCAPE );
+                this.Host.Keyboard.KeyCount = -1;        // wait for a key down and up
+                this.Host.MainWindow.SendKeyEvents( );
+            } while (this.Host.Keyboard.LastPress != 'y' && this.Host.Keyboard.LastPress != 'n' && this.Host.Keyboard.LastPress != KeysDef.K_ESCAPE );
 
-            Host.Screen.FullUpdate = 0;
-            UpdateScreen( );
+            this.Host.Screen.FullUpdate = 0;
+            this.UpdateScreen( );
 
-            return ( Host.Keyboard.LastPress == 'y' );
+            return this.Host.Keyboard.LastPress == 'y';
         }
 
         // SCR_SizeUp_f
@@ -475,8 +445,8 @@ namespace SharpQuake
         // Keybinding command
         private void SizeUp_f( CommandMessage msg )
         {
-            Host.CVars.Set( "viewsize", Host.Cvars.ViewSize.Get<Single>( ) + 10 );
-            _VidDef.recalc_refdef = true;
+            this.Host.CVars.Set( "viewsize", this.Host.Cvars.ViewSize.Get<float>( ) + 10 );
+            this._VidDef.recalc_refdef = true;
         }
 
         // SCR_SizeDown_f
@@ -484,14 +454,15 @@ namespace SharpQuake
         // Keybinding command
         private void SizeDown_f( CommandMessage msg )
         {
-            Host.CVars.Set( "viewsize", Host.Cvars.ViewSize.Get<Single>( ) - 10 );
-            _VidDef.recalc_refdef = true;
+            this.Host.CVars.Set( "viewsize", this.Host.Cvars.ViewSize.Get<float>( ) - 10 );
+            this._VidDef.recalc_refdef = true;
         }
 
         // SCR_ScreenShot_f
         private void ScreenShot_f( CommandMessage msg )
         {
-            Host.Video.Device.ScreenShot( out var path );
+            // Screenshot functionality is removed, as any os supports this anyway.
+            // Also using a dependency only for this feature is not a good idea.
         }
 
         /// <summary>
@@ -502,20 +473,20 @@ namespace SharpQuake
             if ( MainWindow.Instance == null || MainWindow.Instance.IsDisposing )
                 return;
 
-            glX = 0;
-            glY = 0;
-            glWidth = 0;
-            glHeight = 0;
+            this.glX = 0;
+            this.glY = 0;
+            this.glWidth = 0;
+            this.glHeight = 0;
 
             var window = MainWindow.Instance;
             if ( window != null )
             {
                 var size = window.ClientSize;
-                glWidth = size.Width;
-                glHeight = size.Height;
+                this.glWidth = size.Width;
+                this.glHeight = size.Height;
             }
 
-            Host.Video?.Device?.BeginScene( );
+            this.Host.Video?.Device?.BeginScene( );
         }
 
         // SCR_CalcRefdef
@@ -524,84 +495,84 @@ namespace SharpQuake
         // Internal use only
         private void CalcRefdef( )
         {
-            Host.Screen.FullUpdate = 0; // force a background redraw
-            _VidDef.recalc_refdef = false;
+            this.Host.Screen.FullUpdate = 0; // force a background redraw
+            this._VidDef.recalc_refdef = false;
 
             // force the status bar to redraw
-            Host.Hud.Changed( );
+            this.Host.Hud.Changed( );
 
             // bound viewsize
-            if ( Host.Cvars.ViewSize.Get<Single>( ) < 30 )
-                Host.CVars.Set( "viewsize", 30f );
-            if ( Host.Cvars.ViewSize.Get<Single>( ) > 120 )
-                Host.CVars.Set( "viewsize", 120f );
+            if (this.Host.Cvars.ViewSize.Get<float>( ) < 30 )
+                this.Host.CVars.Set( "viewsize", 30f );
+            if (this.Host.Cvars.ViewSize.Get<float>( ) > 120 )
+                this.Host.CVars.Set( "viewsize", 120f );
 
             // bound field of view
-            if ( Host.Cvars.Fov.Get<Single>( ) < 10 )
-                Host.CVars.Set( "fov", 10f );
-            if ( Host.Cvars.Fov.Get<Single>( ) > 170 )
-                Host.CVars.Set( "fov", 170f );
+            if (this.Host.Cvars.Fov.Get<float>( ) < 10 )
+                this.Host.CVars.Set( "fov", 10f );
+            if (this.Host.Cvars.Fov.Get<float>( ) > 170 )
+                this.Host.CVars.Set( "fov", 170f );
 
             // intermission is always full screen
-            Single size;
-            if ( Host.Client.cl.intermission > 0 )
+            float size;
+            if (this.Host.Client.cl.intermission > 0 )
                 size = 120;
             else
-                size = Host.Cvars.ViewSize.Get<Single>( );
+                size = this.Host.Cvars.ViewSize.Get<float>( );
 
             if ( size >= 120 )
-                Host.Hud.Lines = 0; // no status bar at all
+                this.Host.Hud.Lines = 0; // no status bar at all
             else if ( size >= 110 )
-                Host.Hud.Lines = 24; // no inventory
+                this.Host.Hud.Lines = 24; // no inventory
             else
-                Host.Hud.Lines = 24 + 16 + 8;
+                this.Host.Hud.Lines = 24 + 16 + 8;
 
             var full = false;
-            if ( Host.Cvars.ViewSize.Get<Single>( ) >= 100.0 )
+            if (this.Host.Cvars.ViewSize.Get<float>( ) >= 100.0 )
             {
                 full = true;
                 size = 100.0f;
             }
             else
-                size = Host.Cvars.ViewSize.Get<Single>( );
+                size = this.Host.Cvars.ViewSize.Get<float>( );
 
-            if ( Host.Client.cl.intermission > 0 )
+            if (this.Host.Client.cl.intermission > 0 )
             {
                 full = true;
                 size = 100;
-                Host.Hud.Lines = 0;
+                this.Host.Hud.Lines = 0;
             }
             size /= 100.0f;
 
-            var h = _VidDef.height - Host.Hud.Lines;
+            var h = this._VidDef.height - this.Host.Hud.Lines;
 
-            var rdef = Host.RenderContext.RefDef;
-            rdef.vrect.width = ( Int32 ) ( _VidDef.width * size );
+            var rdef = this.Host.RenderContext.RefDef;
+            rdef.vrect.width = ( int ) (this._VidDef.width * size );
             if ( rdef.vrect.width < 96 )
             {
                 size = 96.0f / rdef.vrect.width;
                 rdef.vrect.width = 96;  // min for icons
             }
 
-            rdef.vrect.height = ( Int32 ) ( _VidDef.height * size );
-            if ( rdef.vrect.height > _VidDef.height - Host.Hud.Lines )
-                rdef.vrect.height = _VidDef.height - Host.Hud.Lines;
-            if ( rdef.vrect.height > _VidDef.height )
-                rdef.vrect.height = _VidDef.height;
-            rdef.vrect.x = ( _VidDef.width - rdef.vrect.width ) / 2;
+            rdef.vrect.height = ( int ) (this._VidDef.height * size );
+            if ( rdef.vrect.height > this._VidDef.height - this.Host.Hud.Lines )
+                rdef.vrect.height = this._VidDef.height - this.Host.Hud.Lines;
+            if ( rdef.vrect.height > this._VidDef.height )
+                rdef.vrect.height = this._VidDef.height;
+            rdef.vrect.x = (this._VidDef.width - rdef.vrect.width ) / 2;
             if ( full )
                 rdef.vrect.y = 0;
             else
                 rdef.vrect.y = ( h - rdef.vrect.height ) / 2;
 
-            rdef.fov_x = Host.Cvars.Fov.Get<Single>( );
-            rdef.fov_y = CalcFov( rdef.fov_x, rdef.vrect.width, rdef.vrect.height );
+            rdef.fov_x = this.Host.Cvars.Fov.Get<float>( );
+            rdef.fov_y = this.CalcFov( rdef.fov_x, rdef.vrect.width, rdef.vrect.height );
 
-            _VRect = rdef.vrect;
+            this._VRect = rdef.vrect;
         }
 
         // CalcFov
-        private Single CalcFov( Single fov_x, Single width, Single height )
+        private float CalcFov( float fov_x, float width, float height )
         {
             if ( fov_x < 1 || fov_x > 179 )
                 Utilities.Error( "Bad fov: {0}", fov_x );
@@ -609,7 +580,7 @@ namespace SharpQuake
             var x = width / Math.Tan( fov_x / 360.0 * Math.PI );
             var a = Math.Atan( height / x );
             a = a * 360.0 / Math.PI;
-            return ( Single ) a;
+            return ( float ) a;
         }
 
         /// <summary>
@@ -617,69 +588,68 @@ namespace SharpQuake
         /// </summary>
         private void SetUpToDrawConsole( )
         {
-            Host.Console.CheckResize( );
+            this.Host.Console.CheckResize( );
 
-            if ( _DrawLoading )
+            if (this._DrawLoading )
                 return;     // never a console with loading plaque
 
             // decide on the height of the console
-            Host.Console.ForcedUp = ( Host.Client.cl.worldmodel == null ) || ( Host.Client.cls.signon != ClientDef.SIGNONS );
+            this.Host.Console.ForcedUp = this.Host.Client.cl.worldmodel == null || this.Host.Client.cls.signon != ClientDef.SIGNONS;
 
-            if ( Host.Console.ForcedUp )
+            if (this.Host.Console.ForcedUp )
             {
-                _ConLines = _VidDef.height; // full screen
-                _ConCurrent = _ConLines;
+                this._ConLines = this._VidDef.height; // full screen
+                this._ConCurrent = this._ConLines;
             }
-            else if ( Host.Keyboard.Destination == KeyDestination.key_console )
-                _ConLines = _VidDef.height / 2; // half screen
+            else if (this.Host.Keyboard.Destination == KeyDestination.key_console )
+                this._ConLines = this._VidDef.height / 2; // half screen
             else
-                _ConLines = 0; // none visible
+                this._ConLines = 0; // none visible
 
-            if ( _ConLines < _ConCurrent )
+            if (this._ConLines < this._ConCurrent )
             {
-                _ConCurrent -= ( Int32 ) ( Host.Cvars.ConSpeed.Get<Int32>( ) * Host.FrameTime );
-                if ( _ConLines > _ConCurrent )
-                    _ConCurrent = _ConLines;
+                this._ConCurrent -= ( int ) (this.Host.Cvars.ConSpeed.Get<int>( ) * this.Host.FrameTime );
+                if (this._ConLines > this._ConCurrent )
+                    this._ConCurrent = this._ConLines;
             }
-            else if ( _ConLines > _ConCurrent )
+            else if (this._ConLines > this._ConCurrent )
             {
-                _ConCurrent += ( Int32 ) ( Host.Cvars.ConSpeed.Get<Int32>( ) * Host.FrameTime );
-                if ( _ConLines < _ConCurrent )
-                    _ConCurrent = _ConLines;
+                this._ConCurrent += ( int ) (this.Host.Cvars.ConSpeed.Get<int>( ) * this.Host.FrameTime );
+                if (this._ConLines < this._ConCurrent )
+                    this._ConCurrent = this._ConLines;
             }
 
-            if ( _ClearConsole++ < _VidDef.numpages )
-            {
-                Host.Hud.Changed( );
-            }
-            else if ( ClearNotify++ < _VidDef.numpages )
+            if (this._ClearConsole++ < this._VidDef.numpages )
+                this.Host.Hud.Changed( );
+            else if (this.ClearNotify++ < this._VidDef.numpages )
             {
                 //????????????
             }
             else
-                Host.Console.NotifyLines = 0;
+                this.Host.Console.NotifyLines = 0;
         }
 
         // SCR_TileClear
         private void TileClear( )
         {
-            var rdef = Host.RenderContext.RefDef;
+            var rdef = this.Host.RenderContext.RefDef;
             if ( rdef.vrect.x > 0 )
             {
                 // left
-                Host.DrawingContext.TileClear( 0, 0, rdef.vrect.x, _VidDef.height - Host.Hud.Lines );
+                this.Host.DrawingContext.TileClear( 0, 0, rdef.vrect.x, this._VidDef.height - this.Host.Hud.Lines );
                 // right
-                Host.DrawingContext.TileClear( rdef.vrect.x + rdef.vrect.width, 0,
-                    _VidDef.width - rdef.vrect.x + rdef.vrect.width,
-                    _VidDef.height - Host.Hud.Lines );
+                this.Host.DrawingContext.TileClear( rdef.vrect.x + rdef.vrect.width, 0,
+                    this._VidDef.width - rdef.vrect.x + rdef.vrect.width,
+                    this._VidDef.height - this.Host.Hud.Lines );
             }
             if ( rdef.vrect.y > 0 )
             {
                 // top
-                Host.DrawingContext.TileClear( rdef.vrect.x, 0, rdef.vrect.x + rdef.vrect.width, rdef.vrect.y );
+                this.Host.DrawingContext.TileClear( rdef.vrect.x, 0, rdef.vrect.x + rdef.vrect.width, rdef.vrect.y );
                 // bottom
-                Host.DrawingContext.TileClear( rdef.vrect.x, rdef.vrect.y + rdef.vrect.height,
-                    rdef.vrect.width, _VidDef.height - Host.Hud.Lines - ( rdef.vrect.height + rdef.vrect.y ) );
+                this.Host.DrawingContext.TileClear( rdef.vrect.x, rdef.vrect.y + rdef.vrect.height,
+                    rdef.vrect.width,
+                    this._VidDef.height - this.Host.Hud.Lines - ( rdef.vrect.height + rdef.vrect.y ) );
             }
         }
 
@@ -689,27 +659,27 @@ namespace SharpQuake
         private void DrawNotifyString( )
         {
             var offset = 0;
-            var y = ( Int32 ) ( Host.Screen.vid.height * 0.35 );
+            var y = ( int ) (this.Host.Screen.vid.height * 0.35 );
 
             do
             {
-                var end = _NotifyString.IndexOf( '\n', offset );
+                var end = this._NotifyString.IndexOf( '\n', offset );
                 if ( end == -1 )
-                    end = _NotifyString.Length;
+                    end = this._NotifyString.Length;
                 if ( end - offset > 40 )
                     end = offset + 40;
 
                 var length = end - offset;
                 if ( length > 0 )
                 {
-                    var x = ( vid.width - length * 8 ) / 2;
+                    var x = (this.vid.width - length * 8 ) / 2;
                     for ( var j = 0; j < length; j++, x += 8 )
-                        Host.DrawingContext.DrawCharacter( x, y, _NotifyString[offset + j] );
+                        this.Host.DrawingContext.DrawCharacter( x, y, this._NotifyString[offset + j] );
 
                     y += 8;
                 }
                 offset = end + 1;
-            } while ( offset < _NotifyString.Length );
+            } while ( offset < this._NotifyString.Length );
         }
 
         /// <summary>
@@ -717,40 +687,40 @@ namespace SharpQuake
         /// </summary>
         private void DrawLoading( )
         {
-            if ( !_DrawLoading )
+            if ( !this._DrawLoading )
                 return;
 
-            var pic = Host.DrawingContext.CachePic( "gfx/loading.lmp", "GL_LINEAR" );
-            Host.Video.Device.Graphics.DrawPicture( pic, ( vid.width - pic.Width ) / 2, ( vid.height - 48 - pic.Height ) / 2 );
+            var pic = this.Host.DrawingContext.CachePic( "gfx/loading.lmp", "GL_LINEAR" );
+            this.Host.Video.Device.Graphics.DrawPicture( pic, (this.vid.width - pic.Width ) / 2, (this.vid.height - 48 - pic.Height ) / 2 );
         }
 
         // SCR_CheckDrawCenterString
         private void CheckDrawCenterString( )
         {
-            CopyTop = true;
-            if ( _CenterLines > _EraseLines )
-                _EraseLines = _CenterLines;
+            this.CopyTop = true;
+            if (this._CenterLines > this._EraseLines )
+                this._EraseLines = this._CenterLines;
 
-            CenterTimeOff -= ( Single ) Host.FrameTime;
+            this.CenterTimeOff -= ( float )this.Host.FrameTime;
 
-            if ( CenterTimeOff <= 0 && Host.Client.cl.intermission == 0 )
+            if (this.CenterTimeOff <= 0 && this.Host.Client.cl.intermission == 0 )
                 return;
-            if ( Host.Keyboard.Destination != KeyDestination.key_game )
+            if (this.Host.Keyboard.Destination != KeyDestination.key_game )
                 return;
 
-            DrawCenterString( );
+            this.DrawCenterString( );
         }
 
         // SCR_DrawRam
         private void DrawRam( )
         {
-            if ( !Host.Cvars.ShowRam.Get<Boolean>( ) )
+            if ( !this.Host.Cvars.ShowRam.Get<bool>( ) )
                 return;
 
-            if ( !Host.RenderContext.CacheTrash )
+            if ( !this.Host.RenderContext.CacheTrash )
                 return;
 
-            Host.Video.Device.Graphics.DrawPicture( Ram, _VRect.x + 32, _VRect.y );
+            this.Host.Video.Device.Graphics.DrawPicture(this.Ram, this._VRect.x + 32, this._VRect.y );
         }
 
         // SCR_DrawTurtle
@@ -758,86 +728,83 @@ namespace SharpQuake
         {
             //int	count;
 
-            if ( !Host.Cvars.ShowTurtle.Get<Boolean>( ) )
+            if ( !this.Host.Cvars.ShowTurtle.Get<bool>( ) )
                 return;
 
-            if ( Host.FrameTime < 0.1 )
+            if (this.Host.FrameTime < 0.1 )
             {
-                _TurtleCount = 0;
+                this._TurtleCount = 0;
                 return;
             }
 
-            _TurtleCount++;
-            if ( _TurtleCount < 3 )
+            this._TurtleCount++;
+            if (this._TurtleCount < 3 )
                 return;
 
-            Host.Video.Device.Graphics.DrawPicture( Turtle, _VRect.x, _VRect.y );
+            this.Host.Video.Device.Graphics.DrawPicture(this.Turtle, this._VRect.x, this._VRect.y );
         }
 
         // SCR_DrawNet
         private void DrawNet( )
         {
-            if ( Host.RealTime - Host.Client.cl.last_received_message < 0.3 )
+            if (this.Host.RealTime - this.Host.Client.cl.last_received_message < 0.3 )
                 return;
-            if ( Host.Client.cls.demoplayback )
+            if (this.Host.Client.cls.demoplayback )
                 return;
 
-            Host.Video.Device.Graphics.DrawPicture( Net, _VRect.x + 64, _VRect.y );
+            this.Host.Video.Device.Graphics.DrawPicture(this.Net, this._VRect.x + 64, this._VRect.y );
         }
 
         // DrawPause
         private void DrawPause( )
         {
-            if ( !Host.Cvars.ShowPause.Get<Boolean>( ) )	// turn off for screenshots
+            if ( !this.Host.Cvars.ShowPause.Get<bool>( ) )	// turn off for screenshots
                 return;
 
-            if ( !Host.Client.cl.paused )
+            if ( !this.Host.Client.cl.paused )
                 return;
 
-            var pic = Host.DrawingContext.CachePic( "gfx/pause.lmp", "GL_NEAREST" );
-            Host.Video.Device.Graphics.DrawPicture( pic, ( vid.width - pic.Width ) / 2, ( vid.height - 48 - pic.Height ) / 2 );
+            var pic = this.Host.DrawingContext.CachePic( "gfx/pause.lmp", "GL_NEAREST" );
+            this.Host.Video.Device.Graphics.DrawPicture( pic, (this.vid.width - pic.Width ) / 2, (this.vid.height - 48 - pic.Height ) / 2 );
         }
 
         // SCR_DrawConsole
         private void DrawConsole( )
         {
-            if ( _ConCurrent > 0 )
+            if (this._ConCurrent > 0 )
             {
-                _CopyEverything = true;
-                Host.Console.Draw( ( Int32 ) _ConCurrent, true );
-                _ClearConsole = 0;
+                this._CopyEverything = true;
+                this.Host.Console.Draw( ( int )this._ConCurrent, true );
+                this._ClearConsole = 0;
             }
-            else if ( Host.Keyboard.Destination == KeyDestination.key_game ||
-                Host.Keyboard.Destination == KeyDestination.key_message )
-            {
-                Host.Console.DrawNotify( );	// only draw notify in game
-            }
+            else if (this.Host.Keyboard.Destination == KeyDestination.key_game || this.Host.Keyboard.Destination == KeyDestination.key_message )
+                this.Host.Console.DrawNotify( );	// only draw notify in game
         }
 
         // SCR_DrawCenterString
         private void DrawCenterString( )
         {
-            Int32 remaining;
+            int remaining;
 
             // the finale prints the characters one at a time
-            if ( Host.Client.cl.intermission > 0 )
-                remaining = ( Int32 ) ( Host.Cvars.PrintSpeed.Get<Int32>( ) * ( Host.Client.cl.time - _CenterTimeStart ) );
+            if (this.Host.Client.cl.intermission > 0 )
+                remaining = ( int ) (this.Host.Cvars.PrintSpeed.Get<int>( ) * (this.Host.Client.cl.time - this._CenterTimeStart ) );
             else
                 remaining = 9999;
 
             var y = 48;
-            if ( _CenterLines <= 4 )
-                y = ( Int32 ) ( _VidDef.height * 0.35 );
+            if (this._CenterLines <= 4 )
+                y = ( int ) (this._VidDef.height * 0.35 );
 
-            var lines = _CenterString.Split( '\n' );
+            var lines = this._CenterString.Split( '\n' );
             for ( var i = 0; i < lines.Length; i++ )
             {
                 var line = lines[i].TrimEnd( '\r' );
-                var x = ( vid.width - line.Length * 8 ) / 2;
+                var x = (this.vid.width - line.Length * 8 ) / 2;
 
                 for ( var j = 0; j < line.Length; j++, x += 8 )
                 {
-                    Host.DrawingContext.DrawCharacter( x, y, line[j] );
+                    this.Host.DrawingContext.DrawCharacter( x, y, line[j] );
                     if ( remaining-- <= 0 )
                         return;
                 }

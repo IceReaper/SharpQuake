@@ -23,13 +23,11 @@
 /// </copyright>
 /// 
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Rendering.Sprite
 {
     public struct mspriteframedesc_t
     {
         public spriteframetype_t type;
-        public Object frameptr; // mspriteframe_t or mspritegroup_t
+        public object frameptr; // mspriteframe_t or mspritegroup_t
     } // mspriteframedesc_t;
 }

@@ -22,16 +22,15 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework.Mathematics;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Mathematics
 {
+    using System.Numerics;
+
     public class Plane
     {
         public Vector3 normal;
-        public Single dist;
-        public Byte type;			// for texture axis selection and fast side tests
-        public Byte signbits;		// signx + signy<<1 + signz<<1
+        public float dist;
+        public byte type;			// for texture axis selection and fast side tests
+        public byte signbits;		// signx + signy<<1 + signz<<1
     } //mplane_t;
 }

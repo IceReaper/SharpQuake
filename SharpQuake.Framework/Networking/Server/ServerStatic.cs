@@ -22,16 +22,14 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Networking.Server
 {
     public class server_static_t
     {
-        public Int32 maxclients;
-        public Int32 maxclientslimit;
+        public int maxclients;
+        public int maxclientslimit;
         public client_t[] clients; // [maxclients]
-        public Int32 serverflags;     // episode completion information
-        public Boolean changelevel_issued;	// cleared when at SV_SpawnServer
+        public int serverflags;     // episode completion information
+        public bool changelevel_issued;	// cleared when at SV_SpawnServer
     }// server_static_t;
 }

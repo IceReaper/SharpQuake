@@ -22,26 +22,25 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.IO.BSP.Q3
 {
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Sequential, Pack = 1 )]
     public struct Q3Model
     {
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Single[] mins;
+        public float[] mins;
 
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Single[] maxs;
+        public float[] maxs;
 
-        public Int32 firstFace;
-        public Int32 numFaces;
+        public int firstFace;
+        public int numFaces;
 
-        public Int32 firstBrush;
-        public Int32 numBrushes;
+        public int firstBrush;
+        public int numBrushes;
 
-        public static Int32 SizeInBytes = Marshal.SizeOf( typeof( Q3Model ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( Q3Model ) );
     }
 }

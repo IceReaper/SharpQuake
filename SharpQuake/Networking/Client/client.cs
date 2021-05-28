@@ -22,22 +22,29 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-using SharpQuake.Game.World;
-using SharpQuake.Framework.Mathematics;
-using SharpQuake.Framework.IO;
-using SharpQuake.Framework.IO.Sound;
-using SharpQuake.Game.Data.Models;
+
 
 // client.h
 
-namespace SharpQuake
+namespace SharpQuake.Networking.Client
 {
-	public struct lightstyle_t
+    using Engine.Host;
+    using Framework.Definitions;
+    using Framework.Engine;
+    using Framework.IO.Sound;
+    using Framework.Networking;
+    using Framework.Networking.Client;
+    using Framework.Rendering;
+    using Game.Data.Models;
+    using Game.World;
+    using Rendering;
+    using System;
+    using System.Numerics;
+
+    public struct lightstyle_t
     {
         //public int length;
-        public String map; // [MAX_STYLESTRING];
+        public string map; // [MAX_STYLESTRING];
     }
 
     public enum cactive_t
@@ -54,182 +61,68 @@ namespace SharpQuake
     //
     internal struct kbutton_t
     {
-        public Boolean IsDown
-        {
-            get
-            {
-                return ( state & 1 ) != 0;
-            }
-        }
+        public bool IsDown => (this.state & 1 ) != 0;
 
-        public Int32 down0, down1;        // key nums holding it down
-        public Int32 state;			// low bit is down state
+        public int down0, down1;        // key nums holding it down
+        public int state;			// low bit is down state
     }
 
     public partial class client
     {
-        public client_static_t cls
-        {
-            get
-            {
-                return _Static;
-            }
-        }
+        public client_static_t cls => this._Static;
 
-        public client_state_t cl
-        {
-            get
-            {
-                return _State;
-            }
-        }
+        public client_state_t cl => this._State;
 
-        public Entity[] Entities
-        {
-            get
-            {
-                return _Entities;
-            }
-        }
+        public Entity[] Entities => this._Entities;
 
         /// <summary>
         /// cl_entities[cl.viewentity]
         /// Player model (visible when out of body)
         /// </summary>
-        public Entity ViewEntity
-        {
-            get
-            {
-                return _Entities[_State.viewentity];
-            }
-        }
+        public Entity ViewEntity => this._Entities[this._State.viewentity];
 
         /// <summary>
         /// cl.viewent
         /// Weapon model (only visible from inside body)
         /// </summary>
-        public Entity ViewEnt
-        {
-            get
-            {
-                return _State.viewent;
-            }
-        }
+        public Entity ViewEnt => this._State.viewent;
 
-        public Single ForwardSpeed
-        {
-            get
-            {
-                return Host.Cvars.ForwardSpeed.Get<Single>( );
-            }
-        }
+        public float ForwardSpeed => this.Host.Cvars.ForwardSpeed.Get<float>( );
 
-        public Boolean LookSpring
-        {
-            get
-            {
-                return Host.Cvars.LookSpring.Get<Boolean>( );
-            }
-        }
+        public bool LookSpring => this.Host.Cvars.LookSpring.Get<bool>( );
 
-        public Boolean LookStrafe
-        {
-            get
-            {
-                return Host.Cvars.LookStrafe.Get<Boolean>( );
-            }
-        }
+        public bool LookStrafe => this.Host.Cvars.LookStrafe.Get<bool>( );
 
-        public dlight_t[] DLights
-        {
-            get
-            {
-                return _DLights;
-            }
-        }
+        public dlight_t[] DLights => this._DLights;
 
-        public lightstyle_t[] LightStyle
-        {
-            get
-            {
-                return _LightStyle;
-            }
-        }
+        public lightstyle_t[] LightStyle => this._LightStyle;
 
-        public Entity[] VisEdicts
-        {
-            get
-            {
-                return _VisEdicts;
-            }
-        }
+        public Entity[] VisEdicts => this._VisEdicts;
 
-        public Single Sensitivity
-        {
-            get
-            {
-                return Host.Cvars.Sensitivity.Get<Single>( );
-            }
-        }
+        public float Sensitivity => this.Host.Cvars.Sensitivity.Get<float>( );
 
-        public Single MSide
-        {
-            get
-            {
-                return Host.Cvars.MSide.Get<Single>( );
-            }
-        }
+        public float MSide => this.Host.Cvars.MSide.Get<float>( );
 
-        public Single MYaw
-        {
-            get
-            {
-                return Host.Cvars.MYaw.Get<Single>( );
-            }
-        }
+        public float MYaw => this.Host.Cvars.MYaw.Get<float>( );
 
-        public Single MPitch
-        {
-            get
-            {
-                return Host.Cvars.MPitch.Get<Single>( );
-            }
-        }
+        public float MPitch => this.Host.Cvars.MPitch.Get<float>( );
 
-        public Single MForward
-        {
-            get
-            {
-                return Host.Cvars.MForward.Get<Single>( );
-            }
-        }
+        public float MForward => this.Host.Cvars.MForward.Get<float>( );
 
-        public String Name
-        {
-            get
-            {
-                return Host.Cvars.Name.Get<String>();
-            }
-        }
+        public string Name => this.Host.Cvars.Name.Get<string>();
 
-        public Single Color
-        {
-            get
-            {
-                return Host.Cvars.Color.Get<Single>( );
-            }
-        }
-                
-        public Int32 NumVisEdicts;
+        public float Color => this.Host.Cvars.Color.Get<float>( );
+
+        public int NumVisEdicts;
 
         private client_static_t _Static;
         private client_state_t _State;
 
         public client( Host host )
         {
-            Host = host;
-            _Static = new client_static_t();
-            _State = new client_state_t();
+            this.Host = host;
+            this._Static = new();
+            this._State = new();
         }
 
         private EFrag[] _EFrags = new EFrag[ClientDef.MAX_EFRAGS]; // cl_efrags
@@ -246,54 +139,53 @@ namespace SharpQuake
 
     internal static class ColorShift
     {
-        public const Int32 CSHIFT_CONTENTS = 0;
-        public const Int32 CSHIFT_DAMAGE = 1;
-        public const Int32 CSHIFT_BONUS = 2;
-        public const Int32 CSHIFT_POWERUP = 3;
-        public const Int32 NUM_CSHIFTS = 4;
+        public const int CSHIFT_CONTENTS = 0;
+        public const int CSHIFT_DAMAGE = 1;
+        public const int CSHIFT_BONUS = 2;
+        public const int CSHIFT_POWERUP = 3;
+        public const int NUM_CSHIFTS = 4;
     }
 
     public class scoreboard_t
     {
-        public String name; //[MAX_SCOREBOARDNAME];
+        public string name; //[MAX_SCOREBOARDNAME];
 
         //public float entertime;
-        public Int32 frags;
+        public int frags;
 
-        public Int32 colors;			// two 4 bit fields
-        public Byte[] translations; // [VID_GRADES*256];
+        public int colors;			// two 4 bit fields
+        public byte[] translations; // [VID_GRADES*256];
 
         public scoreboard_t()
         {
-            translations = new Byte[Vid.VID_GRADES * 256];
+            this.translations = new byte[Vid.VID_GRADES * 256];
         }
     } // scoreboard_t;
 
     public class cshift_t
     {
-        public Int32[] destcolor; // [3];
-        public Int32 percent;		// 0-256
+        public int[] destcolor; // [3];
+        public int percent;		// 0-256
 
         public void Clear()
         {
-            destcolor[0] = 0;
-            destcolor[1] = 0;
-            destcolor[2] = 0;
-            percent = 0;
+            this.destcolor[0] = 0;
+            this.destcolor[1] = 0;
+            this.destcolor[2] = 0;
+            this.percent = 0;
         }
 
         public cshift_t()
         {
-            destcolor = new Int32[3];
+            this.destcolor = new int[3];
         }
 
-        public cshift_t( Int32[] destColor, Int32 percent )
+        public cshift_t( int[] destColor, int percent )
         {
             if( destColor.Length != 3 )
-            {
                 throw new ArgumentException( "destColor must have length of 3 elements!" );
-            }
-            destcolor = destColor;
+
+            this.destcolor = destColor;
             this.percent = percent;
         }
     } // cshift_t;
@@ -301,18 +193,18 @@ namespace SharpQuake
 
     internal class beam_t
     {
-        public Int32 entity;
+        public int entity;
         public ModelData model;
-        public Single endtime;
+        public float endtime;
         public Vector3 start, end;
 
         public void Clear()
         {
-            entity = 0;
-            model = null;
-            endtime = 0;
-            start = Vector3.Zero;
-            end = Vector3.Zero;
+            this.entity = 0;
+            this.model = null;
+            this.endtime = 0;
+            this.start = Vector3.Zero;
+            this.end = Vector3.Zero;
         }
     } // beam_t;
 
@@ -327,37 +219,37 @@ namespace SharpQuake
         public cactive_t state;
 
         // personalization data sent to server
-        public String mapstring; // [MAX_QPATH];
+        public string mapstring; // [MAX_QPATH];
 
-        public String spawnparms;//[MAX_MAPSTRING];	// to restart a level
+        public string spawnparms;//[MAX_MAPSTRING];	// to restart a level
 
         // demo loop control
-        public Int32 demonum;		// -1 = don't play demos
+        public int demonum;		// -1 = don't play demos
 
-        public String[] demos; // [MAX_DEMOS][MAX_DEMONAME];		// when not playing
+        public string[] demos; // [MAX_DEMOS][MAX_DEMONAME];		// when not playing
 
         // demo recording info must be here, because record is started before
         // entering a map (and clearing client_state_t)
-        public Boolean demorecording;
+        public bool demorecording;
 
-        public Boolean demoplayback;
-        public Boolean timedemo;
-        public Int32 forcetrack;			// -1 = use normal cd track
+        public bool demoplayback;
+        public bool timedemo;
+        public int forcetrack;			// -1 = use normal cd track
         public IDisposable demofile; // DisposableWrapper<BinaryReader|BinaryWriter> // FILE*
-        public Int32 td_lastframe;		// to meter out one message a frame
-        public Int32 td_startframe;		// host_framecount at start
-        public Single td_starttime;		// realtime at second frame of timedemo
+        public int td_lastframe;		// to meter out one message a frame
+        public int td_startframe;		// host_framecount at start
+        public float td_starttime;		// realtime at second frame of timedemo
 
         // connection information
-        public Int32 signon;			// 0 to SIGNONS
+        public int signon;			// 0 to SIGNONS
 
         public qsocket_t netcon; // qsocket_t	*netcon;
         public MessageWriter message; // sizebuf_t	message;		// writing buffer to send to server
 
         public client_static_t()
         {
-            demos = new String[ClientDef.MAX_DEMOS];
-            message = new MessageWriter( 1024 ); // like in Client_Init()
+            this.demos = new string[ClientDef.MAX_DEMOS];
+            this.message = new( 1024 ); // like in Client_Init()
         }
     } // client_static_t;
 
@@ -367,7 +259,7 @@ namespace SharpQuake
     //
     public class client_state_t
     {
-        public Int32 movemessages;	// since connecting to this server
+        public int movemessages;	// since connecting to this server
 
         // throw out the first couple, so the player
         // doesn't accidentally do something the
@@ -375,11 +267,11 @@ namespace SharpQuake
         public usercmd_t cmd;			// last command sent to the server
 
         // information for local display
-        public Int32[] stats; //[MAX_CL_STATS];	// health, etc
+        public int[] stats; //[MAX_CL_STATS];	// health, etc
 
-        public Int32 items;			// inventory bit flags
-        public Single[] item_gettime; //[32];	// cl.time of aquiring item, for blinking
-        public Single faceanimtime;	// use anim frame if cl.time < this
+        public int items;			// inventory bit flags
+        public float[] item_gettime; //[32];	// cl.time of aquiring item, for blinking
+        public float faceanimtime;	// use anim frame if cl.time < this
 
         public cshift_t[] cshifts; //[NUM_CSHIFTS];	// color shifts for damage, powerups
         public cshift_t[] prev_cshifts; //[NUM_CSHIFTS];	// and content types
@@ -401,33 +293,33 @@ namespace SharpQuake
         public Vector3 punchangle;		// temporary offset
 
         // pitch drifting vars
-        public Single idealpitch;
+        public float idealpitch;
 
-        public Single pitchvel;
-        public Boolean nodrift;
-        public Single driftmove;
-        public Double laststop;
+        public float pitchvel;
+        public bool nodrift;
+        public float driftmove;
+        public double laststop;
 
-        public Single viewheight;
-        public Single crouch;			// local amount for smoothing stepups
+        public float viewheight;
+        public float crouch;			// local amount for smoothing stepups
 
-        public Boolean paused;			// send over by server
-        public Boolean onground;
-        public Boolean inwater;
+        public bool paused;			// send over by server
+        public bool onground;
+        public bool inwater;
 
-        public Int32 intermission;	// don't change view angle, full screen, etc
-        public Int32 completed_time;	// latched at intermission start
+        public int intermission;	// don't change view angle, full screen, etc
+        public int completed_time;	// latched at intermission start
 
-        public Double[] mtime; //[2];		// the timestamp of last two messages
-        public Double time;			// clients view of time, should be between
+        public double[] mtime; //[2];		// the timestamp of last two messages
+        public double time;			// clients view of time, should be between
 
         // servertime and oldservertime to generate
         // a lerp point for other data
-        public Double oldtime;		// previous cl.time, time-oldtime is used
+        public double oldtime;		// previous cl.time, time-oldtime is used
 
         // to decay light values and smooth step ups
 
-        public Single last_received_message;	// (realtime) for net trouble icon
+        public float last_received_message;	// (realtime) for net trouble icon
 
         //
         // information that is static for the entire time connected to a server
@@ -436,112 +328,112 @@ namespace SharpQuake
 
         public SoundEffect_t[] sound_precache; // [MAX_SOUNDS];
 
-        public String levelname; // char[40];	// for display on solo scoreboard
-        public Int32 viewentity;		// cl_entitites[cl.viewentity] = player
-        public Int32 maxclients;
-        public Int32 gametype;
+        public string levelname; // char[40];	// for display on solo scoreboard
+        public int viewentity;		// cl_entitites[cl.viewentity] = player
+        public int maxclients;
+        public int gametype;
 
         // refresh related state
         public BrushModelData worldmodel;	// cl_entitites[0].model
 
         public EFrag free_efrags; // first free efrag in list
-        public Int32 num_entities;	// held in cl_entities array
-        public Int32 num_statics;	// held in cl_staticentities array
+        public int num_entities;	// held in cl_entities array
+        public int num_statics;	// held in cl_staticentities array
         public Entity viewent;			// the gun model
 
-        public Int32 cdtrack, looptrack;	// cd audio
+        public int cdtrack, looptrack;	// cd audio
 
         // frag scoreboard
         public scoreboard_t[] scores;		// [cl.maxclients]
 
-        public Boolean HasItems( Int32 item )
+        public bool HasItems( int item )
         {
-            return ( items & item ) == item;
+            return (this.items & item ) == item;
         }
 
         public void Clear()
         {
-            movemessages = 0;
-            cmd.Clear();
-            Array.Clear( stats, 0, stats.Length );
-            items = 0;
-            Array.Clear( item_gettime, 0, item_gettime.Length );
-            faceanimtime = 0;
+            this.movemessages = 0;
+            this.cmd.Clear();
+            Array.Clear(this.stats, 0, this.stats.Length );
+            this.items = 0;
+            Array.Clear(this.item_gettime, 0, this.item_gettime.Length );
+            this.faceanimtime = 0;
 
-            foreach( var cs in cshifts )
+            foreach( var cs in this.cshifts )
                 cs.Clear();
-            foreach( var cs in prev_cshifts )
+            foreach( var cs in this.prev_cshifts )
                 cs.Clear();
 
-            mviewangles[0] = Vector3.Zero;
-            mviewangles[1] = Vector3.Zero;
-            viewangles = Vector3.Zero;
-            mvelocity[0] = Vector3.Zero;
-            mvelocity[1] = Vector3.Zero;
-            velocity = Vector3.Zero;
-            punchangle = Vector3.Zero;
+            this.mviewangles[0] = Vector3.Zero;
+            this.mviewangles[1] = Vector3.Zero;
+            this.viewangles = Vector3.Zero;
+            this.mvelocity[0] = Vector3.Zero;
+            this.mvelocity[1] = Vector3.Zero;
+            this.velocity = Vector3.Zero;
+            this.punchangle = Vector3.Zero;
 
-            idealpitch = 0;
-            pitchvel = 0;
-            nodrift = false;
-            driftmove = 0;
-            laststop = 0;
+            this.idealpitch = 0;
+            this.pitchvel = 0;
+            this.nodrift = false;
+            this.driftmove = 0;
+            this.laststop = 0;
 
-            viewheight = 0;
-            crouch = 0;
+            this.viewheight = 0;
+            this.crouch = 0;
 
-            paused = false;
-            onground = false;
-            inwater = false;
+            this.paused = false;
+            this.onground = false;
+            this.inwater = false;
 
-            intermission = 0;
-            completed_time = 0;
+            this.intermission = 0;
+            this.completed_time = 0;
 
-            mtime[0] = 0;
-            mtime[1] = 0;
-            time = 0;
-            oldtime = 0;
-            last_received_message = 0;
+            this.mtime[0] = 0;
+            this.mtime[1] = 0;
+            this.time = 0;
+            this.oldtime = 0;
+            this.last_received_message = 0;
 
-            Array.Clear( model_precache, 0, model_precache.Length );
-            Array.Clear( sound_precache, 0, sound_precache.Length );
+            Array.Clear(this.model_precache, 0, this.model_precache.Length );
+            Array.Clear(this.sound_precache, 0, this.sound_precache.Length );
 
-            levelname = null;
-            viewentity = 0;
-            maxclients = 0;
-            gametype = 0;
+            this.levelname = null;
+            this.viewentity = 0;
+            this.maxclients = 0;
+            this.gametype = 0;
 
-            worldmodel = null;
-            free_efrags = null;
-            num_entities = 0;
-            num_statics = 0;
-            viewent.Clear();
+            this.worldmodel = null;
+            this.free_efrags = null;
+            this.num_entities = 0;
+            this.num_statics = 0;
+            this.viewent.Clear();
 
-            cdtrack = 0;
-            looptrack = 0;
+            this.cdtrack = 0;
+            this.looptrack = 0;
 
-            scores = null;
+            this.scores = null;
         }
 
         public client_state_t()
         {
-            stats = new Int32[QStatsDef.MAX_CL_STATS];
-            item_gettime = new Single[32]; // ???????????
+            this.stats = new int[QStatsDef.MAX_CL_STATS];
+            this.item_gettime = new float[32]; // ???????????
 
-            cshifts = new cshift_t[ColorShift.NUM_CSHIFTS];
+            this.cshifts = new cshift_t[ColorShift.NUM_CSHIFTS];
             for( var i = 0; i < ColorShift.NUM_CSHIFTS; i++ )
-                cshifts[i] = new cshift_t();
+                this.cshifts[i] = new();
 
-            prev_cshifts = new cshift_t[ColorShift.NUM_CSHIFTS];
+            this.prev_cshifts = new cshift_t[ColorShift.NUM_CSHIFTS];
             for( var i = 0; i < ColorShift.NUM_CSHIFTS; i++ )
-                prev_cshifts[i] = new cshift_t();
+                this.prev_cshifts[i] = new();
 
-            mviewangles = new Vector3[2]; //??????
-            mvelocity = new Vector3[2];
-            mtime = new Double[2];
-            model_precache = new ModelData[QDef.MAX_MODELS];
-            sound_precache = new SoundEffect_t[QDef.MAX_SOUNDS];
-            viewent = new Entity();
+            this.mviewangles = new Vector3[2]; //??????
+            this.mvelocity = new Vector3[2];
+            this.mtime = new double[2];
+            this.model_precache = new ModelData[QDef.MAX_MODELS];
+            this.sound_precache = new SoundEffect_t[QDef.MAX_SOUNDS];
+            this.viewent = new();
         }
     } //client_state_t;
 

@@ -22,22 +22,20 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Data
 {
     public interface IByteOrderConverter
     {
-        Int16 BigShort( Int16 l );
+        short BigShort( short l );
 
-        Int16 LittleShort( Int16 l );
+        short LittleShort( short l );
 
-        Int32 BigLong( Int32 l );
+        int BigLong( int l );
 
-        Int32 LittleLong( Int32 l );
+        int LittleLong( int l );
 
-        Single BigFloat( Single l );
+        float BigFloat( float l );
 
-        Single LittleFloat( Single l );
+        float LittleFloat( float l );
     }
 }

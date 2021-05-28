@@ -22,11 +22,9 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
 namespace SharpQuake.Framework.World
 {
-	public enum Move : Int32
+	public enum Move : int
 	{
 		MOVE_NORMAL = 0,
 		MOVE_NOMONSTERS = 1,

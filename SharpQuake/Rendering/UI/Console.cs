@@ -22,140 +22,121 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.IO;
-using System.Text;
-using SharpQuake.Framework;
-using SharpQuake.Framework.IO;
-using SharpQuake.Framework.IO.Input;
-
 namespace SharpQuake.Rendering.UI
 {
+	using Engine.Host;
+	using Framework;
+	using Framework.Definitions;
+	using Framework.Engine;
+	using Framework.IO;
+	using Framework.IO.Input;
+	using Menus;
+	using Networking.Client;
+	using System;
+	using System.IO;
+	using System.Text;
+
 	/// <summary>
 	/// Con_functions
 	/// </summary>
 	public class Con
 	{
-		public Boolean IsInitialized
+		public bool IsInitialized => this._IsInitialized;
+
+		public bool ForcedUp
 		{
-			get
-			{
-				return _IsInitialized;
-			}
+			get => this._ForcedUp;
+			set => this._ForcedUp = value;
 		}
 
-		public Boolean ForcedUp
+		public int NotifyLines
 		{
-			get
-			{
-				return _ForcedUp;
-			}
-			set
-			{
-				_ForcedUp = value;
-			}
+			get => this._NotifyLines;
+			set => this._NotifyLines = value;
 		}
 
-		public Int32 NotifyLines
-		{
-			get
-			{
-				return _NotifyLines;
-			}
-			set
-			{
-				_NotifyLines = value;
-			}
-		}
+		public int TotalLines => this._TotalLines;
 
-		public Int32 TotalLines
-		{
-			get
-			{
-				return _TotalLines;
-			}
-		}
+		public int BackScroll;
+		private const string LOG_FILE_NAME = "qconsole.log";
 
-		public Int32 BackScroll;
-		private const String LOG_FILE_NAME = "qconsole.log";
+		private const int CON_TEXTSIZE = 16384;
+		private const int NUM_CON_TIMES = 4;
 
-		private const Int32 CON_TEXTSIZE = 16384;
-		private const Int32 NUM_CON_TIMES = 4;
-
-		private Char[] _Text = new Char[CON_TEXTSIZE]; // char		*con_text=0;
-		private Int32 _VisLines; // con_vislines
-		private Int32 _TotalLines; // con_totallines   // total lines in console scrollback
+		private char[] _Text = new char[Con.CON_TEXTSIZE]; // char		*con_text=0;
+		private int _VisLines; // con_vislines
+		private int _TotalLines; // con_totallines   // total lines in console scrollback
 
 		// con_backscroll		// lines up from bottom to display
-		private Int32 _Current; // con_current		// where next message will be printed
+		private int _Current; // con_current		// where next message will be printed
 
-		private Int32 _X; // con_x		// offset in current line for next print
-		private Int32 _CR; // from Print()
-		private Double[] _Times = new Double[NUM_CON_TIMES]; // con_times	// realtime time the line was generated
+		private int _X; // con_x		// offset in current line for next print
+		private int _CR; // from Print()
+		private double[] _Times = new double[Con.NUM_CON_TIMES]; // con_times	// realtime time the line was generated
 
 		// for transparent notify lines
-		private Int32 _LineWidth; // con_linewidth
+		private int _LineWidth; // con_linewidth
 
-		private Boolean _DebugLog; // qboolean	con_debuglog;
-		private Boolean _IsInitialized; // qboolean con_initialized;
-		private Boolean _ForcedUp; // qboolean con_forcedup		// because no entities to refresh
-		private Int32 _NotifyLines; // con_notifylines	// scan lines to clear for notify lines
-		private Single _CursorSpeed = 4; // con_cursorspeed
+		private bool _DebugLog; // qboolean	con_debuglog;
+		private bool _IsInitialized; // qboolean con_initialized;
+		private bool _ForcedUp; // qboolean con_forcedup		// because no entities to refresh
+		private int _NotifyLines; // con_notifylines	// scan lines to clear for notify lines
+		private float _CursorSpeed = 4; // con_cursorspeed
 		private FileStream _Log;
 
 		public Con( Host host )
 		{
-			Host = host;
+			this.Host = host;
 		}
 
 		// Con_CheckResize (void)
 		public void CheckResize( )
 		{
-			var width = ( Host.Screen.vid.width >> 3 ) - 2;
-			if ( width == _LineWidth )
+			var width = (this.Host.Screen.vid.width >> 3 ) - 2;
+			if ( width == this._LineWidth )
 				return;
 
 			if ( width < 1 ) // video hasn't been initialized yet
 			{
 				width = 38;
-				_LineWidth = width; // con_linewidth = width;
-				_TotalLines = CON_TEXTSIZE / _LineWidth;
-				Utilities.FillArray( _Text, ' ' ); // Q_memset (con_text, ' ', CON_TEXTSIZE);
+				this._LineWidth = width; // con_linewidth = width;
+				this._TotalLines = Con.CON_TEXTSIZE / this._LineWidth;
+				Utilities.FillArray(this._Text, ' ' ); // Q_memset (con_text, ' ', CON_TEXTSIZE);
 			}
 			else
 			{
-				var oldwidth = _LineWidth;
-				_LineWidth = width;
-				var oldtotallines = _TotalLines;
-				_TotalLines = CON_TEXTSIZE / _LineWidth;
+				var oldwidth = this._LineWidth;
+				this._LineWidth = width;
+				var oldtotallines = this._TotalLines;
+				this._TotalLines = Con.CON_TEXTSIZE / this._LineWidth;
 				var numlines = oldtotallines;
 
-				if ( _TotalLines < numlines )
-					numlines = _TotalLines;
+				if (this._TotalLines < numlines )
+					numlines = this._TotalLines;
 
 				var numchars = oldwidth;
 
-				if ( _LineWidth < numchars )
-					numchars = _LineWidth;
+				if (this._LineWidth < numchars )
+					numchars = this._LineWidth;
 
-				var tmp = _Text;
-				_Text = new Char[CON_TEXTSIZE];
-				Utilities.FillArray( _Text, ' ' );
+				var tmp = this._Text;
+				this._Text = new char[Con.CON_TEXTSIZE];
+				Utilities.FillArray(this._Text, ' ' );
 
 				for ( var i = 0; i < numlines; i++ )
 				{
 					for ( var j = 0; j < numchars; j++ )
 					{
-						_Text[( _TotalLines - 1 - i ) * _LineWidth + j] = tmp[( ( _Current - i + oldtotallines ) %
-									  oldtotallines ) * oldwidth + j];
+						this._Text[(this._TotalLines - 1 - i ) * this._LineWidth + j] = tmp[(this._Current - i + oldtotallines ) %
+							oldtotallines * oldwidth + j];
 					}
 				}
 
-				ClearNotify();
+				this.ClearNotify();
 			}
 
-			BackScroll = 0;
-			_Current = _TotalLines - 1;
+			this.BackScroll = 0;
+			this._Current = this._TotalLines - 1;
 		}
 
 		// Instances
@@ -168,122 +149,120 @@ namespace SharpQuake.Rendering.UI
 		// Con_Init (void)
 		public void Initialise( )
 		{
-			_DebugLog = ( CommandLine.CheckParm( "-condebug" ) > 0 );
+			this._DebugLog = CommandLine.CheckParm( "-condebug" ) > 0;
 
-			if ( _DebugLog )
+			if (this._DebugLog )
 			{
-				var path = Path.Combine( FileSystem.GameDir, LOG_FILE_NAME );
+				var path = Path.Combine( FileSystem.GameDir, Con.LOG_FILE_NAME );
 				if ( File.Exists( path ) )
 					File.Delete( path );
 
-				_Log = new FileStream( path, FileMode.Create, FileAccess.Write, FileShare.Read );
+				this._Log = new( path, FileMode.Create, FileAccess.Write, FileShare.Read );
 			}
 
-			_LineWidth = -1;
-			CheckResize();
+			this._LineWidth = -1;
+			this.CheckResize();
 
-			Print( "Console initialized.\n" );
+			this.Print( "Console initialized.\n" );
 
 			//
 			// register our commands
 			//
-			if ( Host.Cvars.NotifyTime == null )
-			{
-				Host.Cvars.NotifyTime = Host.CVars.Add( "con_notifytime", 3 );
-			}
+			if (this.Host.Cvars.NotifyTime == null )
+				this.Host.Cvars.NotifyTime = this.Host.CVars.Add( "con_notifytime", 3 );
 
-			Host.Commands.Add( "toggleconsole", ToggleConsole_f );
-			Host.Commands.Add( "messagemode", MessageMode_f );
-			Host.Commands.Add( "messagemode2", MessageMode2_f );
-			Host.Commands.Add( "clear", Clear_f );
+			this.Host.Commands.Add( "toggleconsole", this.ToggleConsole_f );
+			this.Host.Commands.Add( "messagemode", this.MessageMode_f );
+			this.Host.Commands.Add( "messagemode2", this.MessageMode2_f );
+			this.Host.Commands.Add( "clear", this.Clear_f );
 
 			ConsoleWrapper.OnPrint += ( txt ) =>
 			{
-				Print( txt );
+				this.Print( txt );
 			};
 
 			ConsoleWrapper.OnPrint2 += ( fmt, args ) =>
 			{
-				Print( fmt, args );
+				this.Print( fmt, args );
 			};
 
 			ConsoleWrapper.OnDPrint += ( fmt, args ) =>
 			{
-				DPrint( fmt, args );
+				this.DPrint( fmt, args );
 			};
 
-			_IsInitialized = true;
+			this._IsInitialized = true;
 		}
 
 		// Con_DrawConsole
 		//
 		// Draws the console with the solid background
 		// The typing input line at the bottom should only be drawn if typing is allowed
-		public void Draw( Int32 lines, Boolean drawinput )
+		public void Draw( int lines, bool drawinput )
 		{
 			if ( lines <= 0 )
 				return;
 
 			// draw the background
-			Host.DrawingContext.DrawConsoleBackground( lines );
+			this.Host.DrawingContext.DrawConsoleBackground( lines );
 
 			// draw the text
-			_VisLines = lines;
+			this._VisLines = lines;
 
 			var rows = ( lines - 16 ) >> 3;     // rows of text to draw
 			var y = lines - 16 - ( rows << 3 ); // may start slightly negative
 
-			for ( var i = _Current - rows + 1; i <= _Current; i++, y += 8 )
+			for ( var i = this._Current - rows + 1; i <= this._Current; i++, y += 8 )
 			{
-				var j = i - BackScroll;
+				var j = i - this.BackScroll;
 				if ( j < 0 )
 					j = 0;
 
-				var offset = ( j % _TotalLines ) * _LineWidth;
+				var offset = j % this._TotalLines * this._LineWidth;
 
-				for ( var x = 0; x < _LineWidth; x++ )
-					Host.DrawingContext.DrawCharacter( ( x + 1 ) << 3, y, _Text[offset + x] );
+				for ( var x = 0; x < this._LineWidth; x++ )
+					this.Host.DrawingContext.DrawCharacter( ( x + 1 ) << 3, y, this._Text[offset + x] );
 			}
 
 			// draw the input prompt, user text, and cursor if desired
 			if ( drawinput )
-				DrawInput();
+				this.DrawInput();
 		}
 
 		/// <summary>
 		/// Con_Printf
 		/// </summary>
-		public void Print( String fmt, params Object[] args )
+		public void Print( string fmt, params object[] args )
 		{
-			var msg = ( args.Length > 0 ? String.Format( fmt, args ) : fmt );
+			var msg = args.Length > 0 ? string.Format( fmt, args ) : fmt;
 
 			Console.WriteLine( msg ); // Debug stuff
 
 			// log all messages to file
-			if ( _DebugLog )
-				DebugLog( msg );
+			if (this._DebugLog )
+				this.DebugLog( msg );
 
-			if ( !_IsInitialized )
+			if ( !this._IsInitialized )
 				return;
 
-			if ( Host.Client.cls.state == cactive_t.ca_dedicated )
+			if (this.Host.Client.cls.state == cactive_t.ca_dedicated )
 				return;     // no graphics mode
 
 			// write it to the scrollable buffer
-			Print( msg );
+			this.Print( msg );
 
 			// update the screen if the console is displayed
-			if ( Host.Client.cls.signon != ClientDef.SIGNONS && !Host.Screen.IsDisabledForLoading )
-				Host.Screen.UpdateScreen();
+			if (this.Host.Client.cls.signon != ClientDef.SIGNONS && !this.Host.Screen.IsDisabledForLoading )
+				this.Host.Screen.UpdateScreen();
 		}
 
 		public void Shutdown( )
 		{
-			if ( _Log != null )
+			if (this._Log != null )
 			{
-				_Log.Flush();
-				_Log.Dispose();
-				_Log = null;
+				this._Log.Flush();
+				this._Log.Dispose();
+				this._Log = null;
 			}
 		}
 
@@ -291,22 +270,22 @@ namespace SharpQuake.Rendering.UI
 		// Con_DPrintf
 		//
 		// A Con_Printf that only shows up if the "developer" cvar is set
-		public void DPrint( String fmt, params Object[] args )
+		public void DPrint( string fmt, params object[] args )
 		{
 			// don't confuse non-developers with techie stuff...
-			if ( Host != null && Host.IsDeveloper )
-				Print( fmt, args );
+			if (this.Host != null && this.Host.IsDeveloper )
+				this.Print( fmt, args );
 		}
 
 		// Con_SafePrintf (char *fmt, ...)
 		//
 		// Okay to call even when the screen can't be updated
-		public void SafePrint( String fmt, params Object[] args )
+		public void SafePrint( string fmt, params object[] args )
 		{
-			var temp = Host.Screen.IsDisabledForLoading;
-			Host.Screen.IsDisabledForLoading = true;
-			Print( fmt, args );
-			Host.Screen.IsDisabledForLoading = temp;
+			var temp = this.Host.Screen.IsDisabledForLoading;
+			this.Host.Screen.IsDisabledForLoading = true;
+			this.Print( fmt, args );
+			this.Host.Screen.IsDisabledForLoading = temp;
 		}
 
 		/// <summary>
@@ -315,54 +294,53 @@ namespace SharpQuake.Rendering.UI
 		public void DrawNotify( )
 		{
 			var v = 0;
-			for ( var i = _Current - NUM_CON_TIMES + 1; i <= _Current; i++ )
+			for ( var i = this._Current - Con.NUM_CON_TIMES + 1; i <= this._Current; i++ )
 			{
 				if ( i < 0 )
 					continue;
-				var time = _Times[i % NUM_CON_TIMES];
+				var time = this._Times[i % Con.NUM_CON_TIMES];
 				if ( time == 0 )
 					continue;
-				time = Host.RealTime - time;
-				if ( time > Host.Cvars.NotifyTime.Get<Int32>() )
+				time = this.Host.RealTime - time;
+				if ( time > this.Host.Cvars.NotifyTime.Get<int>() )
 					continue;
 
-				var textOffset = ( i % _TotalLines ) * _LineWidth;
+				var textOffset = i % this._TotalLines * this._LineWidth;
 
-				Host.Screen.ClearNotify = 0;
-				Host.Screen.CopyTop = true;
+				this.Host.Screen.ClearNotify = 0;
+				this.Host.Screen.CopyTop = true;
 
-				for ( var x = 0; x < _LineWidth; x++ )
-					Host.DrawingContext.DrawCharacter( ( x + 1 ) << 3, v, _Text[textOffset + x] );
+				for ( var x = 0; x < this._LineWidth; x++ )
+					this.Host.DrawingContext.DrawCharacter( ( x + 1 ) << 3, v, this._Text[textOffset + x] );
 
 				v += 8;
 			}
 
-			if ( Host.Keyboard.Destination == KeyDestination.key_message )
+			if (this.Host.Keyboard.Destination == KeyDestination.key_message )
 			{
-				Host.Screen.ClearNotify = 0;
-				Host.Screen.CopyTop = true;
+				this.Host.Screen.ClearNotify = 0;
+				this.Host.Screen.CopyTop = true;
 
 				var x = 0;
 
-				Host.DrawingContext.DrawString( 8, v, "say:" );
-				var chat = Host.Keyboard.ChatBuffer;
+				this.Host.DrawingContext.DrawString( 8, v, "say:" );
+				var chat = this.Host.Keyboard.ChatBuffer;
 				for ( ; x < chat.Length; x++ )
-				{
-					Host.DrawingContext.DrawCharacter( ( x + 5 ) << 3, v, chat[x] );
-				}
-				Host.DrawingContext.DrawCharacter( ( x + 5 ) << 3, v, 10 + ( ( Int32 ) ( Host.RealTime * _CursorSpeed ) & 1 ) );
+					this.Host.DrawingContext.DrawCharacter( ( x + 5 ) << 3, v, chat[x] );
+
+				this.Host.DrawingContext.DrawCharacter( ( x + 5 ) << 3, v, 10 + ( ( int ) (this.Host.RealTime * this._CursorSpeed ) & 1 ) );
 				v += 8;
 			}
 
-			if ( v > _NotifyLines )
-				_NotifyLines = v;
+			if ( v > this._NotifyLines )
+				this._NotifyLines = v;
 		}
 
 		// Con_ClearNotify (void)
 		public void ClearNotify( )
 		{
-			for ( var i = 0; i < NUM_CON_TIMES; i++ )
-				_Times[i] = 0;
+			for ( var i = 0; i < Con.NUM_CON_TIMES; i++ )
+				this._Times[i] = 0;
 		}
 
 		/// <summary>
@@ -370,35 +348,33 @@ namespace SharpQuake.Rendering.UI
 		/// </summary>
 		public void ToggleConsole_f( CommandMessage msg )
 		{
-			if ( Host.Keyboard.Destination == KeyDestination.key_console )
+			if (this.Host.Keyboard.Destination == KeyDestination.key_console )
 			{
-				if ( Host.Client.cls.state == cactive_t.ca_connected )
+				if (this.Host.Client.cls.state == cactive_t.ca_connected )
 				{
-					Host.Keyboard.Destination = KeyDestination.key_game;
-					Host.Keyboard.Lines[Host.Keyboard.EditLine][1] = '\0';  // clear any typing
-					Host.Keyboard.LinePos = 1;
+					this.Host.Keyboard.Destination = KeyDestination.key_game;
+					this.Host.Keyboard.Lines[this.Host.Keyboard.EditLine][1] = '\0';  // clear any typing
+					this.Host.Keyboard.LinePos = 1;
 				}
 				else
-				{
-					MenuBase.MainMenu.Show( Host );
-				}
+					MenuBase.MainMenuInstance.Show(this.Host );
 			}
 			else
-				Host.Keyboard.Destination = KeyDestination.key_console;
+				this.Host.Keyboard.Destination = KeyDestination.key_console;
 
-			Host.Screen.EndLoadingPlaque();
-			Array.Clear( _Times, 0, _Times.Length );
+			this.Host.Screen.EndLoadingPlaque();
+			Array.Clear(this._Times, 0, this._Times.Length );
 		}
 
 		/// <summary>
 		/// Con_DebugLog
 		/// </summary>
-		private void DebugLog( String msg )
+		private void DebugLog( string msg )
 		{
-			if ( _Log != null )
+			if (this._Log != null )
 			{
 				var tmp = Encoding.UTF8.GetBytes( msg );
-				_Log.Write( tmp, 0, tmp.Length );
+				this._Log.Write( tmp, 0, tmp.Length );
 			}
 		}
 
@@ -407,22 +383,22 @@ namespace SharpQuake.Rendering.UI
 		// Handles cursor positioning, line wrapping, etc
 		// All console printing must go through this in order to be logged to disk
 		// If no console is visible, the notify window will pop up.
-		private void Print( String txt )
+		private void Print( string txt )
 		{
-			if ( String.IsNullOrEmpty( txt ) )
+			if ( string.IsNullOrEmpty( txt ) )
 				return;
 
-			Int32 mask, offset = 0;
+			int mask, offset = 0;
 
-			BackScroll = 0;
+			this.BackScroll = 0;
 
-			if ( txt.StartsWith( ( ( Char ) 1 ).ToString() ) )// [0] == 1)
+			if ( txt.StartsWith( ( char ) 1 ) )// [0] == 1)
 			{
 				mask = 128; // go to colored text
-				Host.Sound.LocalSound( "misc/talk.wav" ); // play talk wav
+				this.Host.Sound.LocalSound( "misc/talk.wav" ); // play talk wav
 				offset++;
 			}
-			else if ( txt.StartsWith( ( ( Char ) 2 ).ToString() ) ) //txt[0] == 2)
+			else if ( txt.StartsWith( ( ( char ) 2 ).ToString() ) ) //txt[0] == 2)
 			{
 				mask = 128; // go to colored text
 				offset++;
@@ -434,51 +410,51 @@ namespace SharpQuake.Rendering.UI
 			{
 				var c = txt[offset];
 
-				Int32 l;
+				int l;
 				// count word length
-				for ( l = 0; l < _LineWidth && offset + l < txt.Length; l++ )
+				for ( l = 0; l < this._LineWidth && offset + l < txt.Length; l++ )
 				{
 					if ( txt[offset + l] <= ' ' )
 						break;
 				}
 
 				// word wrap
-				if ( l != _LineWidth && ( _X + l > _LineWidth ) )
-					_X = 0;
+				if ( l != this._LineWidth && this._X + l > this._LineWidth )
+					this._X = 0;
 
 				offset++;
 
-				if ( _CR != 0 )
+				if (this._CR != 0 )
 				{
-					_Current--;
-					_CR = 0;
+					this._Current--;
+					this._CR = 0;
 				}
 
-				if ( _X == 0 )
+				if (this._X == 0 )
 				{
-					LineFeed();
+					this.LineFeed();
 					// mark time for transparent overlay
-					if ( _Current >= 0 )
-						_Times[_Current % NUM_CON_TIMES] = Host.RealTime; // realtime
+					if (this._Current >= 0 )
+						this._Times[this._Current % Con.NUM_CON_TIMES] = this.Host.RealTime; // realtime
 				}
 
 				switch ( c )
 				{
 					case '\n':
-						_X = 0;
+						this._X = 0;
 						break;
 
 					case '\r':
-						_X = 0;
-						_CR = 1;
+						this._X = 0;
+						this._CR = 1;
 						break;
 
 					default:    // display character and advance
-						var y = _Current % _TotalLines;
-						_Text[y * _LineWidth + _X] = ( Char ) ( c | mask );
-						_X++;
-						if ( _X >= _LineWidth )
-							_X = 0;
+						var y = this._Current % this._TotalLines;
+						this._Text[y * this._LineWidth + this._X] = ( char ) ( c | mask );
+						this._X++;
+						if (this._X >= this._LineWidth )
+							this._X = 0;
 						break;
 				}
 			}
@@ -489,33 +465,31 @@ namespace SharpQuake.Rendering.UI
 		/// </summary>
 		private void Clear_f( CommandMessage msg )
 		{
-			Utilities.FillArray( _Text, ' ' );
+			Utilities.FillArray(this._Text, ' ' );
 		}
 
 		// Con_MessageMode_f
 		private void MessageMode_f( CommandMessage msg )
 		{
-			Host.Keyboard.Destination = KeyDestination.key_message;
-			Host.Keyboard.TeamMessage = false;
+			this.Host.Keyboard.Destination = KeyDestination.key_message;
+			this.Host.Keyboard.TeamMessage = false;
 		}
 
 		//Con_MessageMode2_f
 		private void MessageMode2_f( CommandMessage msg )
 		{
-			Host.Keyboard.Destination = KeyDestination.key_message;
-			Host.Keyboard.TeamMessage = true;
+			this.Host.Keyboard.Destination = KeyDestination.key_message;
+			this.Host.Keyboard.TeamMessage = true;
 		}
 
 		// Con_Linefeed
 		private void LineFeed( )
 		{
-			_X = 0;
-			_Current++;
+			this._X = 0;
+			this._Current++;
 
-			for ( var i = 0; i < _LineWidth; i++ )
-			{
-				_Text[( _Current % _TotalLines ) * _LineWidth + i] = ' ';
-			}
+			for ( var i = 0; i < this._LineWidth; i++ )
+				this._Text[this._Current % this._TotalLines * this._LineWidth + i] = ' ';
 		}
 
 		// Con_DrawInput
@@ -523,30 +497,30 @@ namespace SharpQuake.Rendering.UI
 		// The input line scrolls horizontally if typing goes beyond the right edge
 		private void DrawInput( )
 		{
-			if ( Host.Keyboard.Destination != KeyDestination.key_console && !_ForcedUp )
+			if (this.Host.Keyboard.Destination != KeyDestination.key_console && !this._ForcedUp )
 				return;     // don't draw anything
 
 			// add the cursor frame
-			Host.Keyboard.Lines[Host.Keyboard.EditLine][Host.Keyboard.LinePos] = ( Char ) ( 10 + ( ( Int32 ) ( Host.RealTime * _CursorSpeed ) & 1 ) );
+			this.Host.Keyboard.Lines[this.Host.Keyboard.EditLine][this.Host.Keyboard.LinePos] = ( char ) ( 10 + ( ( int ) (this.Host.RealTime * this._CursorSpeed ) & 1 ) );
 
 			// fill out remainder with spaces
-			for ( var i = Host.Keyboard.LinePos + 1; i < _LineWidth; i++ )
-				Host.Keyboard.Lines[Host.Keyboard.EditLine][i] = ' ';
+			for ( var i = this.Host.Keyboard.LinePos + 1; i < this._LineWidth; i++ )
+				this.Host.Keyboard.Lines[this.Host.Keyboard.EditLine][i] = ' ';
 
 			//	prestep if horizontally scrolling
 			var offset = 0;
-			if ( Host.Keyboard.LinePos >= _LineWidth )
-				offset = 1 + Host.Keyboard.LinePos - _LineWidth;
+			if (this.Host.Keyboard.LinePos >= this._LineWidth )
+				offset = 1 + this.Host.Keyboard.LinePos - this._LineWidth;
 			//text += 1 + key_linepos - con_linewidth;
 
 			// draw it
-			var y = _VisLines - 16;
+			var y = this._VisLines - 16;
 
-			for ( var i = 0; i < _LineWidth; i++ )
-				Host.DrawingContext.DrawCharacter( ( i + 1 ) << 3, _VisLines - 16, Host.Keyboard.Lines[Host.Keyboard.EditLine][offset + i] );
+			for ( var i = 0; i < this._LineWidth; i++ )
+				this.Host.DrawingContext.DrawCharacter( ( i + 1 ) << 3, this._VisLines - 16, this.Host.Keyboard.Lines[this.Host.Keyboard.EditLine][offset + i] );
 
 			// remove cursor
-			Host.Keyboard.Lines[Host.Keyboard.EditLine][Host.Keyboard.LinePos] = '\0';
+			this.Host.Keyboard.Lines[this.Host.Keyboard.EditLine][this.Host.Keyboard.LinePos] = '\0';
 		}
 	}
 }

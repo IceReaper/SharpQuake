@@ -23,14 +23,12 @@
 /// </copyright>
 /// 
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Rendering.Sprite
 {
     public class mspritegroup_t
     {
-        public Int32 numframes;
-        public Single[] intervals; // float*
+        public int numframes;
+        public float[] intervals; // float*
         public mspriteframe_t[] frames; // mspriteframe_t	*frames[1];
     } //mspritegroup_t;
 }

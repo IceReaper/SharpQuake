@@ -22,11 +22,14 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-
 namespace SharpQuake.Renderer.Textures
 {
+    using Framework;
+    using Framework.Data;
+    using Framework.Engine;
+    using System;
+    using System.Drawing;
+
     public class BaseTextureAtlas : IDisposable
     {
         public BaseDevice Device
@@ -35,43 +38,43 @@ namespace SharpQuake.Renderer.Textures
             private set;
         }
 
-        public Boolean IsDirty
+        public bool IsDirty
         {
             get;
             private set;
         }
 
-        public Int32 UploadCount
+        public int UploadCount
         {
             get;
             private set;
         }
 
-        private Int32[][] Allocated
+        private int[][] Allocated
         {
             get;
             set;
         }
 
-        private Byte[][] Texels
+        private byte[][] Texels
         {
             get;
             set;
         }
 
-        private Int32 MaxTextures
+        private int MaxTextures
         {
             get;
             set;
         }
 
-        private Int32 Width
+        private int Width
         {
             get;
             set;
         }
 
-        private Int32 Height
+        private int Height
         {
             get;
             set;
@@ -83,55 +86,54 @@ namespace SharpQuake.Renderer.Textures
             private set;
         }
 
-        public BaseTextureAtlas( BaseDevice device, Int32 maxTextures, Int32 width, Int32 height )
+        public BaseTextureAtlas( BaseDevice device, int maxTextures, int width, int height )
         {
-            Device = device;
-            MaxTextures = maxTextures;
-            Width = width;
-            Height = height;
-            Textures = new BaseTexture[MaxTextures];
+            this.Device = device;
+            this.MaxTextures = maxTextures;
+            this.Width = width;
+            this.Height = height;
+            this.Textures = new BaseTexture[this.MaxTextures];
 
-            Allocated = new Int32[MaxTextures][]; //[MAX_SCRAPS][BLOCK_WIDTH];
-            for ( var i = 0; i < Allocated.GetLength( 0 ); i++ )
-            {
-                Allocated[i] = new Int32[Width];
-            }
+            this.Allocated = new int[this.MaxTextures][]; //[MAX_SCRAPS][BLOCK_WIDTH];
+            for ( var i = 0; i < this.Allocated.GetLength( 0 ); i++ )
+                this.Allocated[i] = new int[this.Width];
 
-            Texels = new Byte[MaxTextures][]; // [MAX_SCRAPS][BLOCK_WIDTH*BLOCK_HEIGHT*4];
-            for ( var i = 0; i < Texels.GetLength( 0 ); i++ )
-            {
-                Texels[i] = new Byte[Width * Height * 4];
-            }
+            this.Texels = new byte[this.MaxTextures][]; // [MAX_SCRAPS][BLOCK_WIDTH*BLOCK_HEIGHT*4];
+            for ( var i = 0; i < this.Texels.GetLength( 0 ); i++ )
+                this.Texels[i] = new byte[this.Width * this.Height * 4];
         }
 
         public virtual void Initialise( )
         {
         }       
 
-        public virtual void Upload( Boolean resample )
+        public virtual void Upload( bool resample )
         {
-            UploadCount++;
+            this.UploadCount++;
 
-            for ( var i = 0; i < MaxTextures; i++ )
+            for ( var i = 0; i < this.MaxTextures; i++ )
             {
-                var texture = Textures[i];
+                var texture = this.Textures[i];
 
                 if ( texture == null )
                 {
-                    texture = BaseTexture.FromBuffer( Device, Guid.NewGuid( ).ToString( ),
-                        new ByteArraySegment( Texels[i] ), Width, Height, false, true, filter: "GL_NEAREST" );
+                    texture = BaseTexture.FromBuffer(
+                        this.Device, Guid.NewGuid( ).ToString( ),
+                        new ByteArraySegment(this.Texels[i] ),
+                        this.Width,
+                        this.Height, false, true, "GL_NEAREST" );
                 }
                 else
                 {
-                    texture.Initialise( new ByteArraySegment( Texels[i] ) );
+                    texture.Initialise( new ByteArraySegment(this.Texels[i] ) );
                     texture.Bind( );
                     texture.Upload8( resample );
                 }
 
-                Textures[i] = texture;
+                this.Textures[i] = texture;
             }
 
-            IsDirty = false;
+            this.IsDirty = false;
         }
 
         public virtual void Dispose( )
@@ -140,52 +142,52 @@ namespace SharpQuake.Renderer.Textures
 
         public virtual BaseTexture Add( ByteArraySegment buffer, BasePicture picture )
         {
-            var textureNumber = Allocate( picture.Width, picture.Height, out var x, out var y );
+            var textureNumber = this.Allocate( picture.Width, picture.Height, out var x, out var y );
 
-            var source = new System.Drawing.RectangleF( );
-            source.X = ( Single ) ( ( x + 0.01 ) / ( Single ) Height );
-            source.Width = ( picture.Width ) / ( Single ) Width;
-            source.Y = ( Single ) ( ( y + 0.01 ) / ( Single  )Height );
-            source.Height = ( picture.Height ) / ( Single ) Height;
+            var source = new RectangleF( );
+            source.X = ( float ) ( ( x + 0.01 ) / ( float )this.Height );
+            source.Width = picture.Width / ( float )this.Width;
+            source.Y = ( float ) ( ( y + 0.01 ) / ( float  )this.Height );
+            source.Height = picture.Height / ( float )this.Height;
 
             picture.Source = source;
 
-            IsDirty = true;
+            this.IsDirty = true;
 
             var k = 0;
 
             for ( var i = 0; i < picture.Height; i++ )
             {
                 for ( var j = 0; j < picture.Width; j++, k++ )
-                    Texels[textureNumber][( y + i ) * Width + x + j] = buffer.Data[buffer.StartIndex + k];// p->data[k];
+                    this.Texels[textureNumber][( y + i ) * this.Width + x + j] = buffer.Data[buffer.StartIndex + k];// p->data[k];
             }
 
-            Upload( true );
+            this.Upload( true );
 
-            return Textures[textureNumber];
+            return this.Textures[textureNumber];
         }
 
         // Scrap_AllocBlock
         // returns a texture number and the position inside it
-        protected virtual Int32 Allocate( Int32 width, Int32 height, out Int32 x, out Int32 y )
+        protected virtual int Allocate( int width, int height, out int x, out int y )
         {
             x = -1;
             y = -1;
 
-            for ( var texnum = 0; texnum < MaxTextures; texnum++ )
+            for ( var texnum = 0; texnum < this.MaxTextures; texnum++ )
             {
-                var best = Height;
+                var best = this.Height;
 
-                for ( var i = 0; i < Width - width; i++ )
+                for ( var i = 0; i < this.Width - width; i++ )
                 {
-                    Int32 best2 = 0, j;
+                    int best2 = 0, j;
 
                     for ( j = 0; j < width; j++ )
                     {
-                        if ( Allocated[texnum][i + j] >= best )
+                        if (this.Allocated[texnum][i + j] >= best )
                             break;
-                        if ( Allocated[texnum][i + j] > best2 )
-                            best2 = Allocated[texnum][i + j];
+                        if (this.Allocated[texnum][i + j] > best2 )
+                            best2 = this.Allocated[texnum][i + j];
                     }
                     if ( j == width )
                     {
@@ -195,11 +197,11 @@ namespace SharpQuake.Renderer.Textures
                     }
                 }
 
-                if ( best + height > Height )
+                if ( best + height > this.Height )
                     continue;
 
                 for ( var i = 0; i < width; i++ )
-                    Allocated[texnum][x + i] = best + height;
+                    this.Allocated[texnum][x + i] = best + height;
 
                 return texnum;
             }

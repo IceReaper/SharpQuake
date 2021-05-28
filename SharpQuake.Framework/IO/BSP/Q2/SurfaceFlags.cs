@@ -22,12 +22,12 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework.IO.BSP
+namespace SharpQuake.Framework.IO.BSP.Q2
 {
+    using System;
+
     [Flags]
-    public enum Q2SurfaceFlags : Int32
+    public enum Q2SurfaceFlags : int
     {
         Light = 0x1, // value will hold the light strength
         Slick = 0x2, // effects game physics
@@ -39,6 +39,6 @@ namespace SharpQuake.Framework.IO.BSP
         NoDraw = 0x80, // don't bother referencing the texture
         Hint = 0x100, // make a primary bsp splitter
         Skip = 0x200, // completely ignore, allowing non-closed brushes
-        AlphaTest = 0x02000000, // alpha test masking of color 255 in wal textures (supported by modded engines)
+        AlphaTest = 0x02000000 // alpha test masking of color 255 in wal textures (supported by modded engines)
     }
 }

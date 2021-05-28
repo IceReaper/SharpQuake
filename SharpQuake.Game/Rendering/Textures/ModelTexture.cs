@@ -22,13 +22,13 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using SharpQuake.Framework;
-using SharpQuake.Game.Rendering.Memory;
-using SharpQuake.Renderer.Textures;
-
 namespace SharpQuake.Game.Rendering.Textures
 {
+    using Framework;
+    using Framework.Definitions.Bsp;
+    using Memory;
+    using Renderer.Textures;
+
     // Uze:
     // WARNING: texture_t changed!!!
     // in original Quake texture_t and it's data where allocated as one hunk
@@ -38,19 +38,19 @@ namespace SharpQuake.Game.Rendering.Textures
     // now there is field <pixels> and all offsets are just indices in this byte array
     public class ModelTexture
     {
-        public String name; // char[16];
-        public UInt32 width, height;
+        public string name; // char[16];
+        public uint width, height;
         public BaseTexture texture;
         public MemorySurface texturechain;	// for gl_texsort drawing
-        public Int32 anim_total;				// total tenths in sequence ( 0 = no)
-        public Int32 anim_min, anim_max;		// time for this frame min <=time< max
+        public int anim_total;				// total tenths in sequence ( 0 = no)
+        public int anim_min, anim_max;		// time for this frame min <=time< max
         public ModelTexture anim_next;		// in the animation sequence
         public ModelTexture alternate_anims;	// bmodels in frmae 1 use these
-        public Int32[] offsets; //[MIPLEVELS];		// four mip maps stored
-        public Byte[] pixels; // added by Uze
-        public Single scaleX;
-        public Single scaleY;
-		public Byte[] localPalette;
+        public int[] offsets; //[MIPLEVELS];		// four mip maps stored
+        public byte[] pixels; // added by Uze
+        public float scaleX;
+        public float scaleY;
+		public byte[] localPalette;
 
 		public BaseTexture Texture
         {
@@ -60,7 +60,7 @@ namespace SharpQuake.Game.Rendering.Textures
 
         public ModelTexture( )
         {
-            offsets = new Int32[BspDef.MIPLEVELS];
+            this.offsets = new int[BspDef.MIPLEVELS];
         }
     } //texture_t;
 }

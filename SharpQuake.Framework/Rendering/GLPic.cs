@@ -22,22 +22,20 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Rendering
 {
     public class GLPic
     {
-        public Int32 width, height;
-        public Int32 texnum;
-        public Single sl, tl, sh, th;
+        public int width, height;
+        public int texnum;
+        public float sl, tl, sh, th;
 
         public GLPic( )
         {
-            sl = 0;
-            sh = 1;
-            tl = 0;
-            th = 1;
+            this.sl = 0;
+            this.sh = 1;
+            this.tl = 0;
+            this.th = 1;
         }
     } //glpic_t;
 }

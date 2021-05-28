@@ -22,11 +22,10 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 /// 
-using System;
 
-namespace SharpQuake.Framework.IO.BSP
+namespace SharpQuake.Framework.IO.BSP.Q2
 {
-    public enum Q2Lumps : Int32
+    public enum Q2Lumps : int
     {
         Entities = 0,
         Planes = 1,

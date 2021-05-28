@@ -22,14 +22,16 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Drawing;
-using SharpQuake.Framework;
-using SharpQuake.Framework.Mathematics;
-using SharpQuake.Renderer.Textures;
-
 namespace SharpQuake.Renderer
 {
+    using Framework;
+    using Framework.Rendering;
+    using Framework.Rendering.Sprite;
+    using System;
+    using System.Drawing;
+    using System.Numerics;
+    using Textures;
+
     public class BaseGraphics : IDisposable
     {
         public BaseDevice Device
@@ -46,7 +48,7 @@ namespace SharpQuake.Renderer
 
         public BaseGraphics( BaseDevice device )
         {
-            Device = device;
+            this.Device = device;
         }
 
         public virtual void Initialise()
@@ -59,17 +61,17 @@ namespace SharpQuake.Renderer
             //throw new NotImplementedException( );
         }
 
-        public virtual void DrawTexture2D( BaseTexture texture, Int32 x, Int32 y, Color? colour = null, Boolean hasAlpha = false )
+        public virtual void DrawTexture2D( BaseTexture texture, int x, int y, Color? colour = null, bool hasAlpha = false )
         {
-            DrawTexture2D( texture, x, y, texture.Desc.Width, texture.Desc.Height, colour, hasAlpha );
+            this.DrawTexture2D( texture, x, y, texture.Desc.Width, texture.Desc.Height, colour, hasAlpha );
         }
 
-        public virtual void DrawTexture2D( BaseTexture texture, Int32 x, Int32 y, Int32 width, Int32 height, Color? colour = null, Boolean hasAlpha = false )
+        public virtual void DrawTexture2D( BaseTexture texture, int x, int y, int width, int height, Color? colour = null, bool hasAlpha = false )
         {
-            DrawTexture2D( texture, new Rectangle( x, y, width, height ), colour, hasAlpha );
+            this.DrawTexture2D( texture, new( x, y, width, height ), colour, hasAlpha );
         }
 
-        public virtual void DrawTexture2D( BaseTexture texture, Rectangle destRect, Color? colour = null, Boolean hasAlpha = false )
+        public virtual void DrawTexture2D( BaseTexture texture, Rectangle destRect, Color? colour = null, bool hasAlpha = false )
         {
             var srcRectF = new RectangleF( );
             srcRectF.X = 0;
@@ -77,59 +79,59 @@ namespace SharpQuake.Renderer
             srcRectF.Width = 1;
             srcRectF.Height = 1;
 
-            DrawTexture2D( texture, srcRectF, destRect, colour, hasAlpha );
+            this.DrawTexture2D( texture, srcRectF, destRect, colour, hasAlpha );
         }
 
-        public virtual void DrawTexture2D( BaseTexture texture, RectangleF sourceRect, Int32 x, Int32 y, Color? colour = null, Boolean hasAlpha = false )
+        public virtual void DrawTexture2D( BaseTexture texture, RectangleF sourceRect, int x, int y, Color? colour = null, bool hasAlpha = false )
         {
-            DrawTexture2D( texture, sourceRect, new Rectangle( x, y, texture.Desc.Width, texture.Desc.Height ), colour, hasAlpha );
+            this.DrawTexture2D( texture, sourceRect, new( x, y, texture.Desc.Width, texture.Desc.Height ), colour, hasAlpha );
         }
 
-        public virtual void DrawTexture2D( BaseTexture texture, RectangleF sourceRect, Rectangle destRect, Color? colour = null, Boolean hasAlpha = false )
+        public virtual void DrawTexture2D( BaseTexture texture, RectangleF sourceRect, Rectangle destRect, Color? colour = null, bool hasAlpha = false )
         {
             throw new NotImplementedException( );
         }
 
-        public virtual void DrawPicture( BasePicture picture, Int32 x, Int32 y, Color? colour = null, Boolean hasAlpha = false )
+        public virtual void DrawPicture( BasePicture picture, int x, int y, Color? colour = null, bool hasAlpha = false )
         {
-            if ( Device.TextureAtlas.IsDirty )
-                Device.TextureAtlas.Upload( true );
+            if (this.Device.TextureAtlas.IsDirty )
+                this.Device.TextureAtlas.Upload( true );
 
-            DrawTexture2D( picture.Texture, picture.Source, new Rectangle( x, y, picture.Width, picture.Height ), colour, hasAlpha );
+            this.DrawTexture2D( picture.Texture, picture.Source, new( x, y, picture.Width, picture.Height ), colour, hasAlpha );
         }
 
-        public virtual void DrawPicture( BasePicture picture, Int32 x, Int32 y, Int32 width, Int32 height, Color? colour = null, Boolean hasAlpha = false )
+        public virtual void DrawPicture( BasePicture picture, int x, int y, int width, int height, Color? colour = null, bool hasAlpha = false )
         {
-            if ( Device.TextureAtlas.IsDirty )
-                Device.TextureAtlas.Upload( true );
+            if (this.Device.TextureAtlas.IsDirty )
+                this.Device.TextureAtlas.Upload( true );
 
-            DrawTexture2D( picture.Texture, picture.Source, new Rectangle( x, y, width, height ), colour, hasAlpha );
+            this.DrawTexture2D( picture.Texture, picture.Source, new( x, y, width, height ), colour, hasAlpha );
         }
         
         public virtual void BeginParticles( BaseTexture texture )
         {
-            CurrentParticleTexture = texture;
+            this.CurrentParticleTexture = texture;
         }
 
-        public virtual void DrawParticle( Single colour, Vector3 up, Vector3 right, Vector3 origin, Single scale )
+        public virtual void DrawParticle( float colour, Vector3 up, Vector3 right, Vector3 origin, float scale )
         {
             throw new NotImplementedException( );
         }
 
         public virtual void EndParticles( )
         {
-            CurrentParticleTexture = null;
+            this.CurrentParticleTexture = null;
         }
 
         /// <summary>
         /// EmitSkyPolys
         /// </summary>
-        public virtual void EmitSkyPolys( GLPoly polys, Vector3 origin, Single speed, Boolean blend = false )
+        public virtual void EmitSkyPolys( GLPoly polys, Vector3 origin, float speed, bool blend = false )
         {
             throw new NotImplementedException( );
         }
 
-        public virtual void DrawPoly( GLPoly p, Single scaleX = 1f, Single scaleY = 1f, Boolean isLightmap = false )
+        public virtual void DrawPoly( GLPoly p, float scaleX = 1f, float scaleY = 1f, bool isLightmap = false )
         {
             throw new NotImplementedException( );
         }
@@ -138,52 +140,52 @@ namespace SharpQuake.Renderer
         /// EmitWaterPolys
         /// Does a water warp on the pre-fragmented glpoly_t chain
         /// </summary>
-        public virtual void EmitWaterPolys( ref Single[] turbSin, Double time, Double turbScale, GLPoly polys )
+        public virtual void EmitWaterPolys( ref float[] turbSin, double time, double turbScale, GLPoly polys )
         {
             throw new NotImplementedException( );
         }
 
-        public virtual void DrawWaterPoly( GLPoly p, Double time )
+        public virtual void DrawWaterPoly( GLPoly p, double time )
         {
             throw new NotImplementedException( );
         }
 
-        public virtual void DrawWaterPolyLightmap( GLPoly p, Double time, Boolean blend = false )
+        public virtual void DrawWaterPolyLightmap( GLPoly p, double time, bool blend = false )
         {
             throw new NotImplementedException( );
         }
 
-        public virtual void DrawSequentialPoly( BaseTexture texture, BaseTexture lightMapTexture, GLPoly p, Int32 lightMapNumber )
+        public virtual void DrawSequentialPoly( BaseTexture texture, BaseTexture lightMapTexture, GLPoly p, int lightMapNumber )
         {
             throw new NotImplementedException( );
         }
 
-        public virtual void DrawSequentialPolyMultiTexture( BaseTexture texture, BaseTexture lightMapTexture, Byte[] lightMapData, GLPoly p, Int32 lightMapNumber )
+        public virtual void DrawSequentialPolyMultiTexture( BaseTexture texture, BaseTexture lightMapTexture, byte[] lightMapData, GLPoly p, int lightMapNumber )
         {
             throw new NotImplementedException( );
         }
 
-        public virtual void DrawWaterPolyMultiTexture( Byte[] lightMapData, BaseTexture texture, BaseTexture lightMapTexture, Int32 lightMapTextureNumber, GLPoly p, Double time )
+        public virtual void DrawWaterPolyMultiTexture( byte[] lightMapData, BaseTexture texture, BaseTexture lightMapTexture, int lightMapTextureNumber, GLPoly p, double time )
         {
             throw new NotImplementedException( );
         }
 
-        public virtual void Fill( Int32 x, Int32 y, Int32 width, Int32 height, Color color )
+        public virtual void Fill( int x, int y, int width, int height, Color color )
         {
             throw new NotImplementedException( );
         }
 
-        public virtual void DrawTransTranslate( BaseTexture texture, Int32 x, Int32 y, Int32 width, Int32 height, Byte[] translation )
+        public virtual void DrawTransTranslate( BaseTexture texture, int x, int y, int width, int height, byte[] translation )
         {
             throw new NotImplementedException( );
         }
 
-        public virtual void BeginBlendLightMap( Boolean lightMapCvar, String filter = "GL_LUMINANCE" )
+        public virtual void BeginBlendLightMap( bool lightMapCvar, string filter = "GL_LUMINANCE" )
         {
             throw new NotImplementedException( );
         }
 
-        public virtual void EndBlendLightMap( Boolean lightMapCvar, String filter = "GL_LUMINANCE" )
+        public virtual void EndBlendLightMap( bool lightMapCvar, string filter = "GL_LUMINANCE" )
         {
             throw new NotImplementedException( );
         }
@@ -208,7 +210,7 @@ namespace SharpQuake.Renderer
             throw new NotImplementedException( );
         }
 
-        public virtual void PolyBlend( Color4 colour )
+        public virtual void PolyBlend( Color colour )
         {
             throw new NotImplementedException( );
         }
@@ -216,9 +218,9 @@ namespace SharpQuake.Renderer
         // Draw_Fill
         //
         // Fills a box of pixels with a single color
-        public virtual void FillUsingPalette( Int32 x, Int32 y, Int32 width, Int32 height, Int32 colour )
+        public virtual void FillUsingPalette( int x, int y, int width, int height, int colour )
         {
-            Fill( x, y, width, height, Device.Palette.ToColour( colour ) );
+            this.Fill( x, y, width, height, this.Device.Palette.ToColour( colour ) );
         }
 
         public virtual void FadeScreen()

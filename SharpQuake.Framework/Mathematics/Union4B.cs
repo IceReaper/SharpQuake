@@ -22,59 +22,58 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Mathematics
 {
+    using System.Runtime.InteropServices;
+
     [StructLayout( LayoutKind.Explicit )]
     public struct Union4b
     {
         [FieldOffset( 0 )]
-        public UInt32 ui0;
+        public uint ui0;
 
         [FieldOffset( 0 )]
-        public Int32 i0;
+        public int i0;
 
         [FieldOffset( 0 )]
-        public Single f0;
+        public float f0;
 
         [FieldOffset( 0 )]
-        public Int16 s0;
+        public short s0;
 
         [FieldOffset( 2 )]
-        public Int16 s1;
+        public short s1;
 
         [FieldOffset( 0 )]
-        public UInt16 us0;
+        public ushort us0;
 
         [FieldOffset( 2 )]
-        public UInt16 us1;
+        public ushort us1;
 
         [FieldOffset( 0 )]
-        public Byte b0;
+        public byte b0;
 
         [FieldOffset( 1 )]
-        public Byte b1;
+        public byte b1;
 
         [FieldOffset( 2 )]
-        public Byte b2;
+        public byte b2;
 
         [FieldOffset( 3 )]
-        public Byte b3;
+        public byte b3;
 
-        public static readonly Union4b Empty = new Union4b( 0, 0, 0, 0 );
+        public static readonly Union4b Empty = new( 0, 0, 0, 0 );
 
-        public Union4b( Byte b0, Byte b1, Byte b2, Byte b3 )
+        public Union4b( byte b0, byte b1, byte b2, byte b3 )
         {
             // Shut up compiler
-            ui0 = 0;
-            i0 = 0;
-            f0 = 0;
-            s0 = 0;
-            s1 = 0;
-            us0 = 0;
-            us1 = 0;
+            this.ui0 = 0;
+            this.i0 = 0;
+            this.f0 = 0;
+            this.s0 = 0;
+            this.s1 = 0;
+            this.us0 = 0;
+            this.us1 = 0;
             this.b0 = b0;
             this.b1 = b1;
             this.b2 = b2;

@@ -22,23 +22,21 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Definitions
 {
     public static class NetworkDef
     {
-        public const Int32 NET_PROTOCOL_VERSION = 3;
+        public const int NET_PROTOCOL_VERSION = 3;
 
-        public const Int32 HOSTCACHESIZE = 8;
+        public const int HOSTCACHESIZE = 8;
 
-        public const Int32 NET_NAMELEN = 64;
+        public const int NET_NAMELEN = 64;
 
-        public const Int32 NET_MAXMESSAGE = 8192;
+        public const int NET_MAXMESSAGE = 8192;
 
-        public const Int32 NET_HEADERSIZE = 2 * sizeof( UInt32 );
+        public const int NET_HEADERSIZE = 2 * sizeof( uint );
 
-        public const Int32 NET_DATAGRAMSIZE = QDef.MAX_DATAGRAM + NET_HEADERSIZE;
+        public const int NET_DATAGRAMSIZE = QDef.MAX_DATAGRAM + NetworkDef.NET_HEADERSIZE;
 
     }
 }

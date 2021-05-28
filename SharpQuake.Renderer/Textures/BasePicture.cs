@@ -22,19 +22,22 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Runtime.InteropServices;
-using SharpQuake.Framework;
-using SharpQuake.Framework.IO;
-
 namespace SharpQuake.Renderer.Textures
 {
+    using Framework;
+    using Framework.Data;
+    using Framework.Engine;
+    using Framework.IO;
+    using Framework.IO.Wad;
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.IO;
+    using System.Runtime.InteropServices;
+
     public class BasePicture
     {
-        public String Identifier
+        public string Identifier
         {
             get;
             set;
@@ -46,13 +49,13 @@ namespace SharpQuake.Renderer.Textures
             set;
         }
 
-        public virtual Int32 Width
+        public virtual int Width
         {
             get;
             set;
         }
 
-        public virtual Int32 Height
+        public virtual int Height
         {
             get;
             set;
@@ -64,7 +67,7 @@ namespace SharpQuake.Renderer.Textures
             set;
         }
 
-        public static Dictionary<String, BasePicture> PicturePool
+        public static Dictionary<string, BasePicture> PicturePool
         {
             get;
             private set;
@@ -72,13 +75,13 @@ namespace SharpQuake.Renderer.Textures
 
         static BasePicture()
         {
-            PicturePool = new Dictionary<String, BasePicture>( );
+            BasePicture.PicturePool = new( );
         }
 
-        public static BasePicture FromBuffer( BaseDevice device, ByteArraySegment buffer, Int32 width, Int32 height, String identifier = null, String filter = "GL_LINEAR_MIPMAP_NEAREST", Boolean ignoreAtlas = false )
+        public static BasePicture FromBuffer( BaseDevice device, ByteArraySegment buffer, int width, int height, string identifier = null, string filter = "GL_LINEAR_MIPMAP_NEAREST", bool ignoreAtlas = false )
         {
-            if ( PicturePool.ContainsKey( identifier ) )
-                return PicturePool[identifier];
+            if ( BasePicture.PicturePool.ContainsKey( identifier ) )
+                return BasePicture.PicturePool[identifier];
 
             var picture = new BasePicture( );
             picture.Width = width;
@@ -93,10 +96,10 @@ namespace SharpQuake.Renderer.Textures
             return picture;
         }
 
-        public static BasePicture FromFile( BaseDevice device, String path, String filter = "GL_LINEAR_MIPMAP_NEAREST", Boolean ignoreAtlas = false )
+        public static BasePicture FromFile( BaseDevice device, string path, string filter = "GL_LINEAR_MIPMAP_NEAREST", bool ignoreAtlas = false )
         {
-            if ( PicturePool.ContainsKey( path ) )
-                return PicturePool[path];
+            if ( BasePicture.PicturePool.ContainsKey( path ) )
+                return BasePicture.PicturePool[path];
 
             var data = FileSystem.LoadFile( path );
 
@@ -114,7 +117,7 @@ namespace SharpQuake.Renderer.Textures
 
                     var headerSize = Marshal.SizeOf( typeof( WadPicHeader ) );
 
-                    return FromBuffer( device, new ByteArraySegment( data, headerSize ), ( Int32 ) header.width, ( Int32 ) header.height, path, filter, ignoreAtlas );
+                    return BasePicture.FromBuffer( device, new( data, headerSize ), ( int ) header.width, ( int ) header.height, path, filter, ignoreAtlas );
 
                 case "jpg":
                 case "bmp":
@@ -129,10 +132,10 @@ namespace SharpQuake.Renderer.Textures
         }
 
         //qpic_t *Draw_PicFromWad (char *name);
-        public static BasePicture FromWad( BaseDevice device, Wad wad, String name, String filter = "GL_LINEAR_MIPMAP_NEAREST" )
+        public static BasePicture FromWad( BaseDevice device, Wad wad, string name, string filter = "GL_LINEAR_MIPMAP_NEAREST" )
         {
-            if ( PicturePool.ContainsKey( name ) )
-                return PicturePool[name];
+            if ( BasePicture.PicturePool.ContainsKey( name ) )
+                return BasePicture.PicturePool[name];
 
             var offset = wad.GetLumpNameOffset( name );
             var ptr = new IntPtr( wad.DataPointer.ToInt64( ) + offset );
@@ -140,7 +143,7 @@ namespace SharpQuake.Renderer.Textures
 
             offset += Marshal.SizeOf( typeof( WadPicHeader ) );
 
-            return FromBuffer( device, new ByteArraySegment( wad.Data, offset ), header.width, header.height, name, filter );
+            return BasePicture.FromBuffer( device, new( wad.Data, offset ), header.width, header.height, name, filter );
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace SharpQuake.Framework
+﻿namespace SharpQuake.Framework.Rendering
 {
     public enum SyncType
     {

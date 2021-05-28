@@ -22,11 +22,10 @@
 /// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// </copyright>
 
-using System;
-using System.Runtime.InteropServices;
-
-namespace SharpQuake.Framework
+namespace SharpQuake.Framework.Rendering
 {
+    using System.Runtime.InteropServices;
+
     // This mirrors trivert_t in trilib.h, is present so Quake knows how to
     // load this data
 
@@ -34,18 +33,18 @@ namespace SharpQuake.Framework
     public struct trivertx_t
     {
         [MarshalAs( UnmanagedType.ByValArray, SizeConst = 3 )]
-        public Byte[] v; // [3];
-        public Byte lightnormalindex;
+        public byte[] v; // [3];
+        public byte lightnormalindex;
 
-        public static Int32 SizeInBytes = Marshal.SizeOf( typeof( trivertx_t ) );
+        public static int SizeInBytes = Marshal.SizeOf( typeof( trivertx_t ) );
 
         /// <summary>
         /// Call only for manually created instances
         /// </summary>
         public void Init( )
         {
-            if ( v == null )
-                v = new Byte[3];
+            if (this.v == null )
+                this.v = new byte[3];
         }
     } // trivertx_t;
 }
